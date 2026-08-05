@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin']
 const rubik = Rubik({ variable: '--font-rubik', subsets: ['hebrew', 'latin'] });
 
 export const metadata: Metadata = {
-  title: { default: 'Arnak', template: '%s · Arnak' },
+  title: { default: 'toll-e', template: '%s · toll-e' },
   description: 'Investment tracking with real tax clarity for Israeli investors',
 };
 

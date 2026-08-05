@@ -2,7 +2,7 @@ import type { TradingCalendar } from './calendar';
 
 // Markets are data, not code. Adding a market = adding an entry here
 // (+ verifying provider symbol coverage). UI, search, formatting, and
-// badges all render from this registry. See arnakplan.md §2.2.
+// badges all render from this registry. See toll-e-plan.md §2.2.
 
 export interface MarketDef {
   id: string; // 'US', 'IL', later 'UK', 'EU', 'JP'…

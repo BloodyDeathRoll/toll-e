@@ -1,4 +1,4 @@
-# Arnak (ארנק) — Product & Technical Plan
+# toll-e — Product & Technical Plan
 
 **An investment tracking web app with real tax clarity for Israeli investors.**
 Version 1.0 · August 2026 · Prepared for implementation in the IDE
@@ -14,9 +14,9 @@ Portfolio apps do a decent job showing you what you own and how it moved today. 
 - *"I lost money on one position and gained on another — what's my net position with the tax authority?"*
 - *"Last year ended at a loss — what's my carryforward shield worth this year?"*
 
-Israeli investors typically discover the answers once a year, sitting across from an accountant with a stack of broker reports. Arnak's core promise: **every sale immediately updates a clear, running picture of tax owed — monthly and yearly — alongside a Yahoo-Finance-grade portfolio tracker.**
+Israeli investors typically discover the answers once a year, sitting across from an accountant with a stack of broker reports. toll-e's core promise: **every sale immediately updates a clear, running picture of tax owed — monthly and yearly — alongside a Yahoo-Finance-grade portfolio tracker.**
 
-The tracking experience is deliberately modeled on the Yahoo Finance app (our 22 reference screens), which does portfolio UX better than the competition. Arnak = that experience, dual-market (US + TASE), dual-language (EN + HE), with a tax engine underneath.
+The tracking experience is deliberately modeled on the Yahoo Finance app (our 22 reference screens), which does portfolio UX better than the competition. toll-e = that experience, dual-market (US + TASE), dual-language (EN + HE), with a tax engine underneath.
 
 ---
 
@@ -70,9 +70,9 @@ type MarketDef = {
 - Filter (All / by type), Sort by (Market Value, Day %, Total %, Name, Custom).
 - **All Transactions** screen: full journal, filterable by symbol/type/date.
 - Portfolio management: create/rename/delete portfolios, set market/currency, custom ordering. (Reference's "Link Broker" — out of scope v1.)
-- **New for Arnak: Tax panel** on every portfolio (see §3).
+- **New for toll-e: Tax panel** on every portfolio (see §3).
 
-**Performance / Profile page** (new, Arnak-specific — see §3.4)
+**Performance / Profile page** (new, toll-e-specific — see §3.4)
 - The single "how am I actually doing?" page: combined totals plus per-portfolio breakdowns, YTD and month-by-month, with tax paid alongside gains.
 
 **Watchlists** (full Yahoo-style management)
@@ -172,7 +172,7 @@ The engine takes a pluggable `TaxRuleSet`, so these slot in later without schema
 **Monorepo shape** (single Next app, clean internal packages):
 
 ```
-arnak/
+toll-e/
 ├── app/                    # routes: (marketing), (app)/home, /portfolio/[id],
 │   │                       #   /stock/[symbol], /tax, /transactions, /settings, /api/*
 ├── src/
@@ -309,7 +309,7 @@ News, Analysis, Financials tabs (EPS beats, revenue vs earnings, events, holders
 |---|---|
 | Unofficial Yahoo API breaks/blocks | Adapter isolation; server-side caching keeps app usable with stale data; paid-API swap path (§5) |
 | TASE coverage gaps (fundamentals) | Prices/history suffice for v1 tracking+tax; TASE DataHub adapter later |
-| Tax correctness = product trust | Pure, deterministic, exhaustively unit-tested engine; "show your work" lot drill-down; explicit disclaimer that Arnak is not tax advice and the accountant remains the authority |
+| Tax correctness = product trust | Pure, deterministic, exhaustively unit-tested engine; "show your work" lot drill-down; explicit disclaimer that toll-e is not tax advice and the accountant remains the authority |
 | RTL/bidi bugs everywhere | Logical properties + `dir` islands from day one; Hebrew QA pass each phase |
 | Scope creep toward full Yahoo clone | Phases 0–3 are the product; stock-page depth is Phase 4 polish |
 | FX accuracy for combined display | Tax itself stays native-currency (no FX in the engine); persist daily FX history and the rate used per converted display figure (auditable) |

@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { marketIds } from '@/src/markets/registry';
 
-// The active market tab is a lens, not a data wall (arnakplan.md §2.2):
+// The active market tab is a lens, not a data wall (toll-e-plan.md §2.2):
 // it controls which indexes/portfolios/search results surface first.
 
 interface MarketContextValue {
@@ -12,7 +12,7 @@ interface MarketContextValue {
 }
 
 const MarketContext = createContext<MarketContextValue | null>(null);
-const STORAGE_KEY = 'arnak.market';
+const STORAGE_KEY = 'toll-e.market';
 
 export function MarketProvider({
   defaultMarketId = 'US',

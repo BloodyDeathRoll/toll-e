@@ -102,7 +102,7 @@
 }
 
 .dark {
-  /* Dark-first (arnakplan.md §7.2): near-black canvas, elevated card surfaces. */
+  /* Dark-first (toll-e-plan.md §7.2): near-black canvas, elevated card surfaces. */
   --background: oklch(0.13 0.005 260);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.18 0.006 260);

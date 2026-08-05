@@ -1,21 +1,21 @@
 services:
   db:
     image: postgres:17-alpine
-    container_name: arnak-db
+    container_name: toll-e-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: arnak
-      POSTGRES_PASSWORD: arnak
-      POSTGRES_DB: arnak
+      POSTGRES_USER: toll-e
+      POSTGRES_PASSWORD: toll-e
+      POSTGRES_DB: toll-e
     ports:
       - '127.0.0.1:5432:5432'
     volumes:
-      - arnak-pgdata:/var/lib/postgresql/data
+      - toll-e-pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U arnak -d arnak']
+      test: ['CMD-SHELL', 'pg_isready -U toll-e -d toll-e']
       interval: 5s
       timeout: 3s
       retries: 10
 
 volumes:
-  arnak-pgdata:
+  toll-e-pgdata:

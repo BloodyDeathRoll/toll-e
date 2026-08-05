@@ -5,6 +5,6 @@ export default defineConfig({
   out: './src/db/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? 'postgres://arnak:arnak@127.0.0.1:5432/arnak',
+    url: process.env.DATABASE_URL ?? 'postgres://toll-e:toll-e@127.0.0.1:5432/toll-e',
   },
 });

@@ -8,9 +8,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# Arnak
+# toll-e
 
-Investment tracking web app for Israeli investors: Yahoo-Finance-grade portfolio tracker (dual-market US + TASE, EN + HE with RTL) with a tax engine underneath. `arnakplan.md` is the authoritative product & technical plan — read it before non-trivial work. `ref/` holds the 22 Yahoo Finance UX reference screenshots.
+Investment tracking web app for Israeli investors: Yahoo-Finance-grade portfolio tracker (dual-market US + TASE, EN + HE with RTL) with a tax engine underneath. `toll-e-plan.md` is the authoritative product & technical plan — read it before non-trivial work. `ref/` holds the 22 Yahoo Finance UX reference screenshots.
 
 ## Commands
 
@@ -35,4 +35,4 @@ Investment tracking web app for Israeli investors: Yahoo-Finance-grade portfolio
 
 ## Scope discipline
 
-Out of v1 (`arnakplan.md` §2.4): short selling, options, cash/wallet tracking, dividend *tax*, broker linking/CSV import, price alerts, social, allocation analytics, streaming quotes. §3.3 tax refinements (indexation, surtax, Form 867) are architected-for via `TaxRuleSet`, not built.
+Out of v1 (`toll-e-plan.md` §2.4): short selling, options, cash/wallet tracking, dividend *tax*, broker linking/CSV import, price alerts, social, allocation analytics, streaming quotes. §3.3 tax refinements (indexation, surtax, Form 867) are architected-for via `TaxRuleSet`, not built.
