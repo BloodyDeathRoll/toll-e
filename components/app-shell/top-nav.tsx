@@ -5,6 +5,7 @@ import { Link, usePathname } from '@/src/i18n/navigation';
 import { MarketMenu } from './market-menu';
 import { useMarket } from './market-context';
 import { SearchBox } from './search-box';
+import { UserMenu } from './user-menu';
 import { SessionStatus } from '@/components/session-indicator';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useIndexQuotes } from '@/components/use-market-data';
@@ -58,9 +59,7 @@ export function TopNav() {
         <div className="ms-auto flex items-center gap-3.5">
           <MarketMenu />
           <ThemeToggle />
-          <span className="flex size-[30px] items-center justify-center rounded-full bg-primary text-[13px] font-semibold text-primary-foreground">
-            AN
-          </span>
+          <UserMenu />
         </div>
       </div>
 

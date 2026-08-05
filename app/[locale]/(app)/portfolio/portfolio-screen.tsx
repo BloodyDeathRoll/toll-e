@@ -9,7 +9,8 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { getMarket } from '@/src/markets/registry';
 import { demo } from '@/src/demo/data';
 import { fmtNum, fmtPct, fmtSigned } from '@/lib/format';
-import { HoldingsTable } from '@/components/holdings-table';
+import { HoldingsTable, positionRows, type HoldingRow } from '@/components/holdings-table';
+import { usePortfolioPositions } from '@/components/use-portfolio';
 import { cn } from '@/lib/utils';
 
 const tabs = ['tabHoldings', 'tabBasic', 'tabDetails'] as const;
@@ -24,9 +25,34 @@ export function PortfolioScreen() {
   const nl = market.numberLocale;
   const sym = market.currencySymbol;
   const [tab, setTab] = useState<(typeof tabs)[number]>('tabHoldings');
+  const { state } = usePortfolioPositions(marketId);
 
-  const p = data.portfolio;
-  const [first, ...rest] = data.holdings;
+  // Real portfolio once transactions exist; demo showcase otherwise.
+  const real = state.status === 'data' ? state.data : null;
+  const taxRate = real?.portfolio.taxRatePct ?? data.tax.ratePct;
+  const rows: HoldingRow[] = real
+    ? positionRows(real.positions, taxRate)
+    : data.holdings.map((h) => ({
+        symbol: h.symbol,
+        name: h.name,
+        shares: h.shares,
+        avgCost: h.avgCost,
+        price: h.price,
+        marketValue: h.marketValue,
+        totalGain: h.totalGain,
+        totalGainPct: h.totalGainPct,
+        taxIfSold: h.taxIfSold,
+      }));
+  const trades = (symbol: string) =>
+    real ? undefined : data.holdings.find((h) => h.symbol === symbol)?.trades;
+  const p = real
+    ? {
+        value: real.totals.marketValue,
+        dayChange: real.totals.dayGain,
+        dayChangePct: real.totals.dayGainPct,
+      }
+    : data.portfolio;
+  const [first, ...rest] = rows;
 
   return (
     <main className="flex flex-1 flex-col">
@@ -107,7 +133,7 @@ export function PortfolioScreen() {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">{t('unrealizedTax', { rate: data.tax.ratePct })}</span>
+              <span className="text-muted-foreground">{t('unrealizedTax', { rate: taxRate })}</span>
               <span dir="ltr" className="text-foreground">{fmtNum(first.taxIfSold, nl)}</span>
             </div>
           </div>
@@ -118,7 +144,7 @@ export function PortfolioScreen() {
             </span>
             <span className="flex flex-1 justify-between rounded-lg border border-border px-3 py-[9px]">
               <span className="text-muted-foreground">{t('trades')}</span>
-              <span dir="ltr" className="text-foreground">{first.trades}</span>
+              <span dir="ltr" className="text-foreground">{trades(first.symbol) ?? '—'}</span>
             </span>
           </div>
           <Link href="/transactions/new" className="text-[13px] font-semibold text-brand">
@@ -179,7 +205,7 @@ export function PortfolioScreen() {
             {tn('addTransaction')}
           </Link>
         </div>
-        <HoldingsTable marketId={marketId} />
+        <HoldingsTable marketId={marketId} rows={real ? rows : undefined} taxRatePct={taxRate} />
       </div>
     </main>
   );

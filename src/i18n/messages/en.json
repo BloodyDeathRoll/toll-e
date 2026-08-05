@@ -125,6 +125,9 @@
   "tx": {
     "title": "Add transaction",
     "ticker": "Ticker",
+    "tickerPlaceholder": "Search ticker",
+    "oversell": "You only hold {available} shares on that date",
+    "failed": "Could not save — try again",
     "type": "Type",
     "buy": "Buy",
     "sell": "Sell",
@@ -184,6 +187,17 @@
     "saleGain": "{date} · gain",
     "saleShares": "{symbol} · {shares} sh",
     "taxAmount": "tax {amount}"
+  },
+  "journal": {
+    "title": "Transactions",
+    "buy": "Buy",
+    "sell": "Sell",
+    "delete": "Delete",
+    "deleteBlocked": "Can't delete — later sells depend on these shares",
+    "empty": "No transactions yet.",
+    "addFirst": "Add your first transaction",
+    "signIn": "Sign in to track your portfolio.",
+    "signInCta": "Sign in"
   },
   "lists": {
     "editList": "Edit list",

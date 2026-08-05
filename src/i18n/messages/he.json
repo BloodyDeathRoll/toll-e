@@ -125,6 +125,9 @@
   "tx": {
     "title": "הוספת עסקה",
     "ticker": "נייר",
+    "tickerPlaceholder": "חיפוש נייר",
+    "oversell": "ברשותך רק {available} יחידות בתאריך הזה",
+    "failed": "השמירה נכשלה — נסו שוב",
     "type": "סוג",
     "buy": "קנייה",
     "sell": "מכירה",
@@ -184,6 +187,17 @@
     "saleGain": "{date} · רווח",
     "saleShares": "{symbol} · {shares} יח׳",
     "taxAmount": "מס {amount}"
+  },
+  "journal": {
+    "title": "עסקאות",
+    "buy": "קנייה",
+    "sell": "מכירה",
+    "delete": "מחיקה",
+    "deleteBlocked": "אי אפשר למחוק — מכירות מאוחרות תלויות ביחידות האלה",
+    "empty": "אין עסקאות עדיין.",
+    "addFirst": "הוסיפו את העסקה הראשונה",
+    "signIn": "התחברו כדי לעקוב אחר התיק שלכם.",
+    "signInCta": "התחברות"
   },
   "lists": {
     "editList": "עריכת רשימה",

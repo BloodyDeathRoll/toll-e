@@ -1,13 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
+import { useQuotes, useSearch } from '@/components/use-market-data';
+import { ensurePortfolioId, usePortfolioPositions } from '@/components/use-portfolio';
 import { getMarket } from '@/src/markets/registry';
-import { demo, getDemoHolding, getDemoStock } from '@/src/demo/data';
+import { demo } from '@/src/demo/data';
 import { fmtDate, fmtNum, fmtSigned } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -19,26 +21,95 @@ export function TxScreen() {
   const market = getMarket(marketId);
   const nl = market.numberLocale;
   const sym = market.currencySymbol;
+  const tax = demo[marketId].tax; // carried-loss preview goes real in Phase 3
 
-  const symbol = useSearchParams().get('symbol') ?? demo[marketId].holdings[0].symbol;
-  const stock = getDemoStock(symbol);
-  const holding = getDemoHolding(marketId, symbol) ?? getDemoHolding(marketId === 'US' ? 'IL' : 'US', symbol);
-  const tax = demo[marketId].tax;
+  const [symbol, setSymbol] = useState(
+    useSearchParams().get('symbol')?.toUpperCase() ?? '',
+  );
+  const [symbolQuery, setSymbolQuery] = useState('');
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [type, setType] = useState<'buy' | 'sell'>('buy');
+  const [shares, setShares] = useState(10);
+  const [price, setPrice] = useState(0);
+  const [tradeDate, setTradeDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
 
-  const [type, setType] = useState<'buy' | 'sell'>('sell');
-  const [shares, setShares] = useState(100);
-  const [price, setPrice] = useState(stock.price);
+  const results = useSearch(symbolQuery, marketId).slice(0, 6);
+  const { quotes } = useQuotes(symbol ? [symbol] : []);
+  const live = symbol ? quotes[symbol] : undefined;
+  const { state, reload } = usePortfolioPositions(marketId);
+  const position =
+    state.status === 'data' ? state.data.positions.find((p) => p.symbol === symbol) : undefined;
 
-  // Average-cost preview only — the real engine does FIFO lot matching per
-  // AGENTS.md; this mirrors the design's inline estimate until Phase 3.
-  const avgCost = holding?.avgCost ?? stock.price;
+  // Price prefills from the live quote once per symbol; a manual edit
+  // claims the symbol so the quote stops overriding it.
+  const [prefilledFor, setPrefilledFor] = useState<string | null>(null);
+  useEffect(() => {
+    if (live && prefilledFor !== symbol) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot quote prefill
+      setPrice(Number(live.price.toFixed(2)));
+      setPrefilledFor(symbol);
+    }
+  }, [live, symbol, prefilledFor]);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (!pickerRef.current?.contains(e.target as Node)) setPickerOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, []);
+
+  const onPriceEdit = (n: number) => {
+    setPrefilledFor(symbol);
+    setPrice(n);
+  };
+
+  // Average-cost preview only — the FIFO tax engine lands in Phase 3.
+  const avgCost = position?.avgCost;
   const proceeds = shares * price;
-  const costBasis = shares * avgCost;
-  const gain = proceeds - costBasis;
-  const offset = gain > 0 ? Math.min(gain, tax.carriedLoss) : 0;
-  const due = Math.max(0, gain - offset) * (tax.ratePct / 100);
-  const carriedLeft = tax.carriedLoss - offset;
-  const today = new Date().toISOString().slice(0, 10);
+  const costBasis = avgCost !== undefined ? shares * avgCost : undefined;
+  const gain = costBasis !== undefined ? proceeds - costBasis : undefined;
+  const offset = gain !== undefined && gain > 0 ? Math.min(gain, tax.carriedLoss) : 0;
+  const due = gain !== undefined ? Math.max(0, gain - offset) * (tax.ratePct / 100) : undefined;
+
+  const submit = async () => {
+    if (!symbol || shares <= 0 || price < 0 || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const portfolioId = await ensurePortfolioId(marketId);
+      const res = await fetch(`/api/portfolios/${portfolioId}/transactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          symbol,
+          type: type.toUpperCase(),
+          tradeDate,
+          shares,
+          pricePerShare: price,
+        }),
+      });
+      if (res.status === 422) {
+        const json = await res.json();
+        setError(t('oversell', { available: fmtNum(json.available ?? 0, nl, 0) }));
+        return;
+      }
+      if (!res.ok) throw new Error('failed');
+      await reload();
+      router.push('/portfolio');
+    } catch (e) {
+      if ((e as Error).message === 'unauthorized') {
+        router.push('/sign-in');
+        return;
+      }
+      setError(t('failed'));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const numField = (
     label: string,
@@ -53,6 +124,7 @@ export function TxScreen() {
         type="number"
         inputMode="decimal"
         min={0}
+        step="any"
         value={Number.isNaN(value) ? '' : value}
         onChange={(e) => onChange(e.target.valueAsNumber)}
         className="rounded-lg border border-border bg-well px-3.5 py-3 text-base text-foreground tabular-nums outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
@@ -72,11 +144,43 @@ export function TxScreen() {
 
       <div className="flex flex-col gap-3.5">
         <section className="flex flex-col rounded-2xl border border-border bg-card px-4 py-1">
-          <div className="flex items-center justify-between py-3.5">
+          <div className="flex items-center justify-between gap-4 py-3.5">
             <span className="text-sm text-muted-foreground">{t('ticker')}</span>
-            <span className="text-[15px] font-semibold text-foreground">
-              {stock.symbol} · {stock.name.split(' ')[0]}
-            </span>
+            <div ref={pickerRef} className="relative flex-1 max-w-[240px]">
+              <input
+                dir="ltr"
+                value={pickerOpen ? symbolQuery : symbol}
+                placeholder={t('tickerPlaceholder')}
+                onFocus={() => {
+                  setPickerOpen(true);
+                  setSymbolQuery('');
+                }}
+                onChange={(e) => setSymbolQuery(e.target.value)}
+                className="w-full rounded-lg border border-border bg-well px-3 py-2 text-end text-[15px] font-semibold text-foreground outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
+              />
+              {pickerOpen && results.length > 0 && (
+                <ul className="absolute inset-x-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-border bg-popover shadow-[0_12px_32px_rgba(0,0,0,0.55)]">
+                  {results.map((r, i) => (
+                    <li key={r.symbol}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSymbol(r.symbol);
+                          setPickerOpen(false);
+                        }}
+                        className={cn(
+                          'flex w-full items-center gap-2 px-3 py-2 text-start hover:bg-accent',
+                          i > 0 && 'border-t border-border',
+                        )}
+                      >
+                        <span className="text-[13px] font-semibold text-foreground">{r.symbol}</span>
+                        <span className="flex-1 truncate text-xs text-muted-foreground">{r.name}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
           <div className="flex items-center justify-between border-t border-border py-3.5">
             <span className="text-sm text-muted-foreground">{t('type')}</span>
@@ -100,19 +204,26 @@ export function TxScreen() {
           </div>
           <div className="flex items-center justify-between border-t border-border py-3.5">
             <span className="text-sm text-muted-foreground">{t('date')}</span>
-            <span className="text-[15px] text-foreground">{fmtDate(today, locale)}</span>
+            <input
+              dir="ltr"
+              type="date"
+              value={tradeDate}
+              max={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setTradeDate(e.target.value)}
+              className="rounded-lg border border-border bg-well px-3 py-1.5 text-[15px] text-foreground outline-none [color-scheme:dark] focus-visible:border-primary"
+            />
           </div>
         </section>
 
         {numField(
           t('shares'),
           shares,
-          setShares,
-          holding ? t('youHold', { shares: fmtNum(holding.shares, nl, 0) }) : undefined,
+          (n) => setShares(n),
+          position ? t('youHold', { shares: fmtNum(position.shares, nl, 0) }) : undefined,
         )}
-        {numField(t('pricePerShare'), price, setPrice)}
+        {numField(t('pricePerShare'), price, onPriceEdit)}
 
-        {type === 'sell' && (
+        {type === 'sell' && gain !== undefined && costBasis !== undefined && due !== undefined && (
           <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
@@ -131,7 +242,7 @@ export function TxScreen() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">
-                  {t('costBasis', { qty: fmtNum(shares, nl, 0), price: fmtNum(avgCost, nl) })}
+                  {t('costBasis', { qty: fmtNum(shares, nl, 0), price: fmtNum(avgCost ?? 0, nl) })}
                 </span>
                 <span dir="ltr" className="text-foreground">{fmtNum(-costBasis, nl)}</span>
               </div>
@@ -159,21 +270,30 @@ export function TxScreen() {
               </div>
             </div>
             <p className="rounded-lg bg-well p-3.5 text-xs leading-relaxed text-muted-foreground">
-              {t('carryNote', { amount: `${sym}${fmtNum(carriedLeft, nl)}` })}
+              {t('carryNote', { amount: `${sym}${fmtNum(tax.carriedLoss - offset, nl)}` })}
             </p>
           </section>
         )}
+
+        {error && <p className="text-[13px] text-loss">{error}</p>}
       </div>
 
       <div className="sticky bottom-[72px] mt-auto pt-4 md:bottom-0">
         <button
           type="button"
-          className="flex h-12 w-full items-center justify-center rounded-lg bg-primary text-base font-semibold text-primary-foreground hover:opacity-90"
+          onClick={submit}
+          disabled={busy || !symbol || !(shares > 0)}
+          className="flex h-12 w-full items-center justify-center rounded-lg bg-primary text-base font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50"
         >
-          {type === 'sell'
+          {type === 'sell' && due !== undefined
             ? t('submitSell', { tax: `${sym}${fmtNum(due, nl)}` })
-            : t('submitBuy')}
+            : type === 'sell'
+              ? t('sell')
+              : t('submitBuy')}
         </button>
+        <p className="pt-2 text-center text-xs text-muted-foreground">
+          {fmtDate(tradeDate, locale)} · {symbol || '—'}
+        </p>
       </div>
     </main>
   );

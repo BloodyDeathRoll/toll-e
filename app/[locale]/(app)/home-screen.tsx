@@ -7,10 +7,11 @@ import { Link } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
 import { MarketMenu } from '@/components/app-shell/market-menu';
 import { MoreLink } from '@/components/more-link';
-import { HoldingsTable } from '@/components/holdings-table';
+import { HoldingsTable, positionRows } from '@/components/holdings-table';
 import { ReserveBar } from '@/components/reserve-bar';
 import { LineChart, Sparkline } from '@/components/charts';
 import { useIndexQuotes } from '@/components/use-market-data';
+import { usePortfolioPositions } from '@/components/use-portfolio';
 import { getMarket } from '@/src/markets/registry';
 import { demo, demoWatchlists } from '@/src/demo/data';
 import { fmtDate, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
@@ -29,10 +30,24 @@ export function HomeScreen() {
   const currencyLabel = locale === 'he' ? 'ש״ח' : market.currency;
   const [range, setRange] = useState<(typeof ranges)[number]>('1M');
   const { quotes: indexQuotes } = useIndexQuotes(marketId);
+  const { state } = usePortfolioPositions(marketId);
   const name = (x: { name: string; nameHe?: string }) =>
     locale === 'he' && x.nameHe ? x.nameHe : x.name;
 
-  const p = data.portfolio;
+  // Real portfolio once transactions exist; demo showcase otherwise.
+  const real = state.status === 'data' ? state.data : null;
+  const taxRate = real?.portfolio.taxRatePct ?? data.tax.ratePct;
+  const rows = real ? positionRows(real.positions, taxRate) : null;
+  const p = real
+    ? {
+        value: real.totals.marketValue,
+        dayChange: real.totals.dayGain,
+        dayChangePct: real.totals.dayGainPct,
+        allTimeChange: real.totals.totalGain,
+        allTimePct: real.totals.totalGainPct,
+        chart: data.portfolio.chart, // value history chart lands with price_history backfill
+      }
+    : data.portfolio;
   const up = p.dayChange >= 0;
 
   return (
@@ -143,31 +158,52 @@ export function HomeScreen() {
             </h2>
             <span className="text-xs text-faint">{t('home.marketValue')}</span>
           </div>
-          {data.holdings.slice(0, 3).map((h) => (
-            <Link
-              key={h.symbol}
-              href={`/stock/${h.symbol}`}
-              className="flex items-center justify-between border-t border-border px-4 py-[11px] hover:bg-accent"
-            >
-              <span className="flex flex-col gap-0.5">
-                {/* Design: ticker in English, company name in Hebrew. */}
-                <span className="text-[15px] font-semibold text-foreground">
-                  {locale === 'he' && h.nameHe ? h.nameHe : h.symbol}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {t('home.sharesAvg', { shares: fmtNum(h.shares, nl, 0), avg: fmtNum(h.avgCost, nl) })}
-                </span>
-              </span>
-              <span className="flex flex-col items-end gap-0.5 tabular-nums">
-                <span dir="ltr" className="text-[15px] text-foreground">{fmtNum(h.marketValue, nl)}</span>
-                <span dir="ltr" className={cn('text-xs', h.dayChangePct >= 0 ? 'text-gain' : 'text-loss')}>
-                  {fmtPct(h.dayChangePct, nl)} · {fmtPct(h.totalGainPct, nl)}
-                </span>
-              </span>
-            </Link>
-          ))}
+          {rows
+            ? rows.slice(0, 3).map((h) => (
+                <Link
+                  key={h.symbol}
+                  href={`/stock/${h.symbol}`}
+                  className="flex items-center justify-between border-t border-border px-4 py-[11px] hover:bg-accent"
+                >
+                  <span className="flex flex-col gap-0.5">
+                    <span className="text-[15px] font-semibold text-foreground">{h.symbol}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('home.sharesAvg', { shares: fmtNum(h.shares, nl, 0), avg: fmtNum(h.avgCost, nl) })}
+                    </span>
+                  </span>
+                  <span className="flex flex-col items-end gap-0.5 tabular-nums">
+                    <span dir="ltr" className="text-[15px] text-foreground">{fmtNum(h.marketValue, nl)}</span>
+                    <span dir="ltr" className={cn('text-xs', h.totalGainPct >= 0 ? 'text-gain' : 'text-loss')}>
+                      {fmtPct(h.totalGainPct, nl)}
+                    </span>
+                  </span>
+                </Link>
+              ))
+            : data.holdings.slice(0, 3).map((h) => (
+                <Link
+                  key={h.symbol}
+                  href={`/stock/${h.symbol}`}
+                  className="flex items-center justify-between border-t border-border px-4 py-[11px] hover:bg-accent"
+                >
+                  <span className="flex flex-col gap-0.5">
+                    {/* Design: ticker in English, company name in Hebrew. */}
+                    <span className="text-[15px] font-semibold text-foreground">
+                      {locale === 'he' && h.nameHe ? h.nameHe : h.symbol}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('home.sharesAvg', { shares: fmtNum(h.shares, nl, 0), avg: fmtNum(h.avgCost, nl) })}
+                    </span>
+                  </span>
+                  <span className="flex flex-col items-end gap-0.5 tabular-nums">
+                    <span dir="ltr" className="text-[15px] text-foreground">{fmtNum(h.marketValue, nl)}</span>
+                    <span dir="ltr" className={cn('text-xs', h.dayChangePct >= 0 ? 'text-gain' : 'text-loss')}>
+                      {fmtPct(h.dayChangePct, nl)} · {fmtPct(h.totalGainPct, nl)}
+                    </span>
+                  </span>
+                </Link>
+              ))}
           <div className="flex justify-end border-t border-border bg-well px-4 py-[11px]">
-            <MoreLink href="/portfolio">{t('home.allTransactions')}</MoreLink>
+            <MoreLink href="/transactions">{t('home.allTransactions')}</MoreLink>
           </div>
         </section>
       </div>
@@ -226,7 +262,7 @@ export function HomeScreen() {
             <LineChart points={p.chart} up={up} height={150} gridlines={[146]} />
           </section>
 
-          <HoldingsTable marketId={marketId} />
+          <HoldingsTable marketId={marketId} rows={rows ?? undefined} taxRatePct={taxRate} />
         </div>
 
         {/* Right rail */}
