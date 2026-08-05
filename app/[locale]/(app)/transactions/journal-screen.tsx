@@ -135,10 +135,13 @@ export function JournalScreen() {
                 >
                   {t(tx.type === 'BUY' ? 'buy' : 'sell')}
                 </span>
-                <span className="flex flex-1 flex-col gap-0.5">
+                <Link
+                  href={`/transactions/new?edit=${tx.id}&portfolio=${state.portfolioId}`}
+                  className="flex flex-1 flex-col gap-0.5"
+                >
                   <span className="text-[15px] font-semibold text-foreground">{tx.symbol}</span>
                   <span className="text-xs text-muted-foreground">{fmtDate(tx.tradeDate, locale)}</span>
-                </span>
+                </Link>
                 <span className="flex flex-col items-end gap-0.5 tabular-nums">
                   <span dir="ltr" className="text-[15px] text-foreground">
                     {market.currencySymbol}

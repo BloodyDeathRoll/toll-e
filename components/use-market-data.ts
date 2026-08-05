@@ -81,6 +81,36 @@ export function useChart(symbol: string, range: ChartRange) {
   );
 }
 
+/** Chart series for several symbols at once, keyed by symbol. */
+export function useCharts(symbols: string[], range: ChartRange) {
+  const key = symbols.join(',');
+  const [charts, setCharts] = useState<Record<string, ChartSeries>>({});
+  useEffect(() => {
+    if (!key) return;
+    let alive = true;
+    (async () => {
+      const entries = await Promise.all(
+        key.split(',').map(async (s) => {
+          try {
+            const res = await fetch(`/api/market/chart/${encodeURIComponent(s)}?range=${range}`);
+            if (!res.ok) return null;
+            return [s, (await res.json()) as ChartSeries] as const;
+          } catch {
+            return null;
+          }
+        }),
+      );
+      if (alive) {
+        setCharts(Object.fromEntries(entries.filter((e): e is NonNullable<typeof e> => e !== null)));
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [key, range]);
+  return charts;
+}
+
 export function useSummary(symbol: string) {
   return useJson<Summary>(`/api/market/summary/${encodeURIComponent(symbol)}`);
 }

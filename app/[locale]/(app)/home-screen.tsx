@@ -2,22 +2,33 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Settings } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
 import { MarketMenu } from '@/components/app-shell/market-menu';
 import { MoreLink } from '@/components/more-link';
 import { HoldingsTable, positionRows } from '@/components/holdings-table';
+import { PerformanceChart, type OverlayRow } from '@/components/performance-chart';
 import { ReserveBar } from '@/components/reserve-bar';
-import { LineChart, Sparkline } from '@/components/charts';
+import { WatchlistCard } from '@/components/watchlist-card';
+import type { ChartRange } from '@/src/market-data/types';
 import { useIndexQuotes } from '@/components/use-market-data';
 import { usePortfolioPositions } from '@/components/use-portfolio';
+import { useTax } from '@/components/use-tax';
 import { getMarket } from '@/src/markets/registry';
-import { demo, demoWatchlists } from '@/src/demo/data';
+import { demo } from '@/src/demo/data';
 import { fmtDate, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 const ranges = ['1D', '1M', '6M', 'YTD', '1Y', 'All'] as const;
+const rangeMap: Record<(typeof ranges)[number], ChartRange> = {
+  '1D': '1d',
+  '1M': '1mo',
+  '6M': '6mo',
+  YTD: 'ytd',
+  '1Y': '1y',
+  All: 'max',
+};
 
 export function HomeScreen() {
   const t = useTranslations();
@@ -28,16 +39,53 @@ export function HomeScreen() {
   const nl = market.numberLocale;
   const sym = market.currencySymbol;
   const currencyLabel = locale === 'he' ? 'ש״ח' : market.currency;
-  const [range, setRange] = useState<(typeof ranges)[number]>('1M');
+  const [range, setRange] = useState<(typeof ranges)[number]>('1D');
+  // Stocks toggled OFF the performance chart (default: all overlaid).
+  const [hiddenOverlays, setHiddenOverlays] = useState<Set<string>>(new Set());
+  const toggleOverlay = (symbol: string) =>
+    setHiddenOverlays((prev) => {
+      const next = new Set(prev);
+      if (next.has(symbol)) next.delete(symbol);
+      else next.add(symbol);
+      return next;
+    });
+  const [showPortfolioLine, setShowPortfolioLine] = useState(true);
   const { quotes: indexQuotes } = useIndexQuotes(marketId);
   const { state } = usePortfolioPositions(marketId);
+  const { state: taxState } = useTax(marketId);
   const name = (x: { name: string; nameHe?: string }) =>
     locale === 'he' && x.nameHe ? x.nameHe : x.name;
 
   // Real portfolio once transactions exist; demo showcase otherwise.
   const real = state.status === 'data' ? state.data : null;
   const taxRate = real?.portfolio.taxRatePct ?? data.tax.ratePct;
+  // Live ledger for the latest year with sales; demo otherwise (Phase 3).
+  const realLedger =
+    taxState.status === 'data'
+      ? taxState.data.years.reduce((a, b) => (b.year > a.year ? b : a))
+      : null;
+  const reserve = realLedger
+    ? {
+        year: realLedger.year,
+        due: realLedger.due,
+        net: realLedger.net,
+        carried: realLedger.shieldUsed,
+        taxable: realLedger.taxable,
+        isReal: true,
+      }
+    : {
+        year: data.tax.year,
+        due: data.tax.due,
+        net: data.tax.realizedGains - data.tax.realizedLosses,
+        carried: data.tax.carriedLoss,
+        taxable: data.tax.taxable,
+        isReal: false,
+      };
   const rows = real ? positionRows(real.positions, taxRate) : null;
+  const overlayRows: OverlayRow[] = (rows ?? data.holdings).map((h) => ({
+    symbol: h.symbol,
+    shares: h.shares,
+  }));
   const p = real
     ? {
         value: real.totals.marketValue,
@@ -45,7 +93,6 @@ export function HomeScreen() {
         dayChangePct: real.totals.dayGainPct,
         allTimeChange: real.totals.totalGain,
         allTimePct: real.totals.totalGainPct,
-        chart: data.portfolio.chart, // value history chart lands with price_history backfill
       }
     : data.portfolio;
   const up = p.dayChange >= 0;
@@ -67,7 +114,12 @@ export function HomeScreen() {
               <Plus className="size-4" aria-hidden />
             </Link>
           </div>
-          <MarketMenu />
+          <div className="flex items-center gap-3">
+            <Link href="/settings" aria-label={t('nav.settings')} className="text-muted-foreground">
+              <Settings className="size-[18px]" aria-hidden />
+            </Link>
+            <MarketMenu />
+          </div>
         </div>
 
         <div className="relative">
@@ -112,7 +164,7 @@ export function HomeScreen() {
               <span className="text-[13px] text-muted-foreground">{t('home.taxReserve')}</span>
               <span dir="ltr" className="self-start text-xl font-semibold text-foreground tabular-nums">
                 {sym}
-                {fmtNum(data.tax.due, nl)}
+                {fmtNum(reserve.due, nl)}
               </span>
             </div>
             <MoreLink href="/tax">{t('home.taxView')}</MoreLink>
@@ -253,85 +305,73 @@ export function HomeScreen() {
                 </div>
                 <Link
                   href="/transactions/new"
-                  className="rounded-lg bg-primary px-4 py-[9px] text-[13px] font-semibold text-primary-foreground hover:opacity-90"
+                  aria-label={t('nav.addTransaction')}
+                  className="flex size-[30px] items-center justify-center rounded-lg bg-primary text-primary-foreground hover:opacity-90"
                 >
-                  {t('nav.addTransaction')}
+                  <Plus className="size-4" aria-hidden />
                 </Link>
               </div>
             </div>
-            <LineChart points={p.chart} up={up} height={150} gridlines={[146]} />
+            <PerformanceChart
+              rows={overlayRows}
+              hidden={hiddenOverlays}
+              range={rangeMap[range]}
+              height={150}
+              showPortfolio={showPortfolioLine}
+            />
           </section>
 
-          <HoldingsTable marketId={marketId} rows={rows ?? undefined} taxRatePct={taxRate} />
+          <HoldingsTable
+            marketId={marketId}
+            rows={rows ?? undefined}
+            taxRatePct={taxRate}
+            overlay={{
+              hidden: hiddenOverlays,
+              onToggle: toggleOverlay,
+              portfolioVisible: showPortfolioLine,
+              onTogglePortfolio: () => setShowPortfolioLine((v) => !v),
+            }}
+          />
         </div>
 
         {/* Right rail */}
         <div className="flex w-[330px] shrink-0 flex-col gap-5">
           <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
             <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-              {t('home.taxReserveYear', { year: data.tax.year })}
+              {t('home.taxReserveYear', { year: reserve.year })}
             </h2>
             <p dir="ltr" className="self-start text-[30px] font-semibold tracking-tight text-foreground tabular-nums">
               {sym}
-              {fmtNum(data.tax.due, nl)}
+              {fmtNum(reserve.due, nl)}
             </p>
-            <ReserveBar held={data.tax.heldInCash} due={data.tax.due} />
-            <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
-              <span>{t('home.inCash', { amount: fmtNum(data.tax.heldInCash, nl) })}</span>
-              <span>{t('home.short', { amount: fmtNum(data.tax.short, nl) })}</span>
-            </div>
+            {!reserve.isReal && (
+              <>
+                <ReserveBar held={data.tax.heldInCash} due={data.tax.due} />
+                <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
+                  <span>{t('home.inCash', { amount: fmtNum(data.tax.heldInCash, nl) })}</span>
+                  <span>{t('home.short', { amount: fmtNum(data.tax.short, nl) })}</span>
+                </div>
+              </>
+            )}
             <div className="h-px bg-border" />
             <div className="flex flex-col gap-2.5 text-[13px] tabular-nums">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('home.realizedNet')}</span>
-                <span dir="ltr" className="text-foreground">
-                  {fmtNum(data.tax.realizedGains - data.tax.realizedLosses, nl)}
-                </span>
+                <span dir="ltr" className="text-foreground">{fmtNum(reserve.net, nl)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('home.lossCarriedIn')}</span>
-                <span dir="ltr" className="text-foreground">{fmtNum(-data.tax.carriedLoss, nl)}</span>
+                <span dir="ltr" className="text-foreground">{fmtNum(-reserve.carried, nl)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('home.taxableAt', { rate: data.tax.ratePct })}</span>
-                <span dir="ltr" className="text-foreground">{fmtNum(data.tax.taxable, nl)}</span>
+                <span className="text-muted-foreground">{t('home.taxableAt', { rate: taxRate })}</span>
+                <span dir="ltr" className="text-foreground">{fmtNum(reserve.taxable, nl)}</span>
               </div>
             </div>
             <MoreLink href="/tax">{t('home.openTaxView')}</MoreLink>
           </section>
 
-          <section className="overflow-hidden rounded-2xl border border-border bg-card">
-            <div className="flex items-center justify-between px-5 pt-[18px] pb-3">
-              <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-                {demoWatchlists[0].name}
-              </h2>
-              <span className="text-xs text-muted-foreground">{t('home.watchlist')} ▾</span>
-            </div>
-            {demoWatchlists[0].items.slice(3, 6).map((q) => (
-              <Link
-                key={q.symbol}
-                href={`/stock/${q.symbol}`}
-                className="flex items-center justify-between border-t border-border px-5 py-[11px] tabular-nums hover:bg-accent"
-              >
-                <span className="text-sm font-semibold text-foreground">{q.symbol}</span>
-                <span className="flex items-center gap-3">
-                  <Sparkline points={q.spark} up={q.changePct >= 0} width={52} height={20} />
-                  <span dir="ltr" className="min-w-[60px] text-end text-sm text-foreground">
-                    {fmtNum(q.price, nl)}
-                  </span>
-                  <span
-                    dir="ltr"
-                    className={cn('min-w-[52px] text-end text-xs', q.changePct >= 0 ? 'text-gain' : 'text-loss')}
-                  >
-                    {fmtPct(q.changePct, nl)}
-                  </span>
-                </span>
-              </Link>
-            ))}
-            <div className="flex justify-end border-t border-border bg-well px-5 py-[11px]">
-              <MoreLink href="/watchlists">{t('home.editList')}</MoreLink>
-            </div>
-          </section>
+          <WatchlistCard marketId={marketId} />
 
           <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
             <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">

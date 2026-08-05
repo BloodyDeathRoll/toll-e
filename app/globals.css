@@ -47,6 +47,13 @@
   --gain-foreground: #ffffff;
   --loss: #d63a4e;
   --loss-foreground: #ffffff;
+  /* Categorical series (chart overlays) — dataviz-validated fixed order;
+     never cycled, never reused for gain/loss/status. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #4a3aa7;
+  --series-5: #e87ba4;
 }
 
 /* Dark palette (default) — cool-neutral near-black from the design. */
@@ -90,6 +97,11 @@
   --gain-foreground: #14171a;
   --loss: #ff4757;
   --loss-foreground: #ffffff;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #9085e9;
+  --series-5: #d55181;
 }
 
 @theme inline {

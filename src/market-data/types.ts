@@ -19,6 +19,8 @@ export interface Quote {
   wk52Low?: number;
   wk52High?: number;
   volume?: number;
+  /** 3-month average daily volume. */
+  avgVolume?: number;
   marketCap?: number;
   /** Provider's session flag, normalized to our phase vocabulary. */
   marketState?: SessionPhase;

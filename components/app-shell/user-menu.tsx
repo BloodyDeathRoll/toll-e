@@ -14,6 +14,7 @@ import {
 
 export function UserMenu() {
   const t = useTranslations('auth');
+  const tn = useTranslations('nav');
   const router = useRouter();
   const { data: session, isPending } = useSession();
 
@@ -47,6 +48,13 @@ export function UserMenu() {
           <span className="text-sm font-semibold text-foreground">{session.user.name}</span>
           <span className="text-xs font-normal text-muted-foreground">{session.user.email}</span>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => router.push('/performance')}>
+          {tn('performance')}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => router.push('/settings')}>
+          {tn('settings')}
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={async () => {

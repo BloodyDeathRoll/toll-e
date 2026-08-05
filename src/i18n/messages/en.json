@@ -13,7 +13,8 @@
     "settings": "Settings",
     "search": "Search ticker, company, index",
     "addTransaction": "Add transaction",
-    "back": "Back"
+    "back": "Back",
+    "performance": "Performance"
   },
   "market": {
     "menuTitle": "Market",
@@ -24,7 +25,10 @@
     "EU": "EUR · Europe",
     "comingSoon": "Coming soon",
     "addMarket": "Add a market",
-    "stripName": { "US": "US markets", "IL": "TASE" },
+    "stripName": {
+      "US": "US markets",
+      "IL": "TASE"
+    },
     "openCloses": "{market} open · closes {time}",
     "closedOpens": "{market} closed · opens {time}",
     "preOpens": "{market} pre-market · opens {time}",
@@ -44,7 +48,10 @@
     "allTimeWord": "all time",
     "taxReserve": "Tax reserve to hold",
     "taxView": "Tax view",
-    "indexesTitle": { "US": "US indexes", "IL": "TASE indexes" },
+    "indexesTitle": {
+      "US": "US indexes",
+      "IL": "TASE indexes"
+    },
     "holdings": "Holdings",
     "holdingsCurrency": "Holdings · {currency}",
     "marketValue": "Market value",
@@ -61,6 +68,7 @@
     "positionsSummary": "{count} positions · unrealized tax at {rate}% {amount}",
     "upcoming": "Upcoming",
     "watchlist": "Watchlist",
+    "watchlistEmpty": "No tickers yet — add some from Edit list.",
     "editList": "Edit list",
     "taxReserveYear": "Tax reserve · {year}",
     "inCash": "{amount} in cash",
@@ -69,7 +77,10 @@
     "lossCarriedIn": "Loss carried in",
     "taxableAt": "Taxable at {rate}%",
     "openTaxView": "Open tax view",
-    "earnings": "{company} earnings"
+    "earnings": "{company} earnings",
+    "chg": "Chg %",
+    "cost": "Cost",
+    "volAvg": "Vol / avg"
   },
   "markets": {
     "leadingIndexes": "Leading indexes",
@@ -124,6 +135,7 @@
   },
   "tx": {
     "title": "Add transaction",
+    "editTitle": "Edit transaction",
     "ticker": "Ticker",
     "tickerPlaceholder": "Search ticker",
     "oversell": "You only hold {available} shares on that date",
@@ -141,6 +153,7 @@
     "costBasis": "Cost basis · {qty} × {price}",
     "realizedGain": "Realized gain",
     "offsetByCarried": "Offset by {year} carried loss",
+    "offsetByShield": "Offset by loss shield",
     "taxDueAt": "Tax due at {rate}%",
     "carryNote": "Carried loss drops to {amount} after this sale. Estimate — confirm with your accountant.",
     "submitSell": "Add sell · {tax} tax",
@@ -186,7 +199,13 @@
     "saleLoss": "{date} · loss",
     "saleGain": "{date} · gain",
     "saleShares": "{symbol} · {shares} sh",
-    "taxAmount": "tax {amount}"
+    "taxAmount": "tax {amount}",
+    "carriedIn": "Carried loss applied",
+    "disabled": "Tax tracking is off for this portfolio (rate set to 0%). Set a rate in portfolio settings to see ledgers.",
+    "usedNote": "{amount} applied this year",
+    "noShieldNote": "No carried losses applied this year",
+    "shieldNoteApplied": "A carried loss of {amount} was applied against {taxYear} gains, cutting this year's bill by {saved}.",
+    "shieldNoteNone": "Realized losses carry forward indefinitely and offset future gains automatically. Shield balance: {amount}."
   },
   "journal": {
     "title": "Transactions",
@@ -208,7 +227,9 @@
     "sortCustom": "Custom ↑",
     "removeSelected": "Remove {count} selected",
     "moveToList": "Move to list",
-    "newList": "New list"
+    "newList": "New list",
+    "addTicker": "＋ Add ticker",
+    "demoNote": "Sample lists — sign in to build your own."
   },
   "portfolio": {
     "title": "Holdings",
@@ -242,5 +263,40 @@
     "error": "Something went wrong",
     "language": "Language",
     "theme": "Toggle theme"
+  },
+  "perf": {
+    "title": "Performance",
+    "signIn": "Sign in to see your combined performance across portfolios.",
+    "signInCta": "Sign in",
+    "empty": "No portfolios yet — add a transaction to get started.",
+    "emptyCta": "Add a transaction",
+    "realizedYtd": "Net realized · {year}",
+    "unrealized": "Unrealized",
+    "taxAccrued": "Tax accrued",
+    "fxNote": "Converted at USD/ILS {rate} · {date}. Native figures are authoritative.",
+    "byPortfolio": "By portfolio",
+    "portfolio": "Portfolio",
+    "realizedCol": "Realized",
+    "unrealizedCol": "Unrealized",
+    "taxCol": "Tax",
+    "shieldCol": "Shield",
+    "combinedIn": "Combined in {currency}",
+    "settings": "Profile & settings",
+    "displayCurrency": "Display currency",
+    "language": "Language",
+    "defaultMarket": "Default market"
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "dark": "Dark",
+    "light": "Light",
+    "language": "Language",
+    "preferences": "Preferences",
+    "displayCurrency": "Display currency",
+    "defaultMarket": "Default market",
+    "signInForPrefs": "Sign in to save these to your account.",
+    "account": "Account"
   }
 }

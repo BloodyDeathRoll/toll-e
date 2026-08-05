@@ -72,6 +72,7 @@ function toQuote(q: YQuote): Quote {
     wk52Low: q.fiftyTwoWeekLow,
     wk52High: q.fiftyTwoWeekHigh,
     volume: q.regularMarketVolume,
+    avgVolume: q.averageDailyVolume3Month,
     marketCap: q.marketCap,
     marketState: q.marketState ? (phaseMap[q.marketState] ?? 'closed') : undefined,
     extended,

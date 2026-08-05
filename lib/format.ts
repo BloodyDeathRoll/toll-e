@@ -33,6 +33,17 @@ export function fmtMoney(amount: number, currency: string, locale: string, dp = 
   }).format(amount);
 }
 
+/** '+$4,120.00' / '−₪15,340.00' — signed currency for P&L figures. */
+export function fmtMoneySigned(amount: number, currency: string, locale: string, dp = 2): string {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    signDisplay: 'exceptZero',
+    minimumFractionDigits: dp,
+    maximumFractionDigits: dp,
+  }).format(amount);
+}
+
 /** '5.12T' / '184.2M' — compact notation for caps and volumes. */
 export function fmtCompact(n: number, locale: string): string {
   return new Intl.NumberFormat(locale, {

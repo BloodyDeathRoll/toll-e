@@ -66,3 +66,19 @@ export async function getIndexQuotes(marketId: string): Promise<Quote[]> {
 }
 
 export type { ChartRange, ChartSeries, FxRate, Quote, SearchResult, Summary };
+
+/**
+ * Last close on or before `date` (ISO, exchange-local) — prefills backdated
+ * transaction prices. Served from the cached daily chart, which also
+ * persists the closes to price_history.
+ */
+export async function getCloseOn(symbol: string, date: string): Promise<number | null> {
+  const series = await getChart(symbol, '1y');
+  let best: number | null = null;
+  for (const p of series.points) {
+    const localDate = new Date(p.t).toLocaleDateString('en-CA', { timeZone: series.timezone });
+    if (localDate <= date) best = p.close;
+    else break;
+  }
+  return best;
+}

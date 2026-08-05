@@ -13,7 +13,8 @@
     "settings": "הגדרות",
     "search": "חיפוש מנייה, חברה או מדד",
     "addTransaction": "הוספת עסקה",
-    "back": "חזרה"
+    "back": "חזרה",
+    "performance": "ביצועים"
   },
   "market": {
     "menuTitle": "שוק",
@@ -24,7 +25,10 @@
     "EU": "EUR · אירופה",
     "comingSoon": "בקרוב",
     "addMarket": "הוספת שוק",
-    "stripName": { "US": "שוקי ארה״ב", "IL": "הבורסה" },
+    "stripName": {
+      "US": "שוקי ארה״ב",
+      "IL": "הבורסה"
+    },
     "openCloses": "{market} פתוחה · נעילה {time}",
     "closedOpens": "{market} סגורה · פתיחה {time}",
     "preOpens": "{market} בטרום מסחר · פתיחה {time}",
@@ -44,7 +48,10 @@
     "allTimeWord": "סה״כ",
     "taxReserve": "רזרבה למס",
     "taxView": "למסך המס",
-    "indexesTitle": { "US": "מדדי ארה״ב", "IL": "מדדי הבורסה" },
+    "indexesTitle": {
+      "US": "מדדי ארה״ב",
+      "IL": "מדדי הבורסה"
+    },
     "holdings": "החזקות",
     "holdingsCurrency": "החזקות · {currency}",
     "marketValue": "שווי שוק",
@@ -61,6 +68,7 @@
     "positionsSummary": "{count} פוזיציות · מס לא ממומש ב-{rate}% {amount}",
     "upcoming": "בקרוב",
     "watchlist": "רשימת מעקב",
+    "watchlistEmpty": "אין ניירות עדיין — הוסיפו דרך עריכת רשימה.",
     "editList": "עריכת רשימה",
     "taxReserveYear": "רזרבה למס · {year}",
     "inCash": "{amount} במזומן",
@@ -69,7 +77,10 @@
     "lossCarriedIn": "הפסד מועבר",
     "taxableAt": "חייב במס {rate}%",
     "openTaxView": "למסך המס",
-    "earnings": "דוחות {company}"
+    "earnings": "דוחות {company}",
+    "chg": "% שינוי",
+    "cost": "עלות",
+    "volAvg": "מחזור / ממוצע"
   },
   "markets": {
     "leadingIndexes": "מדדים מובילים",
@@ -124,6 +135,7 @@
   },
   "tx": {
     "title": "הוספת עסקה",
+    "editTitle": "עריכת עסקה",
     "ticker": "נייר",
     "tickerPlaceholder": "חיפוש נייר",
     "oversell": "ברשותך רק {available} יחידות בתאריך הזה",
@@ -141,6 +153,7 @@
     "costBasis": "בסיס עלות · {qty} × {price}",
     "realizedGain": "רווח ממומש",
     "offsetByCarried": "קוזז בהפסד מועבר מ-{year}",
+    "offsetByShield": "קוזז במגן ההפסדים",
     "taxDueAt": "מס לתשלום ב-{rate}%",
     "carryNote": "ההפסד המועבר יירד ל-{amount} אחרי מכירה זו. הערכה בלבד — יש לאשר מול רואה החשבון.",
     "submitSell": "הוספת מכירה · מס {tax}",
@@ -186,7 +199,13 @@
     "saleLoss": "{date} · הפסד",
     "saleGain": "{date} · רווח",
     "saleShares": "{symbol} · {shares} יח׳",
-    "taxAmount": "מס {amount}"
+    "taxAmount": "מס {amount}",
+    "carriedIn": "הפסד מועבר שקוזז",
+    "disabled": "מעקב המס כבוי לתיק הזה (שיעור 0%). קבעו שיעור מס בהגדרות התיק כדי לראות את הדוחות.",
+    "usedNote": "{amount} קוזז השנה",
+    "noShieldNote": "לא קוזזו הפסדים מועברים השנה",
+    "shieldNoteApplied": "הפסד מועבר בסך {amount} קוזז מול רווחי {taxYear} וחסך {saved} מהחשבון השנה.",
+    "shieldNoteNone": "הפסדים ממומשים נצברים ללא הגבלת זמן ומקוזזים אוטומטית מול רווחים עתידיים. יתרת המגן: {amount}."
   },
   "journal": {
     "title": "עסקאות",
@@ -208,7 +227,9 @@
     "sortCustom": "מותאם ↑",
     "removeSelected": "הסרת {count} שנבחרו",
     "moveToList": "העברה לרשימה",
-    "newList": "רשימה חדשה"
+    "newList": "רשימה חדשה",
+    "addTicker": "＋ הוספת נייר",
+    "demoNote": "רשימות לדוגמה — התחברו כדי לבנות משלכם."
   },
   "portfolio": {
     "title": "החזקות",
@@ -242,5 +263,40 @@
     "error": "משהו השתבש",
     "language": "שפה",
     "theme": "החלפת ערכת נושא"
+  },
+  "perf": {
+    "title": "ביצועים",
+    "signIn": "התחברו כדי לראות את הביצועים המשולבים בכל התיקים.",
+    "signInCta": "התחברות",
+    "empty": "אין תיקים עדיין — הוסיפו עסקה כדי להתחיל.",
+    "emptyCta": "הוספת עסקה",
+    "realizedYtd": "מומש נטו · {year}",
+    "unrealized": "לא ממומש",
+    "taxAccrued": "מס שנצבר",
+    "fxNote": "הומר לפי דולר/שקל {rate} · {date}. הסכומים במטבע המקור הם הקובעים.",
+    "byPortfolio": "לפי תיק",
+    "portfolio": "תיק",
+    "realizedCol": "ממומש",
+    "unrealizedCol": "לא ממומש",
+    "taxCol": "מס",
+    "shieldCol": "מגן",
+    "combinedIn": "משולב ב-{currency}",
+    "settings": "פרופיל והגדרות",
+    "displayCurrency": "מטבע תצוגה",
+    "language": "שפה",
+    "defaultMarket": "שוק ברירת מחדל"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "appearance": "מראה",
+    "theme": "ערכת נושא",
+    "dark": "כהה",
+    "light": "בהיר",
+    "language": "שפה",
+    "preferences": "העדפות",
+    "displayCurrency": "מטבע תצוגה",
+    "defaultMarket": "שוק ברירת מחדל",
+    "signInForPrefs": "התחברו כדי לשמור את ההעדפות בחשבון.",
+    "account": "חשבון"
   }
 }

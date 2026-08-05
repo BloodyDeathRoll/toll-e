@@ -42,7 +42,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
   const stock = getDemoStock(symbol);
   const holding = getDemoHolding(marketId, symbol) ?? getDemoHolding(marketId === 'US' ? 'IL' : 'US', symbol);
   const [tab, setTab] = useState<Tab>('summary');
-  const [range, setRange] = useState('1M');
+  const [range, setRange] = useState('1D');
 
   // Live data overlays the demo fallback as it arrives (Phase 1).
   const { quotes } = useQuotes([symbol]);
@@ -250,7 +250,14 @@ export function StockScreen({ symbol }: { symbol: string }) {
             <>
               <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card px-3 pt-4 pb-3">
                 {series && series.points.length > 0 ? (
-                  <PriceChart points={series.points} up={up} height={150} intraday={series.interval.endsWith('m')} />
+                  <PriceChart
+                    points={series.points}
+                    up={up}
+                    height={150}
+                    intraday={series.interval.endsWith('m')}
+                    timezone={series.timezone}
+                    fullDay={range === '1D'}
+                  />
                 ) : (
                   <LineChart points={stock.chart} up={up} height={150} viewH={250} gridlines={[233]} />
                 )}
@@ -409,7 +416,14 @@ export function StockScreen({ symbol }: { symbol: string }) {
                     </div>
                   </div>
                   {series && series.points.length > 0 ? (
-                    <PriceChart points={series.points} up={up} height={250} intraday={series.interval.endsWith('m')} />
+                    <PriceChart
+                      points={series.points}
+                      up={up}
+                      height={250}
+                      intraday={series.interval.endsWith('m')}
+                      timezone={series.timezone}
+                      fullDay={range === '1D'}
+                    />
                   ) : (
                     <LineChart points={stock.chart} up={up} height={250} viewH={250} gridlines={[40, 120, 200]} />
                   )}

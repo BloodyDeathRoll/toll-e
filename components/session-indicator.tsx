@@ -35,15 +35,19 @@ export function SessionBadge({ marketId, className }: { marketId: string; classN
   const t = useTranslations('market');
   const session = useMarketSession(marketId);
   if (!session) return null;
+  const live = session.phase === 'open';
   return (
     <span
       className={cn(
-        'flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium',
-        session.phase === 'open' ? 'text-gain' : 'text-muted-foreground',
+        'flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium',
+        // Live trading gets the loud treatment: solid green block, black label.
+        live
+          ? 'bg-gain font-semibold text-black'
+          : 'rounded-full border border-border bg-card text-muted-foreground',
         className,
       )}
     >
-      <Dot phase={session.phase} />
+      {!live && <Dot phase={session.phase} />}
       {t(`phaseBadge.${session.phase}`)}
     </span>
   );

@@ -1,14 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { ChartCandlestick, House, LayoutGrid, List, Percent } from 'lucide-react';
+import { ChartCandlestick, LayoutGrid, List, Percent } from 'lucide-react';
 import { Link, usePathname } from '@/src/i18n/navigation';
 import { cn } from '@/lib/utils';
 
+// Home and Portfolio merged: '/' is the portfolio dashboard.
 const tabs = [
-  { href: '/', key: 'home', icon: House },
+  { href: '/', key: 'portfolio', icon: LayoutGrid },
   { href: '/markets', key: 'markets', icon: ChartCandlestick },
-  { href: '/portfolio', key: 'portfolio', icon: LayoutGrid },
   { href: '/tax', key: 'tax', icon: Percent },
   { href: '/watchlists', key: 'lists', icon: List },
 ] as const;

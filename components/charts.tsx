@@ -29,6 +29,16 @@ export function Sparkline({ points, up, width = 64, height = 24, className }: Sp
   );
 }
 
+/** Normalize a close series into Sparkline y-coords (0–24 viewBox, padded). */
+export function sparkFromCloses(closes: number[], height = 24): number[] {
+  if (closes.length < 2) return [];
+  const min = Math.min(...closes);
+  const max = Math.max(...closes);
+  const span = max - min || 1;
+  const pad = 2;
+  return closes.map((c) => height - pad - ((c - min) / span) * (height - pad * 2));
+}
+
 interface LineChartProps {
   /** y-coordinates in `viewH` space, lower = higher. */
   points: number[];

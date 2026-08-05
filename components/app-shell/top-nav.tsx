@@ -14,10 +14,10 @@ import { demo } from '@/src/demo/data';
 import { fmtNum, fmtPct } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
+// Home and Portfolio merged: '/' is the portfolio dashboard.
 const links = [
-  { href: '/', key: 'home' },
+  { href: '/', key: 'portfolio' },
   { href: '/markets', key: 'markets' },
-  { href: '/portfolio', key: 'portfolio' },
   { href: '/tax', key: 'tax' },
   { href: '/watchlists', key: 'watchlists' },
 ] as const;
