@@ -1,0 +1,38 @@
+{
+  "app": {
+    "name": "Arnak",
+    "tagline": "Investment tracking with real tax clarity"
+  },
+  "nav": {
+    "home": "Home",
+    "markets": "Markets",
+    "portfolio": "Portfolio",
+    "tax": "Tax",
+    "settings": "Settings",
+    "search": "Search tickers or news"
+  },
+  "market": {
+    "US": "US Market",
+    "IL": "Israeli Market",
+    "open": "Market open",
+    "closed": "Market closed",
+    "closesIn": "Closes in {hours}h {minutes}m",
+    "opensIn": "Opens in {hours}h {minutes}m"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "continueWithGoogle": "Continue with Google",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "language": "Language"
+  }
+}
