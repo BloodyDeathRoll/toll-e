@@ -60,7 +60,8 @@ export const markets: Record<string, MarketDef> = {
     id: 'US',
     currency: 'USD',
     currencySymbol: '$',
-    indexes: ['^GSPC', '^DJI', '^IXIC'],
+    // First three feed the homepage trio; the strip shows all of them.
+    indexes: ['^GSPC', '^IXIC', '^DJI', '^RUT', '^VIX'],
     calendar: usCalendar,
     numberLocale: 'en-US',
   },
@@ -68,7 +69,8 @@ export const markets: Record<string, MarketDef> = {
     id: 'IL',
     currency: 'ILS',
     currencySymbol: '₪',
-    indexes: ['TA35.TA', 'TA125.TA', 'TA90.TA'],
+    // Yahoo quirk: TA-125 needs the caret prefix, TA-35/TA-90 don't.
+    indexes: ['TA35.TA', '^TA125.TA', 'TA90.TA'],
     calendar: ilCalendar,
     symbolSuffix: '.TA',
     numberLocale: 'he-IL',

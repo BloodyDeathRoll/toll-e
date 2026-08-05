@@ -7,6 +7,7 @@ import { useMarket } from '@/components/app-shell/market-context';
 import { MarketMenu } from '@/components/app-shell/market-menu';
 import { SessionStatus } from '@/components/session-indicator';
 import { Sparkline } from '@/components/charts';
+import { useFx, useIndexQuotes } from '@/components/use-market-data';
 import { getMarket } from '@/src/markets/registry';
 import { demo, demoFx } from '@/src/demo/data';
 import { fmtNum, fmtPct } from '@/lib/format';
@@ -22,6 +23,8 @@ export function MarketsScreen() {
   const data = demo[marketId];
   const nl = market.numberLocale;
   const [tab, setTab] = useState<(typeof quoteTabs)[number]>('mostActive');
+  const { quotes: indexQuotes } = useIndexQuotes(marketId);
+  const { data: fx } = useFx('USDILS');
   const name = (x: { name: string; nameHe?: string }) =>
     locale === 'he' && x.nameHe ? x.nameHe : x.name;
 
@@ -43,25 +46,30 @@ export function MarketsScreen() {
         <h2 className="px-4 pt-3.5 pb-2.5 text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
           {t('markets.leadingIndexes')}
         </h2>
-        {data.indexes.map((ix) => (
-          <div key={ix.symbol} className="flex items-center justify-between border-t border-border px-4 py-3">
-            <span className="flex flex-col gap-0.5">
-              <span className="text-[15px] font-semibold text-foreground">{name(ix)}</span>
-              <span className="text-xs text-muted-foreground">
-                {locale === 'he' && ix.longNameHe ? ix.longNameHe : (ix.longName ?? ix.name)}
-              </span>
-            </span>
-            <span className="flex items-center gap-3">
-              <span className="flex flex-col items-end gap-0.5 tabular-nums">
-                <span dir="ltr" className="text-[15px] text-foreground">{fmtNum(ix.value, nl)}</span>
-                <span dir="ltr" className={cn('text-xs', ix.changePct >= 0 ? 'text-gain' : 'text-loss')}>
-                  {fmtPct(ix.changePct, nl)}
+        {data.indexes.map((ix) => {
+          const live = indexQuotes[ix.symbol];
+          const value = live?.price ?? ix.value;
+          const pct = live?.changePct ?? ix.changePct;
+          return (
+            <div key={ix.symbol} className="flex items-center justify-between border-t border-border px-4 py-3">
+              <span className="flex flex-col gap-0.5">
+                <span className="text-[15px] font-semibold text-foreground">{name(ix)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {locale === 'he' && ix.longNameHe ? ix.longNameHe : (ix.longName ?? ix.name)}
                 </span>
               </span>
-              {ix.spark && <Sparkline points={ix.spark} up={ix.changePct >= 0} />}
-            </span>
-          </div>
-        ))}
+              <span className="flex items-center gap-3">
+                <span className="flex flex-col items-end gap-0.5 tabular-nums">
+                  <span dir="ltr" className="text-[15px] text-foreground">{fmtNum(value, nl)}</span>
+                  <span dir="ltr" className={cn('text-xs', pct >= 0 ? 'text-gain' : 'text-loss')}>
+                    {fmtPct(pct, nl)}
+                  </span>
+                </span>
+                {ix.spark && <Sparkline points={ix.spark} up={pct >= 0} />}
+              </span>
+            </div>
+          );
+        })}
       </section>
 
       {/* Most active / gainers / losers */}
@@ -109,7 +117,7 @@ export function MarketsScreen() {
       {/* FX + session status */}
       <section className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
         <span className="text-[13px] text-subtle">
-          {t('markets.fx', { rate: fmtNum(demoFx.rate, nl, 3) })}
+          {t('markets.fx', { rate: fmtNum(fx?.rate ?? demoFx.rate, nl, 3) })}
         </span>
         <SessionStatus marketId={marketId} className="text-[13px]" />
       </section>

@@ -1,0 +1,68 @@
+import 'server-only';
+
+import { cached } from './cache';
+import { persistDailyCloses, persistFx } from './persist';
+import { YahooProvider } from './yahoo';
+import { getMarket } from '@/src/markets/registry';
+import type { ChartRange, ChartSeries, FxRate, Quote, SearchResult, Summary } from './types';
+
+// The app-facing market-data facade: Yahoo adapter behind per-class TTL
+// caching (toll-e-plan.md §5), server-side only. UI code never imports the
+// adapter directly.
+
+const provider = new YahooProvider();
+
+const TTL = {
+  quote: 30_000, // 15–60s class
+  chartIntraday: 5 * 60_000,
+  // Plan says 1d for closed history; 1h keeps today's still-open candle
+  // reasonably fresh without hammering the endpoint.
+  chartDaily: 60 * 60_000,
+  search: 60 * 60_000,
+  summary: 24 * 60 * 60_000,
+  fx: 12 * 60 * 60_000,
+} as const;
+
+export async function getQuotes(symbols: string[]): Promise<Quote[]> {
+  const key = [...symbols].sort().join(',');
+  return cached(`quote:${key}`, TTL.quote, () => provider.getQuote(symbols));
+}
+
+export async function getChart(symbol: string, range: ChartRange): Promise<ChartSeries> {
+  const intraday = range === '1d' || range === '5d';
+  return cached(`chart:${symbol}:${range}`, intraday ? TTL.chartIntraday : TTL.chartDaily, async () => {
+    const series = await provider.getChart(symbol, range);
+    persistDailyCloses(series);
+    return series;
+  });
+}
+
+export async function search(query: string, marketId?: string): Promise<SearchResult[]> {
+  const results = await cached(`search:${query.toLowerCase()}`, TTL.search, () =>
+    provider.search(query),
+  );
+  if (!marketId) return results;
+  // Active market's listings surface first — the lens orders, never filters
+  // (toll-e-plan.md §2.2).
+  return [...results].sort(
+    (a, b) => Number(b.market === marketId) - Number(a.market === marketId),
+  );
+}
+
+export async function getSummary(symbol: string): Promise<Summary> {
+  return cached(`summary:${symbol}`, TTL.summary, () => provider.getSummary(symbol));
+}
+
+export async function getFx(pair: string): Promise<FxRate> {
+  return cached(`fx:${pair}`, TTL.fx, async () => {
+    const fx = await provider.getFx(pair);
+    persistFx(fx);
+    return fx;
+  });
+}
+
+export async function getIndexQuotes(marketId: string): Promise<Quote[]> {
+  return getQuotes(getMarket(marketId).indexes);
+}
+
+export type { ChartRange, ChartSeries, FxRate, Quote, SearchResult, Summary };

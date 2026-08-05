@@ -1,0 +1,46 @@
+import { sql } from 'drizzle-orm';
+import { db } from '@/src/db';
+import { fxRates, priceHistory } from '@/src/db/schema';
+import type { ChartSeries, FxRate } from './types';
+
+// Daily closes + FX persist to Postgres (toll-e-plan.md §5) — backdated
+// transactions and tax audit trails need them even if Yahoo disappears.
+// Fire-and-forget: a persistence hiccup must never fail a data request.
+
+const num = (n: number | undefined) => (n === undefined ? null : String(n));
+
+export function persistDailyCloses(series: ChartSeries): void {
+  if (series.interval !== '1d' || series.points.length === 0) return;
+  const rows = series.points.map((p) => ({
+    symbol: series.symbol,
+    // Exchange-local calendar date of the bar.
+    date: new Date(p.t).toLocaleDateString('en-CA', { timeZone: series.timezone }),
+    open: num(p.open),
+    high: num(p.high),
+    low: num(p.low),
+    close: String(p.close),
+    adjClose: null,
+    volume: p.volume ?? null,
+  }));
+  db.insert(priceHistory)
+    .values(rows)
+    // Today's bar mutates until the close — refresh it on re-persist.
+    .onConflictDoUpdate({
+      target: [priceHistory.symbol, priceHistory.date],
+      set: {
+        open: sql`excluded.open`,
+        high: sql`excluded.high`,
+        low: sql`excluded.low`,
+        close: sql`excluded.close`,
+        volume: sql`excluded.volume`,
+      },
+    })
+    .catch(() => {});
+}
+
+export function persistFx(fx: FxRate): void {
+  db.insert(fxRates)
+    .values({ pair: fx.pair, date: fx.asOf, rate: String(fx.rate) })
+    .onConflictDoNothing()
+    .catch(() => {});
+}

@@ -1,12 +1,13 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { Search } from 'lucide-react';
 import { Link, usePathname } from '@/src/i18n/navigation';
 import { MarketMenu } from './market-menu';
 import { useMarket } from './market-context';
+import { SearchBox } from './search-box';
 import { SessionStatus } from '@/components/session-indicator';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useIndexQuotes } from '@/components/use-market-data';
 import { getMarket } from '@/src/markets/registry';
 import { demo } from '@/src/demo/data';
 import { fmtNum, fmtPct } from '@/lib/format';
@@ -52,19 +53,7 @@ export function TopNav() {
           })}
         </nav>
 
-        <div className="relative max-w-[420px] flex-1">
-          <Search
-            className="pointer-events-none absolute start-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <input
-            type="search"
-            placeholder={t('nav.search')}
-            className="h-9 w-full rounded-lg border border-border bg-well ps-9 pe-3 text-[13px] text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
-            // Wired to /api/market/search in Phase 1.
-            disabled
-          />
-        </div>
+        <SearchBox className="max-w-[420px] flex-1" />
 
         <div className="ms-auto flex items-center gap-3.5">
           <MarketMenu />
@@ -85,25 +74,32 @@ function IndexStrip() {
   const { marketId } = useMarket();
   const market = getMarket(marketId);
   const data = demo[marketId];
+  // Live quotes overlay the demo placeholders as they arrive (Phase 1).
+  const { quotes } = useIndexQuotes(marketId);
 
   return (
     <div className="flex h-[52px] items-center gap-8 border-b border-border bg-background px-7">
-      {data.indexes.map((ix) => (
-        <div key={ix.symbol} className="flex items-baseline gap-2">
-          <span className="text-xs text-muted-foreground">
-            {locale === 'he' && ix.nameHe ? ix.nameHe : ix.name}
-          </span>
-          <span dir="ltr" className="text-sm text-foreground tabular-nums">
-            {fmtNum(ix.value, market.numberLocale)}
-          </span>
-          <span
-            dir="ltr"
-            className={cn('text-xs tabular-nums', ix.changePct >= 0 ? 'text-gain' : 'text-loss')}
-          >
-            {fmtPct(ix.changePct, market.numberLocale)}
-          </span>
-        </div>
-      ))}
+      {data.indexes.map((ix) => {
+        const live = quotes[ix.symbol];
+        const value = live?.price ?? ix.value;
+        const pct = live?.changePct ?? ix.changePct;
+        return (
+          <div key={ix.symbol} className="flex items-baseline gap-2">
+            <span className="text-xs text-muted-foreground">
+              {locale === 'he' && ix.nameHe ? ix.nameHe : ix.name}
+            </span>
+            <span dir="ltr" className="text-sm text-foreground tabular-nums">
+              {fmtNum(value, market.numberLocale)}
+            </span>
+            <span
+              dir="ltr"
+              className={cn('text-xs tabular-nums', pct >= 0 ? 'text-gain' : 'text-loss')}
+            >
+              {fmtPct(pct, market.numberLocale)}
+            </span>
+          </div>
+        );
+      })}
       <SessionStatus marketId={marketId} className="ms-auto" />
     </div>
   );

@@ -33,6 +33,14 @@ export function fmtMoney(amount: number, currency: string, locale: string, dp = 
   }).format(amount);
 }
 
+/** '5.12T' / '184.2M' — compact notation for caps and volumes. */
+export function fmtCompact(n: number, locale: string): string {
+  return new Intl.NumberFormat(locale, {
+    notation: 'compact',
+    maximumFractionDigits: 2,
+  }).format(n);
+}
+
 /** 'Aug 26, 2026' / '26 באוג׳ 2026' from an ISO date. */
 export function fmtDate(iso: string, locale: string): string {
   return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(

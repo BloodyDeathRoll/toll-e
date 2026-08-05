@@ -154,7 +154,7 @@ export const demo: Record<string, DemoMarketData> = {
     },
     indexes: [
       { symbol: 'TA35.TA', name: 'TA-35', nameHe: 'ת״א 35', longName: 'Tel Aviv 35', longNameHe: 'תל אביב 35', value: 2_914.06, changePct: 0.84, spark: [17, 15, 18, 12, 14, 9, 11, 6, 4] },
-      { symbol: 'TA125.TA', name: 'TA-125', nameHe: 'ת״א 125', longName: 'Tel Aviv 125', longNameHe: 'תל אביב 125', value: 2_706.31, changePct: 0.67, spark: [16, 14, 15, 11, 13, 10, 8, 7, 5] },
+      { symbol: '^TA125.TA', name: 'TA-125', nameHe: 'ת״א 125', longName: 'Tel Aviv 125', longNameHe: 'תל אביב 125', value: 2_706.31, changePct: 0.67, spark: [16, 14, 15, 11, 13, 10, 8, 7, 5] },
       { symbol: 'TA90.TA', name: 'TA-90', nameHe: 'ת״א 90', longName: 'Tel Aviv 90', longNameHe: 'תל אביב 90', value: 3_180.72, changePct: -0.31, spark: [10, 12, 9, 13, 11, 15, 13, 17, 16] },
       { symbol: 'SME60.TA', name: 'TA-SME60', nameHe: 'ת״א SME60', longName: 'Small & mid caps', longNameHe: 'מניות קטנות ובינוניות', value: 1_842.55, changePct: 0.22, spark: [12, 14, 11, 9, 12, 8, 10, 9, 7] },
     ],

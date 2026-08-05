@@ -8,15 +8,28 @@ import { useMarket } from '@/components/app-shell/market-context';
 import { MoreLink } from '@/components/more-link';
 import { SessionBadge, SessionStatus } from '@/components/session-indicator';
 import { LineChart, Sparkline } from '@/components/charts';
+import { PriceChart } from '@/components/price-chart';
+import { useChart, useQuotes, useSummary } from '@/components/use-market-data';
+import type { ChartRange } from '@/src/market-data/types';
 import { getMarket } from '@/src/markets/registry';
 import { getDemoHolding, getDemoStock } from '@/src/demo/data';
-import { fmtDate, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
+import { fmtCompact, fmtDate, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 const tabs = ['summary', 'news', 'analysis', 'financials'] as const;
 type Tab = (typeof tabs)[number];
 const mobileRanges = ['1D', '1M', '6M', 'YTD', '1Y', '5Y', 'Max'] as const;
 const desktopRanges = ['1D', '5D', '1M', '6M', 'YTD', '1Y', '5Y'] as const;
+const rangeMap: Record<string, ChartRange> = {
+  '1D': '1d',
+  '5D': '5d',
+  '1M': '1mo',
+  '6M': '6mo',
+  YTD: 'ytd',
+  '1Y': '1y',
+  '5Y': '5y',
+  Max: 'max',
+};
 
 export function StockScreen({ symbol }: { symbol: string }) {
   const t = useTranslations('stock');
@@ -30,17 +43,49 @@ export function StockScreen({ symbol }: { symbol: string }) {
   const holding = getDemoHolding(marketId, symbol) ?? getDemoHolding(marketId === 'US' ? 'IL' : 'US', symbol);
   const [tab, setTab] = useState<Tab>('summary');
   const [range, setRange] = useState('1M');
-  const up = stock.changePct >= 0;
+
+  // Live data overlays the demo fallback as it arrives (Phase 1).
+  const { quotes } = useQuotes([symbol]);
+  const live = quotes[symbol];
+  const { data: series } = useChart(symbol, rangeMap[range] ?? '1mo');
+  const { data: summary } = useSummary(symbol);
+
+  const price = live?.price ?? stock.price;
+  const change = live?.change ?? stock.change;
+  const changePct = live?.changePct ?? stock.changePct;
+  const stats = {
+    open: live?.open ?? stock.stats.open,
+    dayLow: live?.dayLow ?? stock.stats.dayLow,
+    dayHigh: live?.dayHigh ?? stock.stats.dayHigh,
+    wk52Low: live?.wk52Low ?? summary?.stats.wk52Low ?? stock.stats.wk52Low,
+    wk52High: live?.wk52High ?? summary?.stats.wk52High ?? stock.stats.wk52High,
+    volume: live?.volume !== undefined ? fmtCompact(live.volume, nl) : stock.stats.volume,
+    marketCap:
+      (live?.marketCap ?? summary?.stats.marketCap) !== undefined
+        ? fmtCompact((live?.marketCap ?? summary?.stats.marketCap) as number, nl)
+        : stock.stats.marketCap,
+    pe: summary?.stats.peTtm ?? stock.stats.pe,
+    eps: summary?.stats.epsTtm ?? stock.stats.eps,
+    divYieldPct: summary?.stats.dividendYieldPct ?? stock.stats.divYieldPct,
+    beta: summary?.stats.beta ?? stock.stats.beta,
+  };
+  const headline = {
+    name: summary?.name ?? stock.name,
+    exchange: summary?.exchange ?? stock.exchange,
+    sector: summary?.sector ?? stock.sector,
+  };
+  const eventDate = summary?.nextEarningsDate ?? stock.nextEvent.date;
+  const up = changePct >= 0;
 
   // Depends on the clock — resolved after mount so SSR markup stays stable.
   const [daysOut, setDaysOut] = useState(0);
   useEffect(() => {
-    const target = new Date(`${stock.nextEvent.date}T00:00:00`).getTime();
+    const target = new Date(`${eventDate}T00:00:00`).getTime();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional clock-derived init
     setDaysOut(Math.max(0, Math.ceil((target - Date.now()) / 86_400_000)));
-  }, [stock.nextEvent.date]);
+  }, [eventDate]);
   const eventTitle = locale === 'he' ? stock.nextEvent.titleHe : stock.nextEvent.title;
-  const daysGain = holding ? holding.shares * stock.change : 0;
+  const daysGain = holding ? holding.shares * change : 0;
 
   const rangePills = (list: readonly string[]) => (
     <div dir="ltr" className="flex gap-0.5 rounded-lg border border-border bg-background p-[3px]">
@@ -189,9 +234,9 @@ export function StockScreen({ symbol }: { symbol: string }) {
           </button>
           <div className="flex flex-1 items-baseline gap-2" dir="ltr">
             <span className="text-[17px] font-bold text-foreground">{stock.symbol}</span>
-            <span className="text-[15px] text-foreground tabular-nums">{fmtNum(stock.price, nl)}</span>
+            <span className="text-[15px] text-foreground tabular-nums">{fmtNum(price, nl)}</span>
             <span className={cn('text-[13px] tabular-nums', up ? 'text-gain' : 'text-loss')}>
-              {fmtSigned(stock.change, nl)} ({fmtPct(stock.changePct, nl)})
+              {fmtSigned(change, nl)} ({fmtPct(changePct, nl)})
             </span>
           </div>
           <Star className="size-4 text-brand" fill="currentColor" aria-hidden />
@@ -204,7 +249,11 @@ export function StockScreen({ symbol }: { symbol: string }) {
           {tab === 'summary' && (
             <>
               <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card px-3 pt-4 pb-3">
-                <LineChart points={stock.chart} up={up} height={150} viewH={250} gridlines={[233]} />
+                {series && series.points.length > 0 ? (
+                  <PriceChart points={series.points} up={up} height={150} intraday={series.interval.endsWith('m')} />
+                ) : (
+                  <LineChart points={stock.chart} up={up} height={150} viewH={250} gridlines={[233]} />
+                )}
                 <div dir="ltr" className="flex justify-between px-1">
                   {mobileRanges.map((r) => (
                     <button
@@ -229,10 +278,10 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   {t('keyStats')}
                 </h2>
                 <div className="grid grid-cols-2 gap-3 text-[13px] tabular-nums">
-                  <Row label={t('open')} value={fmtNum(stock.stats.open, nl)} />
-                  <Row label={t('mktCap')} value={stock.stats.marketCap} />
-                  <Row label={t('dayRange')} value={`${fmtNum(stock.stats.dayLow, nl, 1)}–${fmtNum(stock.stats.dayHigh, nl, 1)}`} />
-                  <Row label={t('pe')} value={fmtNum(stock.stats.pe, nl, 1)} />
+                  <Row label={t('open')} value={fmtNum(stats.open, nl)} />
+                  <Row label={t('mktCap')} value={stats.marketCap} />
+                  <Row label={t('dayRange')} value={`${fmtNum(stats.dayLow, nl, 1)}–${fmtNum(stats.dayHigh, nl, 1)}`} />
+                  <Row label={t('pe')} value={fmtNum(stats.pe, nl, 1)} />
                 </div>
               </section>
             </>
@@ -249,8 +298,8 @@ export function StockScreen({ symbol }: { symbol: string }) {
                     <Sparkline points={stock.wk52Spark} up width={240} height={72} className="w-full" />
                   </div>
                   <div className="flex h-[72px] flex-col justify-between text-[13px] text-foreground tabular-nums">
-                    <span>{fmtNum(stock.stats.wk52High, nl)}</span>
-                    <span>{fmtNum(stock.stats.wk52Low, nl)}</span>
+                    <span>{fmtNum(stats.wk52High, nl)}</span>
+                    <span>{fmtNum(stats.wk52Low, nl)}</span>
                   </div>
                 </div>
                 <div className="flex justify-between px-4 pb-3 text-xs text-muted-foreground">
@@ -266,7 +315,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   {t('corporateEvents')}
                 </h2>
                 <span className="text-[13px] text-muted-foreground">
-                  {fmtDate(stock.nextEvent.date, locale)} · {t('upcomingTag')}
+                  {fmtDate(eventDate, locale)} · {t('upcomingTag')}
                 </span>
                 <span className="text-[15px] font-semibold text-foreground">
                   {stock.name.split(' ')[0]} {eventTitle}
@@ -299,16 +348,16 @@ export function StockScreen({ symbol }: { symbol: string }) {
         <div className="flex items-end justify-between px-7 pt-5">
           <div className="flex flex-col gap-1.5">
             <span className="text-[13px] text-muted-foreground">
-              {stock.name} · {stock.exchange} · {stock.sector}
+              {headline.name} · {headline.exchange} · {headline.sector}
             </span>
             <div className="flex items-center gap-3.5">
               <div className="flex items-baseline gap-3.5" dir="ltr">
                 <span className="text-[28px] font-bold tracking-tight text-foreground">{stock.symbol}</span>
                 <span className="text-[28px] font-semibold text-foreground tabular-nums">
-                  {fmtNum(stock.price, nl)}
+                  {fmtNum(price, nl)}
                 </span>
                 <span className={cn('text-[15px] tabular-nums', up ? 'text-gain' : 'text-loss')}>
-                  {fmtSigned(stock.change, nl)} ({fmtPct(stock.changePct, nl)})
+                  {fmtSigned(change, nl)} ({fmtPct(changePct, nl)})
                 </span>
               </div>
               <SessionBadge marketId={marketId} />
@@ -340,26 +389,30 @@ export function StockScreen({ symbol }: { symbol: string }) {
                     {rangePills(desktopRanges)}
                     <div dir="ltr" className="flex gap-[18px] text-xs text-muted-foreground tabular-nums">
                       <span>
-                        {t('open')} <span className="text-foreground">{fmtNum(stock.stats.open, nl)}</span>
+                        {t('open')} <span className="text-foreground">{fmtNum(stats.open, nl)}</span>
                       </span>
                       <span>
                         {t('day')}{' '}
                         <span className="text-foreground">
-                          {fmtNum(stock.stats.dayLow, nl)} – {fmtNum(stock.stats.dayHigh, nl)}
+                          {fmtNum(stats.dayLow, nl)} – {fmtNum(stats.dayHigh, nl)}
                         </span>
                       </span>
                       <span>
                         {t('wk52')}{' '}
                         <span className="text-foreground">
-                          {fmtNum(stock.stats.wk52Low, nl)} – {fmtNum(stock.stats.wk52High, nl)}
+                          {fmtNum(stats.wk52Low, nl)} – {fmtNum(stats.wk52High, nl)}
                         </span>
                       </span>
                       <span>
-                        {t('vol')} <span className="text-foreground">{stock.stats.volume}</span>
+                        {t('vol')} <span className="text-foreground">{stats.volume}</span>
                       </span>
                     </div>
                   </div>
-                  <LineChart points={stock.chart} up={up} height={250} viewH={250} gridlines={[40, 120, 200]} />
+                  {series && series.points.length > 0 ? (
+                    <PriceChart points={series.points} up={up} height={250} intraday={series.interval.endsWith('m')} />
+                  ) : (
+                    <LineChart points={stock.chart} up={up} height={250} viewH={250} gridlines={[40, 120, 200]} />
+                  )}
                 </section>
                 {financialsCard}
               </>
@@ -375,11 +428,11 @@ export function StockScreen({ symbol }: { symbol: string }) {
                 {t('keyStats')}
               </h2>
               <div className="flex flex-col gap-3 text-[13px] tabular-nums">
-                <Row label={t('marketCap')} value={stock.stats.marketCap} />
-                <Row label={t('peTtm')} value={fmtNum(stock.stats.pe, nl, 1)} />
-                <Row label={t('epsTtm')} value={fmtNum(stock.stats.eps, nl)} />
-                <Row label={t('divYield')} value={`${fmtNum(stock.stats.divYieldPct, nl)}%`} />
-                <Row label={t('beta')} value={fmtNum(stock.stats.beta, nl)} />
+                <Row label={t('marketCap')} value={stats.marketCap} />
+                <Row label={t('peTtm')} value={fmtNum(stats.pe, nl, 1)} />
+                <Row label={t('epsTtm')} value={fmtNum(stats.eps, nl)} />
+                <Row label={t('divYield')} value={`${fmtNum(stats.divYieldPct, nl)}%`} />
+                <Row label={t('beta')} value={fmtNum(stats.beta, nl)} />
               </div>
             </section>
             <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card p-5">
@@ -387,7 +440,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                 {t('nextEvent')}
               </h2>
               <span className="text-[15px] text-foreground">
-                {eventTitle} · {fmtDate(stock.nextEvent.date, locale)}
+                {eventTitle} · {fmtDate(eventDate, locale)}
               </span>
               <span className="text-[13px] text-muted-foreground">
                 {t('daysOut', { days: daysOut })} · <span className="text-brand">{t('setReminder')}</span>

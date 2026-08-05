@@ -10,6 +10,7 @@ import { MoreLink } from '@/components/more-link';
 import { HoldingsTable } from '@/components/holdings-table';
 import { ReserveBar } from '@/components/reserve-bar';
 import { LineChart, Sparkline } from '@/components/charts';
+import { useIndexQuotes } from '@/components/use-market-data';
 import { getMarket } from '@/src/markets/registry';
 import { demo, demoWatchlists } from '@/src/demo/data';
 import { fmtDate, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
@@ -27,6 +28,7 @@ export function HomeScreen() {
   const sym = market.currencySymbol;
   const currencyLabel = locale === 'he' ? 'ש״ח' : market.currency;
   const [range, setRange] = useState<(typeof ranges)[number]>('1M');
+  const { quotes: indexQuotes } = useIndexQuotes(marketId);
   const name = (x: { name: string; nameHe?: string }) =>
     locale === 'he' && x.nameHe ? x.nameHe : x.name;
 
@@ -111,20 +113,25 @@ export function HomeScreen() {
             <MoreLink href="/markets">{t('nav.markets')}</MoreLink>
           </div>
           <div className="flex gap-2.5">
-            {data.indexes.slice(0, 3).map((ix) => (
-              <div key={ix.symbol} className="flex flex-1 flex-col gap-[3px] rounded-2xl border border-border bg-card p-3">
-                <span className="text-[13px] font-semibold text-foreground">{name(ix)}</span>
-                <span dir="ltr" className="self-start text-[15px] text-foreground tabular-nums">
-                  {fmtNum(ix.value, nl)}
-                </span>
-                <span
-                  dir="ltr"
-                  className={cn('self-start text-xs tabular-nums', ix.changePct >= 0 ? 'text-gain' : 'text-loss')}
-                >
-                  {fmtPct(ix.changePct, nl)}
-                </span>
-              </div>
-            ))}
+            {data.indexes.slice(0, 3).map((ix) => {
+              const live = indexQuotes[ix.symbol];
+              const value = live?.price ?? ix.value;
+              const pct = live?.changePct ?? ix.changePct;
+              return (
+                <div key={ix.symbol} className="flex flex-1 flex-col gap-[3px] rounded-2xl border border-border bg-card p-3">
+                  <span className="text-[13px] font-semibold text-foreground">{name(ix)}</span>
+                  <span dir="ltr" className="self-start text-[15px] text-foreground tabular-nums">
+                    {fmtNum(value, nl)}
+                  </span>
+                  <span
+                    dir="ltr"
+                    className={cn('self-start text-xs tabular-nums', pct >= 0 ? 'text-gain' : 'text-loss')}
+                  >
+                    {fmtPct(pct, nl)}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </section>
 
