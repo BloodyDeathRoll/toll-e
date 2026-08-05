@@ -19,17 +19,13 @@ export interface MarketDef {
 const h = (hh: number, mm: number) => hh * 60 + mm;
 
 // NYSE/Nasdaq regular session, US Eastern. Holidays filled in Phase 1.
+// Extended hours: pre-market 04:00–09:30, after-hours 16:00–20:00.
+const usDay = { preOpen: h(4, 0), open: h(9, 30), close: h(16, 0), postClose: h(20, 0) };
 const usCalendar: TradingCalendar = {
   timezone: 'America/New_York',
   schedules: [
     {
-      hours: {
-        1: { open: h(9, 30), close: h(16, 0) },
-        2: { open: h(9, 30), close: h(16, 0) },
-        3: { open: h(9, 30), close: h(16, 0) },
-        4: { open: h(9, 30), close: h(16, 0) },
-        5: { open: h(9, 30), close: h(16, 0) },
-      },
+      hours: { 1: usDay, 2: usDay, 3: usDay, 4: usDay, 5: usDay },
     },
   ],
   holidays: [],
@@ -38,29 +34,22 @@ const usCalendar: TradingCalendar = {
 // TASE: Sun–Thu historically; moved to Mon–Fri in January 2026.
 // Encoded as effective-dated schedules so backdated views stay correct.
 // TODO(verify): exact switch date and Friday closing time against TASE.
+// Pre-open auction phase ~09:00 before continuous trading; TASE has no
+// after-hours session (closing-auction prints land within minutes of close).
+// TODO(verify): pre-open start and Friday auction times against TASE.
+const ilDay = { preOpen: h(9, 0), open: h(9, 59), close: h(17, 25) };
+const ilFri = { preOpen: h(9, 0), open: h(9, 59), close: h(13, 45) };
 const ilCalendar: TradingCalendar = {
   timezone: 'Asia/Jerusalem',
   schedules: [
     {
       // Legacy week: Sun–Thu, continuous trading ~09:59–17:25.
-      hours: {
-        0: { open: h(9, 59), close: h(17, 25) },
-        1: { open: h(9, 59), close: h(17, 25) },
-        2: { open: h(9, 59), close: h(17, 25) },
-        3: { open: h(9, 59), close: h(17, 25) },
-        4: { open: h(9, 59), close: h(17, 25) },
-      },
+      hours: { 0: ilDay, 1: ilDay, 2: ilDay, 3: ilDay, 4: ilDay },
     },
     {
       // Mon–Fri week (Friday shortened session).
       effectiveFrom: '2026-01-05',
-      hours: {
-        1: { open: h(9, 59), close: h(17, 25) },
-        2: { open: h(9, 59), close: h(17, 25) },
-        3: { open: h(9, 59), close: h(17, 25) },
-        4: { open: h(9, 59), close: h(17, 25) },
-        5: { open: h(9, 59), close: h(13, 45) },
-      },
+      hours: { 1: ilDay, 2: ilDay, 3: ilDay, 4: ilDay, 5: ilFri },
     },
   ],
   holidays: [],

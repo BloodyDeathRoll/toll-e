@@ -1,10 +1,15 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Search } from 'lucide-react';
 import { Link, usePathname } from '@/src/i18n/navigation';
-import { LocaleSwitcher } from '@/components/locale-switcher';
-import { MarketTabs } from '@/components/app-shell/market-tabs';
+import { MarketMenu } from './market-menu';
+import { useMarket } from './market-context';
+import { SessionStatus } from '@/components/session-indicator';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { getMarket } from '@/src/markets/registry';
+import { demo } from '@/src/demo/data';
+import { fmtNum, fmtPct } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 const links = [
@@ -12,21 +17,22 @@ const links = [
   { href: '/markets', key: 'markets' },
   { href: '/portfolio', key: 'portfolio' },
   { href: '/tax', key: 'tax' },
+  { href: '/watchlists', key: 'watchlists' },
 ] as const;
 
-/** Desktop top navbar — hidden below md where the bottom tab bar takes over. */
+/** Desktop top navbar + index strip — hidden below md (bottom tab bar takes over). */
 export function TopNav() {
   const t = useTranslations();
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 hidden border-b border-border bg-background/95 backdrop-blur md:block">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4">
-        <Link href="/" className="text-lg font-bold tracking-tight">
+    <header className="sticky top-0 z-40 hidden md:block">
+      <div className="flex h-[60px] items-center gap-7 border-b border-border bg-card px-7">
+        <Link href="/" className="text-[19px] font-bold tracking-tight text-foreground">
           {t('app.name')}
         </Link>
 
-        <nav className="flex items-center gap-4 text-sm">
+        <nav className="flex items-center gap-[22px] text-sm">
           {links.map(({ href, key }) => {
             const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
             return (
@@ -34,8 +40,10 @@ export function TopNav() {
                 key={key}
                 href={href}
                 className={cn(
-                  'transition-colors hover:text-foreground',
-                  active ? 'text-foreground' : 'text-muted-foreground',
+                  'py-[19px] transition-colors hover:text-foreground',
+                  active
+                    ? 'border-b-2 border-brand font-semibold text-foreground'
+                    : 'text-muted-foreground',
                 )}
               >
                 {t(`nav.${key}`)}
@@ -44,23 +52,59 @@ export function TopNav() {
           })}
         </nav>
 
-        <div className="relative ms-auto hidden max-w-xs flex-1 lg:block">
+        <div className="relative max-w-[420px] flex-1">
           <Search
-            className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute start-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
             aria-hidden
           />
           <input
             type="search"
             placeholder={t('nav.search')}
-            className="h-9 w-full rounded-md border border-input bg-transparent ps-9 pe-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-9 w-full rounded-lg border border-border bg-well ps-9 pe-3 text-[13px] text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
             // Wired to /api/market/search in Phase 1.
             disabled
           />
         </div>
 
-        <MarketTabs />
-        <LocaleSwitcher compact />
+        <div className="ms-auto flex items-center gap-3.5">
+          <MarketMenu />
+          <ThemeToggle />
+          <span className="flex size-[30px] items-center justify-center rounded-full bg-primary text-[13px] font-semibold text-primary-foreground">
+            AN
+          </span>
+        </div>
       </div>
+
+      <IndexStrip />
     </header>
+  );
+}
+
+function IndexStrip() {
+  const locale = useLocale();
+  const { marketId } = useMarket();
+  const market = getMarket(marketId);
+  const data = demo[marketId];
+
+  return (
+    <div className="flex h-[52px] items-center gap-8 border-b border-border bg-background px-7">
+      {data.indexes.map((ix) => (
+        <div key={ix.symbol} className="flex items-baseline gap-2">
+          <span className="text-xs text-muted-foreground">
+            {locale === 'he' && ix.nameHe ? ix.nameHe : ix.name}
+          </span>
+          <span dir="ltr" className="text-sm text-foreground tabular-nums">
+            {fmtNum(ix.value, market.numberLocale)}
+          </span>
+          <span
+            dir="ltr"
+            className={cn('text-xs tabular-nums', ix.changePct >= 0 ? 'text-gain' : 'text-loss')}
+          >
+            {fmtPct(ix.changePct, market.numberLocale)}
+          </span>
+        </div>
+      ))}
+      <SessionStatus marketId={marketId} className="ms-auto" />
+    </div>
   );
 }

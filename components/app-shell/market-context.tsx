@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useLocale } from 'next-intl';
 import { marketIds } from '@/src/markets/registry';
 
 // The active market tab is a lens, not a data wall (toll-e-plan.md §2.2):
@@ -15,13 +16,18 @@ const MarketContext = createContext<MarketContextValue | null>(null);
 const STORAGE_KEY = 'toll-e.market';
 
 export function MarketProvider({
-  defaultMarketId = 'US',
+  defaultMarketId,
   children,
 }: {
   defaultMarketId?: string;
   children: React.ReactNode;
 }) {
-  const [marketId, setMarketId] = useState(defaultMarketId);
+  // Market ↔ language travel together (design: picking ₪ ILS switches to
+  // Hebrew), so the SSR default lens follows the locale.
+  const locale = useLocale();
+  const [marketId, setMarketId] = useState(
+    defaultMarketId ?? (locale === 'he' ? 'IL' : 'US'),
+  );
 
   // Hydrate the persisted tab after mount — localStorage isn't available on
   // the server, and reading it during render would mismatch SSR markup.

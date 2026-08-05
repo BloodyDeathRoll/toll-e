@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getMarketState, scheduleFor, toExchangeLocal } from './calendar';
+import { getMarketState, getSessionState, scheduleFor, toExchangeLocal } from './calendar';
 import { getMarket } from './registry';
 
 const us = getMarket('US').calendar;
@@ -69,5 +69,48 @@ describe('TASE schedule switch (Sun–Thu → Mon–Fri, Jan 2026)', () => {
   it('TASE closed Sunday under the 2026 week', () => {
     const s = getMarketState(il, utc('2026-08-09T09:00:00Z')); // Sun 12:00 IDT
     expect(s.open).toBe(false);
+  });
+});
+
+describe('session phases (pre / open / post / closed)', () => {
+  it('US pre-market before the bell', () => {
+    const s = getSessionState(us, utc('2026-08-04T11:00:00Z')); // 07:00 EDT Tue
+    expect(s.phase).toBe('pre');
+    expect(s.minutesToChange).toBe(2.5 * 60); // regular open 09:30
+  });
+
+  it('US live during regular hours', () => {
+    const s = getSessionState(us, utc('2026-08-04T14:30:00Z')); // 10:30 EDT
+    expect(s.phase).toBe('open');
+    expect(s.minutesToChange).toBe(5.5 * 60);
+  });
+
+  it('US after-hours until 20:00 ET', () => {
+    const s = getSessionState(us, utc('2026-08-04T21:00:00Z')); // 17:00 EDT
+    expect(s.phase).toBe('post');
+    expect(s.minutesToChange).toBe(3 * 60);
+  });
+
+  it('US fully closed overnight, counts to next regular open', () => {
+    const s = getSessionState(us, utc('2026-08-05T02:00:00Z')); // 22:00 EDT Tue
+    expect(s.phase).toBe('closed');
+    expect(s.minutesToChange).toBe(11.5 * 60); // 22:00 → 09:30 Wed
+  });
+
+  it('holiday suppresses all phases', () => {
+    const withHoliday = { ...us, holidays: ['2026-08-04'] };
+    const s = getSessionState(withHoliday, utc('2026-08-04T14:30:00Z'));
+    expect(s.phase).toBe('closed');
+  });
+
+  it('TASE pre-open auction phase', () => {
+    const s = getSessionState(il, utc('2026-08-04T06:30:00Z')); // 09:30 IDT Tue
+    expect(s.phase).toBe('pre');
+    expect(s.minutesToChange).toBe(29); // continuous trading 09:59
+  });
+
+  it('TASE has no post phase after close', () => {
+    const s = getSessionState(il, utc('2026-08-04T15:00:00Z')); // 18:00 IDT
+    expect(s.phase).toBe('closed');
   });
 });

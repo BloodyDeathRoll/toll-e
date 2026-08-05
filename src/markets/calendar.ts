@@ -7,11 +7,20 @@ type MinuteOfDay = number;
 /** 0 = Sunday … 6 = Saturday (JS Date convention). */
 export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
+export interface SessionHours {
+  open: MinuteOfDay;
+  close: MinuteOfDay;
+  /** Extended-session start (e.g. US pre-market 04:00); omit if none. */
+  preOpen?: MinuteOfDay;
+  /** Extended-session end (e.g. US after-hours 20:00); omit if none. */
+  postClose?: MinuteOfDay;
+}
+
 export interface SessionSchedule {
   /** ISO date (exchange-local) this schedule applies from; omit for "since forever". */
   effectiveFrom?: string;
   /** Open/close per weekday; days absent = closed. */
-  hours: Partial<Record<Weekday, { open: MinuteOfDay; close: MinuteOfDay }>>;
+  hours: Partial<Record<Weekday, SessionHours>>;
 }
 
 export interface TradingCalendar {
@@ -100,4 +109,42 @@ export function getMarketState(cal: TradingCalendar, now: Date): MarketState {
     return { open: false, minutesToChange: minutes };
   }
   return { open: false };
+}
+
+// ---------------------------------------------------------------------------
+// Session phases — Yahoo-Finance-style pre/live/post/closed indicators.
+// Kept separate from getMarketState, whose open/closed countdown semantics
+// (always relative to the *regular* session) existing callers rely on.
+
+export type SessionPhase = 'pre' | 'open' | 'post' | 'closed';
+
+export interface SessionState {
+  phase: SessionPhase;
+  /**
+   * Minutes until this phase's next boundary: pre → regular open,
+   * open → regular close, post → extended close, closed → next regular open.
+   */
+  minutesToChange?: number;
+}
+
+/** Which trading phase is the exchange in at `now`? Holiday-aware. */
+export function getSessionState(cal: TradingCalendar, now: Date): SessionState {
+  const local = toExchangeLocal(cal, now);
+  const today = scheduleFor(cal, local.isoDate).hours[local.weekday];
+  const isHoliday = cal.holidays.includes(local.isoDate);
+  const m = local.minuteOfDay;
+
+  if (today && !isHoliday) {
+    if (today.preOpen !== undefined && m >= today.preOpen && m < today.open) {
+      return { phase: 'pre', minutesToChange: today.open - m };
+    }
+    if (m >= today.open && m < today.close) {
+      return { phase: 'open', minutesToChange: today.close - m };
+    }
+    if (today.postClose !== undefined && m >= today.close && m < today.postClose) {
+      return { phase: 'post', minutesToChange: today.postClose - m };
+    }
+  }
+  // Closed — reuse the regular-session countdown to the next opening bell.
+  return { phase: 'closed', minutesToChange: getMarketState(cal, now).minutesToChange };
 }

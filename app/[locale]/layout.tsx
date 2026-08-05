@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Geist, Geist_Mono, Rubik } from 'next/font/google';
+import { Geist_Mono, Inter, Rubik } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { routing, localeDir } from '@/src/i18n/routing';
 import '../globals.css';
 
-// Geist has no Hebrew glyphs — Rubik backfills them via the font stack.
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
+// Inter has no Hebrew glyphs — Rubik backfills them via the font stack.
+const inter = Inter({ variable: '--font-inter', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 const rubik = Rubik({ variable: '--font-rubik', subsets: ['hebrew', 'latin'] });
 
@@ -19,6 +19,10 @@ export const metadata: Metadata = {
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
+
+// Dark is the SSR default; this runs before paint so a stored light
+// preference never flashes dark first.
+const themeInit = `try{if(localStorage.getItem('toll-e.theme')==='light')document.documentElement.classList.remove('dark')}catch(e){}`;
 
 export default async function LocaleLayout({
   children,
@@ -32,9 +36,11 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={localeDir(locale)}
-      className={`${geistSans.variable} ${geistMono.variable} ${rubik.variable} dark h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} ${rubik.variable} dark h-full`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>
