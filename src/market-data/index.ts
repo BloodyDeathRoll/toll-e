@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { cached } from './cache';
+import { getChartFromDb, getFxFallback, getQuotesFromDb } from './fallback';
 import { persistDailyCloses, persistFx } from './persist';
 import { YahooProvider } from './yahoo';
 import { getMarket } from '@/src/markets/registry';
@@ -22,6 +23,16 @@ import type {
 
 const provider = new YahooProvider();
 
+// Kill-switch for outage drills and local fallback testing: with
+// MARKET_DATA_DISABLE_YAHOO=1 every Yahoo call throws, so requests exercise
+// the fallback chain (BoI/ECB FX, persisted closes) exactly like a real block.
+function yahoo<T>(fetch: () => Promise<T>): Promise<T> {
+  if (process.env.MARKET_DATA_DISABLE_YAHOO === '1') {
+    return Promise.reject(new Error('yahoo disabled via MARKET_DATA_DISABLE_YAHOO'));
+  }
+  return fetch();
+}
+
 const TTL = {
   quote: 30_000, // 15–60s class
   chartIntraday: 5 * 60_000,
@@ -39,21 +50,35 @@ const TTL = {
 
 export async function getQuotes(symbols: string[]): Promise<Quote[]> {
   const key = [...symbols].sort().join(',');
-  return cached(`quote:${key}`, TTL.quote, () => provider.getQuote(symbols));
+  return cached(`quote:${key}`, TTL.quote, async () => {
+    try {
+      return await yahoo(() => provider.getQuote(symbols));
+    } catch {
+      // Degraded mode: last persisted closes (asOf tells the UI how old).
+      return getQuotesFromDb(symbols);
+    }
+  });
 }
 
 export async function getChart(symbol: string, range: ChartRange): Promise<ChartSeries> {
   const intraday = range === '1d' || range === '5d';
   return cached(`chart:${symbol}:${range}`, intraday ? TTL.chartIntraday : TTL.chartDaily, async () => {
-    const series = await provider.getChart(symbol, range);
-    persistDailyCloses(series);
-    return series;
+    try {
+      const series = await yahoo(() => provider.getChart(symbol, range));
+      persistDailyCloses(series);
+      return series;
+    } catch (err) {
+      // Degraded mode: replay persisted daily closes (1d/5d become daily bars).
+      return getChartFromDb(symbol, range).catch(() => {
+        throw err;
+      });
+    }
   });
 }
 
 export async function search(query: string, marketId?: string): Promise<SearchResult[]> {
   const results = await cached(`search:${query.toLowerCase()}`, TTL.search, () =>
-    provider.search(query),
+    yahoo(() => provider.search(query)),
   );
   if (!marketId) return results;
   // Active market's listings surface first — the lens orders, never filters
@@ -64,24 +89,29 @@ export async function search(query: string, marketId?: string): Promise<SearchRe
 }
 
 export async function getSummary(symbol: string): Promise<Summary> {
-  return cached(`summary:${symbol}`, TTL.summary, () => provider.getSummary(symbol));
+  return cached(`summary:${symbol}`, TTL.summary, () => yahoo(() => provider.getSummary(symbol)));
 }
 
 export async function getNews(symbol: string): Promise<NewsItem[]> {
-  return cached(`news:${symbol}`, TTL.news, () => provider.getNews(symbol));
+  return cached(`news:${symbol}`, TTL.news, () => yahoo(() => provider.getNews(symbol)));
 }
 
 export async function getAnalysis(symbol: string): Promise<StockAnalysis> {
-  return cached(`analysis:${symbol}`, TTL.analysis, () => provider.getAnalysis(symbol));
+  return cached(`analysis:${symbol}`, TTL.analysis, () => yahoo(() => provider.getAnalysis(symbol)));
 }
 
 export async function getFinancials(symbol: string): Promise<StockFinancials> {
-  return cached(`financials:${symbol}`, TTL.financials, () => provider.getFinancials(symbol));
+  return cached(`financials:${symbol}`, TTL.financials, () => yahoo(() => provider.getFinancials(symbol)));
 }
 
 export async function getFx(pair: string): Promise<FxRate> {
   return cached(`fx:${pair}`, TTL.fx, async () => {
-    const fx = await provider.getFx(pair);
+    let fx: FxRate;
+    try {
+      fx = await yahoo(() => provider.getFx(pair));
+    } catch {
+      fx = await getFxFallback(pair);
+    }
     persistFx(fx);
     return fx;
   });
