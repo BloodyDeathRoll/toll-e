@@ -9,8 +9,8 @@ import { db } from '@/src/db';
 // deployment's own URL. Every candidate is trusted so preview links can sign
 // in without per-deploy configuration.
 // A localhost BETTER_AUTH_URL is ignored when running on Vercel: it can only
-// have come from a stray local .env, and letting it win sends Google's OAuth
-// redirect_uri to localhost — which fails for every real user.
+// have come from a stray local .env.local, and letting it win sends Google's
+// OAuth redirect_uri to localhost — which fails for every real user.
 const configuredUrl = process.env.BETTER_AUTH_URL;
 const localConfigOnVercel =
   Boolean(process.env.VERCEL) && /localhost|127\.0\.0\.1/.test(configuredUrl ?? '');
