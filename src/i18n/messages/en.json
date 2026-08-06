@@ -80,7 +80,11 @@
     "earnings": "{company} earnings",
     "chg": "Chg %",
     "cost": "Cost",
-    "volAvg": "Vol / avg"
+    "volAvg": "Vol / avg",
+    "emptyTitle": "No holdings yet",
+    "emptyBody": "Add your first transaction and toll-e will track value, gains, and the tax picture for you.",
+    "emptyCta": "Add your first transaction",
+    "noSalesYet": "Appears after your first sale — sells create the tax picture."
   },
   "markets": {
     "leadingIndexes": "Leading indexes",
@@ -159,7 +163,8 @@
     "upcomingTag": "upcoming",
     "daysOut": "{days} days out",
     "setReminder": "set reminder",
-    "watchlistBtn": "★ Watchlist",
+    "watchlistBtn": "Watchlist",
+    "saveToList": "Save to list",
     "setAlert": "Set alert",
     "addTransaction": "Add transaction"
   },
@@ -235,7 +240,10 @@
     "usedNote": "{amount} applied this year",
     "noShieldNote": "No carried losses applied this year",
     "shieldNoteApplied": "A carried loss of {amount} was applied against {taxYear} gains, cutting this year's bill by {saved}.",
-    "shieldNoteNone": "Realized losses carry forward indefinitely and offset future gains automatically. Shield balance: {amount}."
+    "shieldNoteNone": "Realized losses carry forward indefinitely and offset future gains automatically. Shield balance: {amount}.",
+    "emptyTitle": "No tax events yet",
+    "emptyBody": "Tax is computed from sales. Once you record a sell, the yearly ledger, monthly breakdown, and loss shield show up here.",
+    "emptyCta": "Record a sale"
   },
   "journal": {
     "title": "Transactions",
@@ -293,7 +301,9 @@
     "loading": "Loading…",
     "error": "Something went wrong",
     "language": "Language",
-    "theme": "Toggle theme"
+    "theme": "Toggle theme",
+    "stale": "Stale",
+    "delayed": "Delayed"
   },
   "perf": {
     "title": "Performance",
@@ -328,6 +338,9 @@
     "displayCurrency": "Display currency",
     "defaultMarket": "Default market",
     "signInForPrefs": "Sign in to save these to your account.",
-    "account": "Account"
+    "account": "Account",
+    "hideAmounts": "Hide amounts",
+    "on": "On",
+    "off": "Off"
   }
 }

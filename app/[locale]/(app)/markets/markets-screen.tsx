@@ -6,6 +6,7 @@ import { Link } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
 import { MarketMenu } from '@/components/app-shell/market-menu';
 import { SessionStatus } from '@/components/session-indicator';
+import { StaleBadge } from '@/components/stale-badge';
 import { Sparkline } from '@/components/charts';
 import { useFx, useIndexQuotes } from '@/components/use-market-data';
 import { getMarket } from '@/src/markets/registry';
@@ -23,7 +24,7 @@ export function MarketsScreen() {
   const data = demo[marketId];
   const nl = market.numberLocale;
   const [tab, setTab] = useState<(typeof quoteTabs)[number]>('mostActive');
-  const { quotes: indexQuotes } = useIndexQuotes(marketId);
+  const { quotes: indexQuotes, stale: indexesStale } = useIndexQuotes(marketId);
   const { data: fx } = useFx('USDILS');
   const name = (x: { name: string; nameHe?: string }) =>
     locale === 'he' && x.nameHe ? x.nameHe : x.name;
@@ -43,9 +44,12 @@ export function MarketsScreen() {
 
       {/* Leading indexes */}
       <section className="overflow-hidden rounded-2xl border border-border bg-card">
-        <h2 className="px-4 pt-3.5 pb-2.5 text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-          {t('markets.leadingIndexes')}
-        </h2>
+        <div className="flex items-center gap-2 px-4 pt-3.5 pb-2.5">
+          <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+            {t('markets.leadingIndexes')}
+          </h2>
+          <StaleBadge show={indexesStale} />
+        </div>
         {data.indexes.map((ix) => {
           const live = indexQuotes[ix.symbol];
           const value = live?.price ?? ix.value;

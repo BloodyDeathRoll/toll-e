@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
+import { Link } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
 import { MoreLink } from '@/components/more-link';
 import { ReserveBar } from '@/components/reserve-bar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useTax } from '@/components/use-tax';
 import { getMarket, displaySymbol } from '@/src/markets/registry';
 import { demo } from '@/src/demo/data';
@@ -64,6 +66,39 @@ export function TaxScreen() {
 
   const real = state.status === 'data' ? state.data : null;
   const demoTax = demo[marketId].tax;
+
+  if (state.status === 'loading') {
+    return (
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3.5 p-4 md:py-7">
+        <h1 className="pt-1 text-[22px] font-bold tracking-tight text-foreground">{t('title')}</h1>
+        <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-10 w-40" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </section>
+      </main>
+    );
+  }
+
+  // Signed in but no sales yet — explain instead of showing demo numbers.
+  if (state.status === 'empty') {
+    return (
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3.5 p-4 md:py-7">
+        <h1 className="pt-1 text-[22px] font-bold tracking-tight text-foreground">{t('title')}</h1>
+        <section className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6">
+          <h2 className="text-base font-semibold text-foreground">{t('emptyTitle')}</h2>
+          <p className="text-sm text-muted-foreground">{t('emptyBody')}</p>
+          <Link
+            href="/transactions/new"
+            className="rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-primary-foreground"
+          >
+            {t('emptyCta')}
+          </Link>
+        </section>
+      </main>
+    );
+  }
 
   let view: TaxView;
   if (real) {
@@ -202,7 +237,7 @@ export function TaxScreen() {
                 {t(s.amount >= 0 ? 'saleGain' : 'saleLoss', { date: fmtDate(s.date, locale) })}
               </span>
             </span>
-            <span className="flex flex-col items-end gap-[3px] tabular-nums">
+            <span className="private flex flex-col items-end gap-[3px] tabular-nums">
               <span dir="ltr" className={cn('text-sm', s.amount >= 0 ? 'text-gain' : 'text-loss')}>
                 {fmtSigned(s.amount, nl)}
               </span>
@@ -242,7 +277,7 @@ export function TaxScreen() {
           <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
             {t('setAsideNow')}
           </h2>
-          <p dir="ltr" className="self-start text-[44px] font-semibold tracking-tighter text-foreground tabular-nums">
+          <p dir="ltr" className="private self-start text-[44px] font-semibold tracking-tighter text-foreground tabular-nums">
             {sym}
             {fmtNum(view.due, nl)}
           </p>
@@ -280,7 +315,7 @@ export function TaxScreen() {
               className="flex items-center justify-between border-t border-border px-4 py-2.5 tabular-nums"
             >
               <span className="text-sm text-foreground">{fmtMonth(m.month, locale, 'short')}</span>
-              <span className="flex gap-4">
+              <span className="private flex gap-4">
                 <span dir="ltr" className={cn('text-sm', m.net >= 0 ? 'text-gain' : 'text-loss')}>
                   {fmtSigned(m.net, nl)}
                 </span>
@@ -330,7 +365,7 @@ export function TaxScreen() {
                 <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
                   {t('setAsideNow')}
                 </h2>
-                <p dir="ltr" className="self-start text-[32px] font-semibold tracking-tight text-foreground tabular-nums">
+                <p dir="ltr" className="private self-start text-[32px] font-semibold tracking-tight text-foreground tabular-nums">
                   {sym}
                   {fmtNum(view.due, nl)}
                 </p>
@@ -352,10 +387,10 @@ export function TaxScreen() {
                 <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
                   {t('netRealized')}
                 </h2>
-                <p dir="ltr" className="self-start text-[32px] font-semibold tracking-tight text-foreground tabular-nums">
+                <p dir="ltr" className="private self-start text-[32px] font-semibold tracking-tight text-foreground tabular-nums">
                   {fmtSigned(view.net, nl, 0)}
                 </p>
-                <p className="text-[13px] text-muted-foreground tabular-nums">
+                <p className="private text-[13px] text-muted-foreground tabular-nums">
                   {t('gainsMinusLosses', {
                     gains: fmtNum(view.realizedGains, nl),
                     losses: fmtNum(view.realizedLosses, nl),
@@ -366,7 +401,7 @@ export function TaxScreen() {
                 <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
                   {t('lossShieldLeft')}
                 </h2>
-                <p dir="ltr" className="self-start text-[32px] font-semibold tracking-tight text-foreground tabular-nums">
+                <p dir="ltr" className="private self-start text-[32px] font-semibold tracking-tight text-foreground tabular-nums">
                   {sym}
                   {fmtNum(view.shieldLeft, nl, 0)}
                 </p>
@@ -400,15 +435,15 @@ export function TaxScreen() {
                   className="grid grid-cols-[1fr_1fr_1fr_1fr_1.2fr] border-t border-border px-6 py-[13px] text-sm tabular-nums"
                 >
                   <span className="text-foreground">{fmtMonth(m.month, locale)}</span>
-                  <span dir="ltr" className={cn('text-end', m.gains === null ? 'text-faint' : 'text-gain')}>
+                  <span dir="ltr" className={cn('private text-end', m.gains === null ? 'text-faint' : 'text-gain')}>
                     {m.gains === null ? '—' : fmtSigned(m.gains, nl)}
                   </span>
-                  <span dir="ltr" className={cn('text-end', m.losses === null ? 'text-faint' : 'text-loss')}>
+                  <span dir="ltr" className={cn('private text-end', m.losses === null ? 'text-faint' : 'text-loss')}>
                     {m.losses === null ? '—' : fmtSigned(m.losses, nl)}
                   </span>
-                  <span dir="ltr" className="text-end text-foreground">{fmtNum(m.net, nl)}</span>
+                  <span dir="ltr" className="private text-end text-foreground">{fmtNum(m.net, nl)}</span>
                   <span
-                    className={cn('text-end', m.tax === null ? 'text-muted-foreground' : 'text-foreground')}
+                    className={cn('private text-end', m.tax === null ? 'text-muted-foreground' : 'text-foreground')}
                   >
                     {m.tax === null ? t('shielded') : <span dir="ltr">{fmtNum(m.tax, nl)}</span>}
                   </span>
@@ -416,10 +451,10 @@ export function TaxScreen() {
               ))}
               <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1.2fr] border-t border-border bg-well px-6 py-3.5 text-sm font-semibold tabular-nums">
                 <span className="text-foreground">{t('yearToDate')}</span>
-                <span dir="ltr" className="text-end text-gain">{fmtSigned(view.realizedGains, nl)}</span>
-                <span dir="ltr" className="text-end text-loss">{fmtSigned(-view.realizedLosses, nl)}</span>
-                <span dir="ltr" className="text-end text-foreground">{fmtNum(view.net, nl)}</span>
-                <span dir="ltr" className="text-end text-foreground">{fmtNum(view.due, nl)}</span>
+                <span dir="ltr" className="private text-end text-gain">{fmtSigned(view.realizedGains, nl)}</span>
+                <span dir="ltr" className="private text-end text-loss">{fmtSigned(-view.realizedLosses, nl)}</span>
+                <span dir="ltr" className="private text-end text-foreground">{fmtNum(view.net, nl)}</span>
+                <span dir="ltr" className="private text-end text-foreground">{fmtNum(view.due, nl)}</span>
               </div>
             </section>
           </div>
@@ -447,7 +482,7 @@ export function TaxScreen() {
               <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
                 {t('lossShield')}
               </h2>
-              <p className="text-sm leading-relaxed text-foreground">
+              <p className="private text-sm leading-relaxed text-foreground">
                 {view.carriedApplied > 0
                   ? t('shieldNoteApplied', {
                       amount: `${sym}${fmtNum(view.carriedApplied, nl, 0)}`,
@@ -479,7 +514,7 @@ function Row({
   return (
     <div className="flex justify-between">
       <span className={cn(bold ? 'font-semibold text-foreground' : 'text-muted-foreground')}>{label}</span>
-      <span dir="ltr" className={cn('text-foreground', bold && 'font-semibold', big && 'text-base')}>
+      <span dir="ltr" className={cn('private text-foreground', bold && 'font-semibold', big && 'text-base')}>
         {value}
       </span>
     </div>

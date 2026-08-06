@@ -172,3 +172,10 @@
     font-feature-settings: "ss01", "cv01", "cv02", "cv03", "cv04";
   }
 }
+
+/* Number privacy (settings "Hide amounts"): personal money values carry the
+   `private` class; the toggle flips data-privacy on <html>. */
+html[data-privacy='on'] .private {
+  filter: blur(8px);
+  user-select: none;
+}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/src/i18n/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 import { getMarket } from '@/src/markets/registry';
 import { fmtDate, fmtMoney, fmtMoneySigned, fmtMonth, fmtNum } from '@/lib/format';
 import type { PerformancePayload } from '@/src/server/performance';
@@ -65,7 +66,7 @@ export function PerformanceScreen() {
       <p
         dir="ltr"
         className={cn(
-          'self-start text-[26px] font-semibold tracking-tight tabular-nums md:text-[30px]',
+          'private self-start text-[26px] font-semibold tracking-tight tabular-nums md:text-[30px]',
           gainLoss ? (value >= 0 ? 'text-gain' : 'text-loss') : 'text-foreground',
         )}
       >
@@ -98,6 +99,14 @@ export function PerformanceScreen() {
           </div>
         )}
       </div>
+
+      {state.status === 'loading' && (
+        <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-4 w-full" />
+        </section>
+      )}
 
       {state.status === 'signed-out' && (
         <section className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6">

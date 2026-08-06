@@ -21,8 +21,9 @@ export function generateStaticParams() {
 }
 
 // Dark is the SSR default; this runs before paint so a stored light
-// preference never flashes dark first.
-const themeInit = `try{if(localStorage.getItem('toll-e.theme')==='light')document.documentElement.classList.remove('dark')}catch(e){}`;
+// preference never flashes dark first. Same for number privacy: restoring it
+// pre-paint means private amounts never flash visible.
+const themeInit = `try{if(localStorage.getItem('toll-e.theme')==='light')document.documentElement.classList.remove('dark');if(localStorage.getItem('toll-e.privacy')==='on')document.documentElement.dataset.privacy='on'}catch(e){}`;
 
 export default async function LocaleLayout({
   children,

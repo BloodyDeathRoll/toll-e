@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { Link, useRouter } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
+import { Skeleton } from '@/components/ui/skeleton';
 import { getMarket } from '@/src/markets/registry';
 import { fmtDate, fmtNum } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -93,6 +94,14 @@ export function JournalScreen() {
 
       {error && <p className="text-[13px] text-loss">{error}</p>}
 
+      {state.status === 'loading' && (
+        <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </section>
+      )}
+
       {state.status === 'signed-out' && (
         <section className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">{t('signIn')}</p>
@@ -142,7 +151,7 @@ export function JournalScreen() {
                   <span className="text-[15px] font-semibold text-foreground">{tx.symbol}</span>
                   <span className="text-xs text-muted-foreground">{fmtDate(tx.tradeDate, locale)}</span>
                 </Link>
-                <span className="flex flex-col items-end gap-0.5 tabular-nums">
+                <span className="private flex flex-col items-end gap-0.5 tabular-nums">
                   <span dir="ltr" className="text-[15px] text-foreground">
                     {market.currencySymbol}
                     {fmtNum(shares * price, nl)}

@@ -6,6 +6,7 @@ import { MarketMenu } from './market-menu';
 import { useMarket } from './market-context';
 import { SearchBox } from './search-box';
 import { UserMenu } from './user-menu';
+import { PrivacyToggle } from '@/components/privacy-toggle';
 import { SessionStatus } from '@/components/session-indicator';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useIndexQuotes } from '@/components/use-market-data';
@@ -58,6 +59,7 @@ export function TopNav() {
 
         <div className="ms-auto flex items-center gap-3.5">
           <MarketMenu />
+          <PrivacyToggle />
           <ThemeToggle />
           <UserMenu />
         </div>

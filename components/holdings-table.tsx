@@ -6,6 +6,7 @@ import { Link } from '@/src/i18n/navigation';
 import { MAX_OVERLAYS } from '@/components/performance-chart';
 import { MoreLink } from '@/components/more-link';
 import { Sparkline, sparkFromCloses } from '@/components/charts';
+import { StaleBadge } from '@/components/stale-badge';
 import { useCharts, useQuotes } from '@/components/use-market-data';
 import { getMarket, displaySymbol } from '@/src/markets/registry';
 import { demo } from '@/src/demo/data';
@@ -73,7 +74,7 @@ export function HoldingsTable({
 
   // Live quotes (price/change/volume) + 1D sparks for every row.
   const symbols = displayRows.map((r) => r.symbol);
-  const { quotes } = useQuotes(symbols);
+  const { quotes, stale } = useQuotes(symbols);
   const sparks = useCharts(symbols, '1d');
 
   return (
@@ -97,6 +98,7 @@ export function HoldingsTable({
           <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
             {t('holdings')}
           </h2>
+          <StaleBadge show={stale} />
         </span>
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">{t('sort')}</span>
@@ -181,11 +183,11 @@ export function HoldingsTable({
                 <span dir="ltr" className={cn('text-end', chg >= 0 ? 'text-gain' : 'text-loss')}>
                   {fmtPct(chg, nl)}
                 </span>
-                <span dir="ltr" className="text-end text-foreground">
+                <span dir="ltr" className="private text-end text-foreground">
                   {fmtNum(h.shares * h.avgCost, nl)}
                 </span>
-                <span dir="ltr" className="text-end text-foreground">{fmtNum(h.shares, nl, 1)}</span>
-                <span className="flex flex-col items-end gap-0.5">
+                <span dir="ltr" className="private text-end text-foreground">{fmtNum(h.shares, nl, 1)}</span>
+                <span className="private flex flex-col items-end gap-0.5">
                   <span dir="ltr" className={cn(h.totalGain >= 0 ? 'text-gain' : 'text-loss')}>
                     {fmtSigned(h.totalGain, nl)}
                   </span>
@@ -193,7 +195,7 @@ export function HoldingsTable({
                     {fmtPct(h.totalGainPct, nl)}
                   </span>
                 </span>
-                <span dir="ltr" className="text-end text-foreground">
+                <span dir="ltr" className="private text-end text-foreground">
                   {fmtNum(h.shares * h.avgCost + h.totalGain, nl)}
                 </span>
                 <span className="flex flex-col items-end gap-0.5">
@@ -204,14 +206,14 @@ export function HoldingsTable({
                     {q?.avgVolume !== undefined ? fmtCompact(q.avgVolume, nl) : '—'}
                   </span>
                 </span>
-                <span dir="ltr" className="text-end text-foreground">{fmtNum(h.taxIfSold, nl)}</span>
+                <span dir="ltr" className="private text-end text-foreground">{fmtNum(h.taxIfSold, nl)}</span>
               </>
             );
           })()}
         </Link>
       ))}
       <div className="flex items-center justify-between border-t border-border bg-well px-6 py-[13px]">
-        <span className="text-[13px] text-muted-foreground">
+        <span className="private text-[13px] text-muted-foreground">
           {t('positionsSummary', {
             count: displayRows.length,
             rate: taxRatePct,

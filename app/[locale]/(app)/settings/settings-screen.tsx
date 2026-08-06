@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft } from 'lucide-react';
 import { Link, usePathname, useRouter } from '@/src/i18n/navigation';
+import { usePrivacy } from '@/components/use-privacy';
 import { authClient, signOut, useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +15,7 @@ export function SettingsScreen() {
   const router = useRouter();
   const pathname = usePathname();
   const { data: session, isPending } = useSession();
+  const { on: privacyOn, toggle: togglePrivacy } = usePrivacy();
 
   // Theme state mirrors the html class (set pre-paint by the layout script).
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -110,6 +112,19 @@ export function SettingsScreen() {
             ],
             locale,
             (l) => router.replace(pathname, { locale: l as 'en' | 'he' }),
+          ),
+        )}
+        {row(
+          t('hideAmounts'),
+          segment(
+            [
+              { value: 'off', label: t('off') },
+              { value: 'on', label: t('on') },
+            ],
+            privacyOn ? 'on' : 'off',
+            (v) => {
+              if ((v === 'on') !== privacyOn) togglePrivacy();
+            },
           ),
         )}
       </section>

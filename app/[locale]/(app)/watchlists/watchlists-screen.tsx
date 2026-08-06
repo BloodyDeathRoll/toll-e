@@ -6,6 +6,12 @@ import { ArrowLeft, Check, GripHorizontal, Plus } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { useQuotes, useSearch } from '@/components/use-market-data';
 import { useWatchlists } from '@/components/use-watchlists';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useMarket } from '@/components/app-shell/market-context';
 import { demoWatchlists } from '@/src/demo/data';
 import { getMarket, displaySymbol } from '@/src/markets/registry';
@@ -97,6 +103,19 @@ export function WatchlistsScreen() {
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
     await patchList(activeReal.id, { symbols: next });
+  };
+
+  const moveSelected = async (targetId: string) => {
+    const target = real?.find((l) => l.id === targetId);
+    if (!activeReal || !target || selected.size === 0) return;
+    const moved = activeReal.symbols.filter((s) => selected.has(s));
+    await patchList(activeReal.id, {
+      symbols: activeReal.symbols.filter((s) => !selected.has(s)),
+    });
+    await patchList(targetId, {
+      symbols: [...target.symbols, ...moved.filter((s) => !target.symbols.includes(s))],
+    });
+    setSelected(new Set());
   };
 
   const newList = async () => {
@@ -263,9 +282,27 @@ export function WatchlistsScreen() {
         >
           {t('removeSelected', { count: selected.size })}
         </button>
-        <button type="button" disabled className="text-sm text-muted-foreground opacity-60">
-          {t('moveToList')}
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            disabled={selected.size === 0 || !activeReal || (real?.length ?? 0) < 2}
+            className="text-sm font-medium text-brand outline-none disabled:font-normal disabled:text-muted-foreground disabled:opacity-60"
+          >
+            {t('moveToList')}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[200px] rounded-xl p-0">
+            {real
+              ?.filter((l) => l.id !== activeReal?.id)
+              .map((l, i) => (
+                <DropdownMenuItem
+                  key={l.id}
+                  onSelect={() => moveSelected(l.id)}
+                  className={cn('rounded-none px-4 py-2.5', i > 0 && 'border-t border-border')}
+                >
+                  <span className="truncate text-sm text-foreground">{l.name}</span>
+                </DropdownMenuItem>
+              ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {state.status === 'signed-out' && (

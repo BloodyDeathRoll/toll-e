@@ -9,7 +9,10 @@ import { MarketMenu } from '@/components/app-shell/market-menu';
 import { MoreLink } from '@/components/more-link';
 import { HoldingsTable, positionRows } from '@/components/holdings-table';
 import { PerformanceChart, type OverlayRow } from '@/components/performance-chart';
+import { PrivacyToggle } from '@/components/privacy-toggle';
 import { ReserveBar } from '@/components/reserve-bar';
+import { StaleBadge } from '@/components/stale-badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { WatchlistCard } from '@/components/watchlist-card';
 import type { ChartRange } from '@/src/market-data/types';
 import { useIndexQuotes } from '@/components/use-market-data';
@@ -50,9 +53,13 @@ export function HomeScreen() {
       return next;
     });
   const [showPortfolioLine, setShowPortfolioLine] = useState(true);
-  const { quotes: indexQuotes } = useIndexQuotes(marketId);
+  const { quotes: indexQuotes, stale: indexesStale } = useIndexQuotes(marketId);
   const { state } = usePortfolioPositions(marketId);
   const { state: taxState } = useTax(marketId);
+  // Signed-in states: 'empty' gets a first-transaction CTA instead of the
+  // (signed-out) demo showcase; 'loading' gets skeletons, never fake numbers.
+  const loading = state.status === 'loading';
+  const empty = state.status === 'empty';
   const name = (x: { name: string; nameHe?: string }) =>
     locale === 'he' && x.nameHe ? x.nameHe : x.name;
 
@@ -97,6 +104,27 @@ export function HomeScreen() {
     : data.portfolio;
   const up = p.dayChange >= 0;
 
+  const emptyCard = (
+    <section className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6">
+      <h2 className="text-base font-semibold text-foreground">{t('home.emptyTitle')}</h2>
+      <p className="text-sm text-muted-foreground">{t('home.emptyBody')}</p>
+      <Link
+        href="/transactions/new"
+        className="rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-primary-foreground"
+      >
+        {t('home.emptyCta')}
+      </Link>
+    </section>
+  );
+
+  const valueSkeleton = (
+    <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 md:px-6 md:py-[22px]">
+      <Skeleton className="h-4 w-32" />
+      <Skeleton className="h-9 w-48" />
+      <Skeleton className="h-4 w-64" />
+    </section>
+  );
+
   return (
     <main className="flex flex-1 flex-col">
       {/* ---------- Mobile ---------- */}
@@ -115,6 +143,7 @@ export function HomeScreen() {
             </Link>
           </div>
           <div className="flex items-center gap-3">
+            <PrivacyToggle />
             <Link href="/settings" aria-label={t('nav.settings')} className="text-muted-foreground">
               <Settings className="size-[18px]" aria-hidden />
             </Link>
@@ -136,47 +165,54 @@ export function HomeScreen() {
         </div>
 
         {/* Portfolio value */}
-        <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-              {t('home.portfolioValue')}
-            </h2>
-            <span className="text-xs text-faint">
-              {t('home.holdingsIn', { currency: currencyLabel })}
-            </span>
-          </div>
-          <p dir="ltr" className="self-start text-[34px] font-semibold tracking-tight text-foreground tabular-nums">
-            {sym}
-            {fmtNum(p.value, nl)}
-          </p>
-          <p className={cn('flex gap-3.5 text-sm font-medium tabular-nums', up ? 'text-gain' : 'text-loss')}>
-            <span>
-              <span dir="ltr">{fmtSigned(p.dayChange, nl)} ({fmtPct(p.dayChangePct, nl)})</span>{' '}
-              {t('home.today')}
-            </span>
-            <span>
-              <span dir="ltr">{fmtPct(p.allTimePct, nl)}</span> {t('home.allWord')}
-            </span>
-          </p>
-          <div className="my-1 h-px bg-border" />
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[13px] text-muted-foreground">{t('home.taxReserve')}</span>
-              <span dir="ltr" className="self-start text-xl font-semibold text-foreground tabular-nums">
-                {sym}
-                {fmtNum(reserve.due, nl)}
+        {loading && valueSkeleton}
+        {empty && emptyCard}
+        {!loading && !empty && (
+          <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+                {t('home.portfolioValue')}
+              </h2>
+              <span className="text-xs text-faint">
+                {t('home.holdingsIn', { currency: currencyLabel })}
               </span>
             </div>
-            <MoreLink href="/tax">{t('home.taxView')}</MoreLink>
-          </div>
-        </section>
+            <p dir="ltr" className="private self-start text-[34px] font-semibold tracking-tight text-foreground tabular-nums">
+              {sym}
+              {fmtNum(p.value, nl)}
+            </p>
+            <p className={cn('private flex gap-3.5 text-sm font-medium tabular-nums', up ? 'text-gain' : 'text-loss')}>
+              <span>
+                <span dir="ltr">{fmtSigned(p.dayChange, nl)} ({fmtPct(p.dayChangePct, nl)})</span>{' '}
+                {t('home.today')}
+              </span>
+              <span>
+                <span dir="ltr">{fmtPct(p.allTimePct, nl)}</span> {t('home.allWord')}
+              </span>
+            </p>
+            <div className="my-1 h-px bg-border" />
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[13px] text-muted-foreground">{t('home.taxReserve')}</span>
+                <span dir="ltr" className="private self-start text-xl font-semibold text-foreground tabular-nums">
+                  {sym}
+                  {fmtNum(reserve.due, nl)}
+                </span>
+              </div>
+              <MoreLink href="/tax">{t('home.taxView')}</MoreLink>
+            </div>
+          </section>
+        )}
 
         {/* Index trio */}
         <section className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-              {t(`home.indexesTitle.${marketId}`)}
-            </h2>
+            <span className="flex items-center gap-2">
+              <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+                {t(`home.indexesTitle.${marketId}`)}
+              </h2>
+              <StaleBadge show={indexesStale} />
+            </span>
             <MoreLink href="/markets">{t('nav.markets')}</MoreLink>
           </div>
           <div className="flex gap-2.5">
@@ -203,6 +239,15 @@ export function HomeScreen() {
         </section>
 
         {/* Holdings */}
+        {loading && (
+          <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </section>
+        )}
+        {!loading && !empty && (
         <section className="overflow-hidden rounded-2xl border border-border bg-card">
           <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
             <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
@@ -223,7 +268,7 @@ export function HomeScreen() {
                       {t('home.sharesAvg', { shares: fmtNum(h.shares, nl, 0), avg: fmtNum(h.avgCost, nl) })}
                     </span>
                   </span>
-                  <span className="flex flex-col items-end gap-0.5 tabular-nums">
+                  <span className="private flex flex-col items-end gap-0.5 tabular-nums">
                     <span dir="ltr" className="text-[15px] text-foreground">{fmtNum(h.marketValue, nl)}</span>
                     <span dir="ltr" className={cn('text-xs', h.totalGainPct >= 0 ? 'text-gain' : 'text-loss')}>
                       {fmtPct(h.totalGainPct, nl)}
@@ -246,7 +291,7 @@ export function HomeScreen() {
                       {t('home.sharesAvg', { shares: fmtNum(h.shares, nl, 0), avg: fmtNum(h.avgCost, nl) })}
                     </span>
                   </span>
-                  <span className="flex flex-col items-end gap-0.5 tabular-nums">
+                  <span className="private flex flex-col items-end gap-0.5 tabular-nums">
                     <span dir="ltr" className="text-[15px] text-foreground">{fmtNum(h.marketValue, nl)}</span>
                     <span dir="ltr" className={cn('text-xs', h.dayChangePct >= 0 ? 'text-gain' : 'text-loss')}>
                       {fmtPct(h.dayChangePct, nl)} · {fmtPct(h.totalGainPct, nl)}
@@ -258,23 +303,27 @@ export function HomeScreen() {
             <MoreLink href="/transactions">{t('home.allTransactions')}</MoreLink>
           </div>
         </section>
+        )}
       </div>
 
       {/* ---------- Desktop ---------- */}
       <div className="hidden flex-1 gap-5 p-7 md:flex">
         <div className="flex min-w-0 flex-1 flex-col gap-5">
           {/* Portfolio chart card */}
+          {loading && valueSkeleton}
+          {empty && emptyCard}
+          {!loading && !empty && (
           <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card px-6 py-[22px]">
             <div className="flex items-start justify-between">
               <div className="flex flex-col gap-1.5">
                 <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
                   {t('home.holdingsCurrency', { currency: currencyLabel })}
                 </h2>
-                <p dir="ltr" className="self-start text-[38px] font-semibold tracking-tight text-foreground tabular-nums">
+                <p dir="ltr" className="private self-start text-[38px] font-semibold tracking-tight text-foreground tabular-nums">
                   {sym}
                   {fmtNum(p.value, nl)}
                 </p>
-                <p className={cn('flex gap-4 text-sm tabular-nums', up ? 'text-gain' : 'text-loss')}>
+                <p className={cn('private flex gap-4 text-sm tabular-nums', up ? 'text-gain' : 'text-loss')}>
                   <span>
                     <span dir="ltr">{fmtSigned(p.dayChange, nl)} ({fmtPct(p.dayChangePct, nl)})</span>{' '}
                     {t('home.today')}
@@ -320,27 +369,53 @@ export function HomeScreen() {
               showPortfolio={showPortfolioLine}
             />
           </section>
+          )}
 
-          <HoldingsTable
-            marketId={marketId}
-            rows={rows ?? undefined}
-            taxRatePct={taxRate}
-            overlay={{
-              hidden: hiddenOverlays,
-              onToggle: toggleOverlay,
-              portfolioVisible: showPortfolioLine,
-              onTogglePortfolio: () => setShowPortfolioLine((v) => !v),
-            }}
-          />
+          {!loading && !empty && (
+            <HoldingsTable
+              marketId={marketId}
+              rows={rows ?? undefined}
+              taxRatePct={taxRate}
+              overlay={{
+                hidden: hiddenOverlays,
+                onToggle: toggleOverlay,
+                portfolioVisible: showPortfolioLine,
+                onTogglePortfolio: () => setShowPortfolioLine((v) => !v),
+              }}
+            />
+          )}
         </div>
 
         {/* Right rail */}
         <div className="flex w-[330px] shrink-0 flex-col gap-5">
+          {loading ? (
+            <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-8 w-28" />
+              <Skeleton className="h-4 w-full" />
+            </section>
+          ) : !reserve.isReal && !empty && state.status !== 'signed-out' ? (
+            // Signed in, no sales yet — say so instead of showing demo numbers.
+            <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card p-5">
+              <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+                {t('home.taxReserve')}
+              </h2>
+              <p className="text-sm text-muted-foreground">{t('home.noSalesYet')}</p>
+              <MoreLink href="/tax">{t('home.openTaxView')}</MoreLink>
+            </section>
+          ) : empty ? (
+            <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card p-5">
+              <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+                {t('home.taxReserve')}
+              </h2>
+              <p className="text-sm text-muted-foreground">{t('home.noSalesYet')}</p>
+            </section>
+          ) : (
           <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
             <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
               {t('home.taxReserveYear', { year: reserve.year })}
             </h2>
-            <p dir="ltr" className="self-start text-[30px] font-semibold tracking-tight text-foreground tabular-nums">
+            <p dir="ltr" className="private self-start text-[30px] font-semibold tracking-tight text-foreground tabular-nums">
               {sym}
               {fmtNum(reserve.due, nl)}
             </p>
@@ -357,19 +432,20 @@ export function HomeScreen() {
             <div className="flex flex-col gap-2.5 text-[13px] tabular-nums">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('home.realizedNet')}</span>
-                <span dir="ltr" className="text-foreground">{fmtNum(reserve.net, nl)}</span>
+                <span dir="ltr" className="private text-foreground">{fmtNum(reserve.net, nl)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('home.lossCarriedIn')}</span>
-                <span dir="ltr" className="text-foreground">{fmtNum(-reserve.carried, nl)}</span>
+                <span dir="ltr" className="private text-foreground">{fmtNum(-reserve.carried, nl)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('home.taxableAt', { rate: taxRate })}</span>
-                <span dir="ltr" className="text-foreground">{fmtNum(reserve.taxable, nl)}</span>
+                <span dir="ltr" className="private text-foreground">{fmtNum(reserve.taxable, nl)}</span>
               </div>
             </div>
             <MoreLink href="/tax">{t('home.openTaxView')}</MoreLink>
           </section>
+          )}
 
           <WatchlistCard marketId={marketId} />
 

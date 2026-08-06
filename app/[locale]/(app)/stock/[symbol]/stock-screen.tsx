@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft, Menu, Search, Star } from 'lucide-react';
+import { ArrowLeft, Menu, Search } from 'lucide-react';
+import { useSymbolWatchlist, WatchlistMenuButton, WatchlistStar } from '@/components/watchlist-star';
 import { Link, useRouter } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
 import { MoreLink } from '@/components/more-link';
@@ -71,6 +72,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
   const news = useNews(symbol, tab === 'news');
   const analysis = useAnalysis(symbol, tab === 'analysis');
   const financials = useFinancials(symbol, tab === 'financials' || tab === 'summary');
+  const wl = useSymbolWatchlist(symbol);
 
   const price = live?.price ?? stock.price;
   const change = live?.change ?? stock.change;
@@ -166,7 +168,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
       <div className="flex items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <span className="text-[13px] text-muted-foreground">{t('taxIfSoldAll')}</span>
-          <span dir="ltr" className="text-xl font-semibold text-foreground tabular-nums">
+          <span dir="ltr" className="private text-xl font-semibold text-foreground tabular-nums">
             {sym}
             {fmtNum(holding.taxIfSold, nl)}
           </span>
@@ -319,7 +321,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
               {fmtSigned(change, nl)} ({fmtPct(changePct, nl)})
             </span>
           </div>
-          <Star className="size-4 text-brand" fill="currentColor" aria-hidden />
+          <WatchlistStar wl={wl} />
           <Search className="size-4 text-muted-foreground" aria-hidden />
         </div>
         <SessionStatus marketId={marketId} className="px-4 pb-2.5" />
@@ -455,9 +457,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
             </div>
           </div>
           <div className="flex items-center gap-2.5">
-            <button type="button" className="rounded-lg border border-border bg-card px-3.5 py-2 text-[13px] text-subtle">
-              {t('watchlistBtn')}
-            </button>
+            <WatchlistMenuButton wl={wl} />
             <button type="button" className="rounded-lg border border-border bg-card px-3.5 py-2 text-[13px] text-subtle">
               {t('setAlert')}
             </button>
@@ -963,7 +963,7 @@ function PositionCell({
       <span className="text-xs text-muted-foreground">{label}</span>
       <span
         dir="ltr"
-        className={cn('self-start text-[15px] text-foreground', gain && 'text-gain', loss && 'text-loss')}
+        className={cn('private self-start text-[15px] text-foreground', gain && 'text-gain', loss && 'text-loss')}
       >
         {value}
       </span>
