@@ -40,6 +40,9 @@ jobs:
       DATABASE_URL: postgres://toll-e:toll-e@127.0.0.1:5432/toll-e
       BETTER_AUTH_SECRET: ci-only-smoke-secret
       BETTER_AUTH_URL: http://localhost:3000
+      # Lets the smoke suite sign in without real Google OAuth. Never set on
+      # Vercel, and lib/auth.ts additionally refuses it when VERCEL_ENV=production.
+      E2E_TEST_AUTH: '1'
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6

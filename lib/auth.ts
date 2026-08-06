@@ -15,12 +15,19 @@ const originCandidates = [
   process.env.VERCEL_BRANCH_URL && `https://${process.env.VERCEL_BRANCH_URL}`,
 ].filter((v): v is string => Boolean(v));
 
+// Google is the only way in. Password auth exists solely so the headless
+// smoke suite can sign in (real OAuth can't run in CI) — it needs an explicit
+// opt-in AND a non-production environment, so a stray env var can never open
+// password sign-up on the live site.
+const testAuthEnabled =
+  process.env.E2E_TEST_AUTH === '1' && process.env.VERCEL_ENV !== 'production';
+
 export const auth = betterAuth({
   baseURL: originCandidates[0],
   trustedOrigins: originCandidates,
   database: drizzleAdapter(db, { provider: 'pg' }),
   emailAndPassword: {
-    enabled: true,
+    enabled: testAuthEnabled,
   },
   socialProviders: {
     google: {

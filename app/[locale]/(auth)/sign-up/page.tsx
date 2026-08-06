@@ -1,9 +1,8 @@
-import { setRequestLocale } from 'next-intl/server';
-import { use } from 'react';
-import { AuthForm } from '../auth-form';
+import { redirect } from 'next/navigation';
 
-export default function SignUpPage({ params }: PageProps<'/[locale]/sign-up'>) {
-  const { locale } = use(params);
-  setRequestLocale(locale);
-  return <AuthForm mode="signUp" />;
+// Signing up and signing in are the same Google action — keep the old route
+// working for existing links rather than 404ing it.
+export default async function SignUpPage({ params }: PageProps<'/[locale]/sign-up'>) {
+  const { locale } = await params;
+  redirect(`/${locale}/sign-in`);
 }

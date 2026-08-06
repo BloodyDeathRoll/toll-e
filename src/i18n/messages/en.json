@@ -287,15 +287,11 @@
   },
   "auth": {
     "signIn": "Sign in",
-    "signUp": "Sign up",
     "signOut": "Sign out",
-    "email": "Email",
-    "password": "Password",
-    "name": "Name",
     "continueWithGoogle": "Continue with Google",
-    "noAccount": "Don't have an account?",
-    "haveAccount": "Already have an account?",
-    "error": "Something went wrong — check your details and try again."
+    "error": "Something went wrong — check your details and try again.",
+    "tagline": "Investment tracking with real tax clarity",
+    "googleOnlyNote": "toll-e uses your Google account to sign in — no extra password to remember. We only read your name and email."
   },
   "common": {
     "loading": "Loading…",
@@ -342,5 +338,16 @@
     "hideAmounts": "Hide amounts",
     "on": "On",
     "off": "Off"
+  },
+  "install": {
+    "sectionTitle": "App",
+    "title": "Install toll-e",
+    "body": "Opens full screen, launches faster, and sits on your home screen like any other app.",
+    "iosBody": "Tap <b>Share</b> in Safari, then <b>Add to Home Screen</b>.",
+    "firefoxBody": "Open Firefox's <b>menu</b>, then <b>Install</b> (older versions call it <b>Add to Home screen</b>).",
+    "install": "Install",
+    "later": "Not now",
+    "gotIt": "Got it",
+    "close": "Close"
   }
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft } from 'lucide-react';
 import { Link, usePathname, useRouter } from '@/src/i18n/navigation';
+import { InstallSettingsRow } from '@/components/install-prompt';
 import { usePrivacy } from '@/components/use-privacy';
 import { authClient, signOut, useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -162,6 +163,8 @@ export function SettingsScreen() {
           <p className="text-xs text-muted-foreground">{t('signInForPrefs')}</p>
         )}
       </section>
+
+      <InstallSettingsRow />
 
       {/* Account */}
       <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
