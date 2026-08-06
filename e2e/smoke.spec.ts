@@ -87,8 +87,9 @@ test.describe('auth', () => {
     await page.getByLabel('Password').fill('testpass123');
     await page.getByRole('button', { name: 'Sign in' }).click();
     await page.waitForURL('**/en', { timeout: 15_000 });
-    // Signed-in chrome replaces the sign-in CTA with the user menu.
-    await expect(seen(page, /Holdings · USD|Portfolio value/)).toBeVisible();
+    // Signed-in chrome replaces the sign-in CTA with the user menu. A fresh
+    // account (CI) sees the no-holdings empty state instead of the dashboard.
+    await expect(seen(page, /Holdings · USD|Portfolio value|No holdings yet/)).toBeVisible();
     await expect(page.getByRole('link', { name: 'Sign in' })).toHaveCount(0);
   });
 });
