@@ -286,7 +286,8 @@
     "name": "שם",
     "continueWithGoogle": "המשך עם Google",
     "noAccount": "אין לך חשבון?",
-    "haveAccount": "כבר יש לך חשבון?"
+    "haveAccount": "כבר יש לך חשבון?",
+    "error": "משהו השתבש — בדקו את הפרטים ונסו שוב."
   },
   "common": {
     "loading": "טוען…",
