@@ -4,7 +4,17 @@ import { cached } from './cache';
 import { persistDailyCloses, persistFx } from './persist';
 import { YahooProvider } from './yahoo';
 import { getMarket } from '@/src/markets/registry';
-import type { ChartRange, ChartSeries, FxRate, Quote, SearchResult, Summary } from './types';
+import type {
+  ChartRange,
+  ChartSeries,
+  FxRate,
+  NewsItem,
+  Quote,
+  SearchResult,
+  StockAnalysis,
+  StockFinancials,
+  Summary,
+} from './types';
 
 // The app-facing market-data facade: Yahoo adapter behind per-class TTL
 // caching (toll-e-plan.md §5), server-side only. UI code never imports the
@@ -20,6 +30,10 @@ const TTL = {
   chartDaily: 60 * 60_000,
   search: 60 * 60_000,
   summary: 24 * 60 * 60_000,
+  news: 15 * 60_000,
+  // Analyst data and reported financials move on earnings cadence.
+  analysis: 6 * 60 * 60_000,
+  financials: 24 * 60 * 60_000,
   fx: 12 * 60 * 60_000,
 } as const;
 
@@ -53,6 +67,18 @@ export async function getSummary(symbol: string): Promise<Summary> {
   return cached(`summary:${symbol}`, TTL.summary, () => provider.getSummary(symbol));
 }
 
+export async function getNews(symbol: string): Promise<NewsItem[]> {
+  return cached(`news:${symbol}`, TTL.news, () => provider.getNews(symbol));
+}
+
+export async function getAnalysis(symbol: string): Promise<StockAnalysis> {
+  return cached(`analysis:${symbol}`, TTL.analysis, () => provider.getAnalysis(symbol));
+}
+
+export async function getFinancials(symbol: string): Promise<StockFinancials> {
+  return cached(`financials:${symbol}`, TTL.financials, () => provider.getFinancials(symbol));
+}
+
 export async function getFx(pair: string): Promise<FxRate> {
   return cached(`fx:${pair}`, TTL.fx, async () => {
     const fx = await provider.getFx(pair);
@@ -65,7 +91,17 @@ export async function getIndexQuotes(marketId: string): Promise<Quote[]> {
   return getQuotes(getMarket(marketId).indexes);
 }
 
-export type { ChartRange, ChartSeries, FxRate, Quote, SearchResult, Summary };
+export type {
+  ChartRange,
+  ChartSeries,
+  FxRate,
+  NewsItem,
+  Quote,
+  SearchResult,
+  StockAnalysis,
+  StockFinancials,
+  Summary,
+};
 
 /**
  * Last close on or before `date` (ISO, exchange-local) — prefills backdated

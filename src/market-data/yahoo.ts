@@ -4,8 +4,11 @@ import type {
   ChartSeries,
   FxRate,
   MarketDataProvider,
+  NewsItem,
   Quote,
   SearchResult,
+  StockAnalysis,
+  StockFinancials,
   Summary,
 } from './types';
 import type { SessionPhase } from '@/src/markets/calendar';
@@ -169,6 +172,109 @@ export class YahooProvider implements MarketDataProvider {
         wk52High: detail?.fiftyTwoWeekHigh,
       },
       nextEarningsDate: earningsDate ? new Date(earningsDate).toISOString().slice(0, 10) : undefined,
+    };
+  }
+
+  async getNews(symbol: string): Promise<NewsItem[]> {
+    const res = await yf.search(symbol, { newsCount: 12, quotesCount: 0 });
+    // Search news is fuzzy — untagged/off-symbol items show up (worst on TASE
+    // symbols). Only keep articles Yahoo explicitly tagged with the symbol.
+    return res.news
+      .filter((n) => n.relatedTickers?.includes(symbol))
+      .map((n) => ({
+        id: n.uuid,
+        title: n.title,
+        publisher: n.publisher,
+        link: n.link,
+        publishedAt: new Date(n.providerPublishTime).getTime(),
+        // Smallest resolution suffices for a list thumbnail.
+        thumbnail: n.thumbnail?.resolutions?.reduce((a, b) => (a.width <= b.width ? a : b))?.url,
+      }));
+  }
+
+  async getAnalysis(symbol: string): Promise<StockAnalysis> {
+    const res = await yf.quoteSummary(symbol, {
+      modules: ['recommendationTrend', 'financialData', 'upgradeDowngradeHistory'],
+    });
+    const fin = res.financialData;
+    const target =
+      fin?.targetLowPrice !== undefined && fin?.targetMeanPrice !== undefined && fin?.targetHighPrice !== undefined
+        ? {
+            low: fin.targetLowPrice,
+            mean: fin.targetMeanPrice,
+            high: fin.targetHighPrice,
+            current: fin.currentPrice,
+          }
+        : undefined;
+
+    return {
+      symbol,
+      recommendationTrend: (res.recommendationTrend?.trend ?? []).map((p) => ({
+        period: p.period,
+        strongBuy: p.strongBuy,
+        buy: p.buy,
+        hold: p.hold,
+        sell: p.sell,
+        strongSell: p.strongSell,
+      })),
+      recommendationKey: fin?.recommendationKey,
+      numberOfAnalysts: fin?.numberOfAnalystOpinions,
+      target,
+      upgrades: (res.upgradeDowngradeHistory?.history ?? [])
+        .map((h) => ({
+          date: new Date(h.epochGradeDate).getTime(),
+          firm: h.firm,
+          toGrade: String(h.toGrade),
+          fromGrade: h.fromGrade ? String(h.fromGrade) : undefined,
+          action: String(h.action),
+        }))
+        .sort((a, b) => b.date - a.date)
+        .slice(0, 20),
+    };
+  }
+
+  async getFinancials(symbol: string): Promise<StockFinancials> {
+    const res = await yf.quoteSummary(symbol, {
+      modules: ['earnings', 'earningsHistory', 'majorHoldersBreakdown', 'institutionOwnership'],
+    });
+    const chart = res.earnings?.financialsChart;
+    const holders = res.majorHoldersBreakdown;
+
+    // EPS beats: earningsChart quarterly labels ('4Q2025') + actual/estimate.
+    const epsHistory = (res.earnings?.earningsChart?.quarterly ?? []).map((q) => {
+      const surprisePct =
+        q.actual !== undefined && q.estimate ? ((q.actual - q.estimate) / Math.abs(q.estimate)) * 100 : undefined;
+      return { period: q.date, actual: q.actual, estimate: q.estimate, surprisePct };
+    });
+
+    return {
+      symbol,
+      currency: res.earnings?.financialCurrency,
+      epsHistory,
+      revenueEarnings: {
+        yearly: (chart?.yearly ?? []).map((y) => ({
+          label: String(y.date),
+          revenue: y.revenue,
+          earnings: y.earnings,
+        })),
+        quarterly: (chart?.quarterly ?? []).map((q) => ({
+          label: q.date,
+          revenue: q.revenue,
+          earnings: q.earnings,
+        })),
+      },
+      holders: {
+        insidersPctHeld: holders?.insidersPercentHeld !== undefined ? holders.insidersPercentHeld * 100 : undefined,
+        institutionsPctHeld:
+          holders?.institutionsPercentHeld !== undefined ? holders.institutionsPercentHeld * 100 : undefined,
+        institutionsCount: holders?.institutionsCount,
+        top: (res.institutionOwnership?.ownershipList ?? []).slice(0, 10).map((o) => ({
+          organization: o.organization,
+          pctHeld: o.pctHeld * 100,
+          value: o.value,
+          reportDate: o.reportDate ? new Date(o.reportDate).toISOString().slice(0, 10) : undefined,
+        })),
+      },
     };
   }
 

@@ -1,7 +1,17 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ChartRange, ChartSeries, FxRate, Quote, SearchResult, Summary } from '@/src/market-data/types';
+import type {
+  ChartRange,
+  ChartSeries,
+  FxRate,
+  NewsItem,
+  Quote,
+  SearchResult,
+  StockAnalysis,
+  StockFinancials,
+  Summary,
+} from '@/src/market-data/types';
 
 // Client-side polling against /api/market/* (server-side provider + cache).
 // Errors surface as `stale: true` — callers keep showing the last good value.
@@ -113,6 +123,25 @@ export function useCharts(symbols: string[], range: ChartRange) {
 
 export function useSummary(symbol: string) {
   return useJson<Summary>(`/api/market/summary/${encodeURIComponent(symbol)}`);
+}
+
+/** Symbol-tagged headlines; `enabled` defers the fetch until the tab opens. */
+export function useNews(symbol: string, enabled = true) {
+  return useJson<{ news: NewsItem[] }>(
+    enabled ? `/api/market/news/${encodeURIComponent(symbol)}` : null,
+  );
+}
+
+export function useAnalysis(symbol: string, enabled = true) {
+  return useJson<StockAnalysis>(
+    enabled ? `/api/market/analysis/${encodeURIComponent(symbol)}` : null,
+  );
+}
+
+export function useFinancials(symbol: string, enabled = true) {
+  return useJson<StockFinancials>(
+    enabled ? `/api/market/financials/${encodeURIComponent(symbol)}` : null,
+  );
 }
 
 /** Daily FX rate (server persists it to fx_rates). */

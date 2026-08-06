@@ -88,10 +88,92 @@ export interface FxRate {
   asOf: string; // ISO date
 }
 
+export interface NewsItem {
+  id: string;
+  title: string;
+  publisher: string;
+  link: string;
+  /** Epoch ms. */
+  publishedAt: number;
+  thumbnail?: string;
+}
+
+export interface RecommendationPeriod {
+  /** '0m' | '-1m' | '-2m' | '-3m' — months back from now. */
+  period: string;
+  strongBuy: number;
+  buy: number;
+  hold: number;
+  sell: number;
+  strongSell: number;
+}
+
+export interface GradeChange {
+  /** Epoch ms. */
+  date: number;
+  firm: string;
+  toGrade: string;
+  fromGrade?: string;
+  /** up | down | init | main | reit */
+  action: string;
+}
+
+export interface StockAnalysis {
+  symbol: string;
+  recommendationTrend: RecommendationPeriod[];
+  /** e.g. 'buy' — Yahoo's aggregate key. */
+  recommendationKey?: string;
+  numberOfAnalysts?: number;
+  target?: { low: number; mean: number; high: number; current?: number };
+  upgrades: GradeChange[];
+}
+
+export interface EpsQuarter {
+  /** e.g. '4Q2025'. */
+  period: string;
+  /** Quarter end, ISO date. */
+  quarter?: string;
+  actual?: number;
+  estimate?: number;
+  surprisePct?: number;
+}
+
+export interface RevenueEarningsPeriod {
+  /** '2025' or '1Q2026'. */
+  label: string;
+  revenue: number;
+  earnings: number;
+}
+
+export interface TopHolder {
+  organization: string;
+  pctHeld: number;
+  value: number;
+  /** ISO date. */
+  reportDate?: string;
+}
+
+export interface StockFinancials {
+  symbol: string;
+  /** Currency the financial figures are reported in. */
+  currency?: string;
+  epsHistory: EpsQuarter[];
+  revenueEarnings: { yearly: RevenueEarningsPeriod[]; quarterly: RevenueEarningsPeriod[] };
+  holders: {
+    insidersPctHeld?: number;
+    institutionsPctHeld?: number;
+    institutionsCount?: number;
+    top: TopHolder[];
+  };
+}
+
 export interface MarketDataProvider {
   getQuote(symbols: string[]): Promise<Quote[]>;
   getChart(symbol: string, range: ChartRange): Promise<ChartSeries>;
   search(query: string): Promise<SearchResult[]>;
   getSummary(symbol: string): Promise<Summary>;
   getFx(pair: string): Promise<FxRate>;
+  getNews(symbol: string): Promise<NewsItem[]>;
+  getAnalysis(symbol: string): Promise<StockAnalysis>;
+  getFinancials(symbol: string): Promise<StockFinancials>;
 }

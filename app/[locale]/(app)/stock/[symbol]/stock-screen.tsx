@@ -9,8 +9,15 @@ import { MoreLink } from '@/components/more-link';
 import { SessionBadge, SessionStatus } from '@/components/session-indicator';
 import { LineChart, Sparkline } from '@/components/charts';
 import { PriceChart } from '@/components/price-chart';
-import { useChart, useQuotes, useSummary } from '@/components/use-market-data';
-import type { ChartRange } from '@/src/market-data/types';
+import {
+  useAnalysis,
+  useChart,
+  useFinancials,
+  useNews,
+  useQuotes,
+  useSummary,
+} from '@/components/use-market-data';
+import type { ChartRange, StockAnalysis, StockFinancials } from '@/src/market-data/types';
 import { getMarket } from '@/src/markets/registry';
 import { getDemoHolding, getDemoStock } from '@/src/demo/data';
 import { fmtCompact, fmtDate, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
@@ -43,12 +50,27 @@ export function StockScreen({ symbol }: { symbol: string }) {
   const holding = getDemoHolding(marketId, symbol) ?? getDemoHolding(marketId === 'US' ? 'IL' : 'US', symbol);
   const [tab, setTab] = useState<Tab>('summary');
   const [range, setRange] = useState('1D');
+  const [finPeriod, setFinPeriod] = useState<'annual' | 'quarterly'>('annual');
+
+  // Deep-linkable tabs (?tab=news) — read after mount so SSR markup stays stable.
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get('tab');
+    if (wanted && (tabs as readonly string[]).includes(wanted)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot URL-derived init
+      setTab(wanted as Tab);
+    }
+  }, []);
 
   // Live data overlays the demo fallback as it arrives (Phase 1).
   const { quotes } = useQuotes([symbol]);
   const live = quotes[symbol];
   const { data: series } = useChart(symbol, rangeMap[range] ?? '1mo');
   const { data: summary } = useSummary(symbol);
+  // Tab payloads are fetched lazily — only once their tab is opened (the
+  // revenue/earnings card also shows on the desktop summary tab).
+  const news = useNews(symbol, tab === 'news');
+  const analysis = useAnalysis(symbol, tab === 'analysis');
+  const financials = useFinancials(symbol, tab === 'financials' || tab === 'summary');
 
   const price = live?.price ?? stock.price;
   const change = live?.change ?? stock.change;
@@ -156,6 +178,33 @@ export function StockScreen({ symbol }: { symbol: string }) {
     </section>
   );
 
+  // Revenue vs earnings: live financials once loaded; demo bars only while
+  // the request is in flight (so signed-out showcase still paints instantly).
+  const finSeries =
+    finPeriod === 'quarterly'
+      ? financials.data?.revenueEarnings.quarterly
+      : financials.data?.revenueEarnings.yearly;
+  const finRows =
+    finSeries !== undefined
+      ? finSeries.slice(-4)
+      : financials.stale
+        ? []
+        : stock.financials.map((f) => ({ label: f.label, revenue: f.revenue * 1e9, earnings: f.earnings * 1e9 }));
+  const finSym = currencySign(financials.data?.currency ?? 'USD');
+
+  const legend = (extra?: string) => (
+    <div className={cn('flex items-center gap-4', extra)}>
+      <span className="flex items-center gap-1.5">
+        <span className="size-[9px] rounded-[2px] bg-primary" />
+        <span className="text-xs text-muted-foreground">{t('revenue')}</span>
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="size-[9px] rounded-[2px] bg-chart-2" />
+        <span className="text-xs text-muted-foreground">{t('earnings')}</span>
+      </span>
+    </div>
+  );
+
   const financialsCard = (
     <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
       <div className="flex items-center justify-between">
@@ -163,65 +212,96 @@ export function StockScreen({ symbol }: { symbol: string }) {
           {t('revenueVsEarnings')}
         </h2>
         <div className="flex items-center gap-4">
-          <span className="hidden items-center gap-1.5 md:flex">
-            <span className="size-[9px] rounded-[2px] bg-primary" />
-            <span className="text-xs text-muted-foreground">{t('revenue')}</span>
-          </span>
-          <span className="hidden items-center gap-1.5 md:flex">
-            <span className="size-[9px] rounded-[2px] bg-chart-2" />
-            <span className="text-xs text-muted-foreground">{t('earnings')}</span>
-          </span>
-          <span className="rounded-full border border-border bg-background px-3 py-1 text-xs text-foreground">
-            {t('annual')}
-          </span>
+          {legend('hidden md:flex')}
+          <button
+            type="button"
+            onClick={() => setFinPeriod(finPeriod === 'annual' ? 'quarterly' : 'annual')}
+            className="rounded-full border border-border bg-background px-3 py-1 text-xs text-foreground"
+          >
+            {t(finPeriod)}
+          </button>
         </div>
       </div>
-      <div dir="ltr" className="flex gap-3.5">
-        <div className="relative h-[150px] w-[46px] shrink-0 text-[11px] text-muted-foreground tabular-nums">
-          <span className="absolute -top-1.5 end-0">${stock.financialsMax}B</span>
-          <span className="absolute top-[69px] end-0">${stock.financialsMax / 2}B</span>
-          <span className="absolute -bottom-1.5 end-0">$0B</span>
-        </div>
-        <div className="relative flex-1">
-          {[0, 75, 150].map((y) => (
-            <div key={y} className="absolute inset-x-0 h-px bg-border" style={{ top: y }} />
-          ))}
-          <div className="flex gap-5">
-            {stock.financials.map((f) => (
-              <div key={f.label} className="flex flex-1 flex-col items-center gap-2.5">
-                <div className="flex h-[150px] w-full items-end justify-center gap-2">
-                  <div
-                    className="w-8 bg-primary md:w-11"
-                    style={{ height: (f.revenue / stock.financialsMax) * 150 }}
-                  />
-                  <div
-                    className="w-8 bg-chart-2 md:w-11"
-                    style={{ height: (f.earnings / stock.financialsMax) * 150 }}
-                  />
-                </div>
-                <span className="text-[11px] text-muted-foreground">{f.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-4 md:hidden">
-        <span className="flex items-center gap-1.5">
-          <span className="size-[9px] rounded-[2px] bg-primary" />
-          <span className="text-xs text-subtle">{t('revenue')}</span>
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="size-[9px] rounded-[2px] bg-chart-2" />
-          <span className="text-xs text-subtle">{t('earnings')}</span>
-        </span>
-      </div>
+      {finRows.length > 0 ? (
+        <>
+          <RevEarnBars rows={finRows} sym={finSym} nl={nl} />
+          {legend('md:hidden')}
+        </>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          {financials.stale && !financials.data ? t('loadFailed') : t('noFinancials')}
+        </p>
+      )}
     </section>
   );
 
-  const comingSoon = (
-    <section className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
-      {t('comingSoon')}
+  const newsContent = !news.data ? (
+    news.stale ? (
+      <CardMsg>{t('loadFailed')}</CardMsg>
+    ) : (
+      <CardSkeleton rows={5} />
+    )
+  ) : news.data.news.length === 0 ? (
+    <CardMsg>{t('noNews')}</CardMsg>
+  ) : (
+    <section className="flex flex-col divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+      {news.data.news.map((n) => (
+        <a
+          key={n.id}
+          href={n.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-start gap-3.5 p-4 hover:bg-well"
+        >
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="line-clamp-2 text-sm font-medium leading-snug text-foreground">
+              {n.title}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {n.publisher} · {relTime(n.publishedAt, locale)}
+            </span>
+          </div>
+          {n.thumbnail && (
+            // eslint-disable-next-line @next/next/no-img-element -- remote Yahoo CDN thumbs, no next/image domain config
+            <img src={n.thumbnail} alt="" className="size-14 shrink-0 rounded-lg object-cover" />
+          )}
+        </a>
+      ))}
     </section>
+  );
+
+  const hasAnalysis =
+    analysis.data &&
+    (analysis.data.recommendationTrend.length > 0 ||
+      analysis.data.target !== undefined ||
+      analysis.data.upgrades.length > 0);
+  const analysisContent = !analysis.data ? (
+    analysis.stale ? (
+      <CardMsg>{t('loadFailed')}</CardMsg>
+    ) : (
+      <CardSkeleton rows={6} />
+    )
+  ) : !hasAnalysis ? (
+    <CardMsg>{t('noAnalysis')}</CardMsg>
+  ) : (
+    <>
+      {analysis.data.recommendationTrend.length > 0 && <RecommendationCard data={analysis.data} />}
+      {analysis.data.target && (
+        <TargetCard
+          target={analysis.data.target}
+          sym={currencySign(live?.currency ?? summary?.currency ?? market.currency)}
+          nl={nl}
+        />
+      )}
+      {analysis.data.upgrades.length > 0 && <UpgradesCard upgrades={analysis.data.upgrades} />}
+    </>
+  );
+
+  const epsCard = financials.data && financials.data.epsHistory.length > 0 && (
+    <EpsBeatsCard eps={financials.data.epsHistory} nl={nl} />
+  );
+  const holdersCard = financials.data && (
+    <HoldersCard holders={financials.data.holders} nl={nl} />
   );
 
   return (
@@ -295,7 +375,10 @@ export function StockScreen({ symbol }: { symbol: string }) {
           )}
           {tab === 'financials' && (
             <>
+              {!financials.data && !financials.stale && <CardSkeleton rows={5} />}
+              {epsCard}
               {financialsCard}
+              {holdersCard}
               <section className="overflow-hidden rounded-2xl border border-border bg-card">
                 <h2 className="px-4 pt-3.5 pb-2 text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
                   {t('historicalPrices')}
@@ -333,7 +416,8 @@ export function StockScreen({ symbol }: { symbol: string }) {
               </section>
             </>
           )}
-          {(tab === 'news' || tab === 'analysis') && comingSoon}
+          {tab === 'news' && newsContent}
+          {tab === 'analysis' && analysisContent}
         </div>
 
         {/* Floating CTA above the tab bar */}
@@ -431,8 +515,16 @@ export function StockScreen({ symbol }: { symbol: string }) {
                 {financialsCard}
               </>
             )}
-            {tab === 'financials' && financialsCard}
-            {(tab === 'news' || tab === 'analysis') && comingSoon}
+            {tab === 'financials' && (
+              <>
+                {!financials.data && !financials.stale && <CardSkeleton rows={5} />}
+                {epsCard}
+                {financialsCard}
+                {holdersCard}
+              </>
+            )}
+            {tab === 'news' && newsContent}
+            {tab === 'analysis' && analysisContent}
           </div>
 
           <div className="flex w-[330px] shrink-0 flex-col gap-5">
@@ -473,6 +565,385 @@ function Row({ label, value }: { label: string; value: string }) {
       <span className="text-muted-foreground">{label}</span>
       <span dir="ltr" className="text-foreground">{value}</span>
     </div>
+  );
+}
+
+const SIGNS: Record<string, string> = { USD: '$', ILS: '₪', EUR: '€', GBP: '£' };
+function currencySign(code: string) {
+  return SIGNS[code] ?? `${code} `;
+}
+
+function relTime(ts: number, locale: string) {
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'always', style: 'short' });
+  const mins = Math.round((ts - Date.now()) / 60_000);
+  if (Math.abs(mins) < 60) return rtf.format(mins, 'minute');
+  if (Math.abs(mins) < 24 * 60) return rtf.format(Math.round(mins / 60), 'hour');
+  return rtf.format(Math.round(mins / (24 * 60)), 'day');
+}
+
+function CardMsg({ children }: { children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
+      {children}
+    </section>
+  );
+}
+
+function CardSkeleton({ rows }: { rows: number }) {
+  return (
+    <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
+      {Array.from({ length: rows }, (_, i) => (
+        <div
+          key={i}
+          className="h-4 animate-pulse rounded bg-well"
+          style={{ width: `${100 - ((i * 23) % 45)}%` }}
+        />
+      ))}
+    </section>
+  );
+}
+
+/** Grouped revenue/earnings bars; negative earnings hang below the zero line. */
+function RevEarnBars({
+  rows,
+  sym,
+  nl,
+}: {
+  rows: Array<{ label: string; revenue: number; earnings: number }>;
+  sym: string;
+  nl: string;
+}) {
+  const H = 150;
+  const max = Math.max(...rows.flatMap((r) => [r.revenue, r.earnings]), 1);
+  const min = Math.min(0, ...rows.map((r) => r.earnings));
+  const scale = H / (max - min);
+  const zeroTop = max * scale;
+
+  const bar = (v: number, cls: string) => {
+    const h = Math.max(2, Math.abs(v) * scale);
+    return (
+      <div className="relative h-full w-6 md:w-11">
+        <div
+          className={cn('absolute inset-x-0', v < 0 ? 'bg-loss' : cls)}
+          style={v >= 0 ? { top: zeroTop - h, height: h } : { top: zeroTop, height: h }}
+        />
+      </div>
+    );
+  };
+
+  return (
+    <div dir="ltr" className="flex gap-3.5">
+      <div className="relative h-[150px] w-[52px] shrink-0 text-[11px] text-muted-foreground tabular-nums">
+        <span className="absolute -top-1.5 end-0">{sym}{fmtCompact(max, nl)}</span>
+        <span className="absolute end-0" style={{ top: zeroTop - 6 }}>{sym}0</span>
+        {min < 0 && <span className="absolute -bottom-1.5 end-0">-{sym}{fmtCompact(-min, nl)}</span>}
+      </div>
+      <div className="relative flex-1">
+        {[0, zeroTop, ...(min < 0 ? [H] : [])].map((y) => (
+          <div key={y} className="absolute inset-x-0 h-px bg-border" style={{ top: y }} />
+        ))}
+        <div className="flex gap-2 md:gap-5">
+          {rows.map((f) => (
+            <div key={f.label} className="flex min-w-0 flex-1 flex-col items-center gap-2.5">
+              <div className="flex h-[150px] w-full justify-center gap-1.5 md:gap-2">
+                {bar(f.revenue, 'bg-primary')}
+                {bar(f.earnings, 'bg-chart-2')}
+              </div>
+              <span className="text-[11px] text-muted-foreground">{f.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const RECO_SEGMENTS = [
+  { key: 'strongSell', cls: 'bg-loss' },
+  { key: 'sell', cls: 'bg-loss/50' },
+  { key: 'hold', cls: 'bg-chart-2' },
+  { key: 'buy', cls: 'bg-gain/50' },
+  { key: 'strongBuy', cls: 'bg-gain' },
+] as const;
+
+function RecommendationCard({ data }: { data: StockAnalysis }) {
+  const t = useTranslations('stock');
+  const locale = useLocale();
+  const periods = [...data.recommendationTrend].sort(
+    (a, b) => parseInt(a.period) - parseInt(b.period),
+  );
+  const total = (p: (typeof periods)[number]) => p.strongBuy + p.buy + p.hold + p.sell + p.strongSell;
+  const maxTotal = Math.max(...periods.map(total), 1);
+  const latest = periods[periods.length - 1];
+  const H = 140;
+  const now = new Date();
+
+  return (
+    <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+          {t('recommendations')}
+        </h2>
+        {data.numberOfAnalysts !== undefined && (
+          <span className="text-xs text-muted-foreground">
+            {t('analystsCount', { count: data.numberOfAnalysts })}
+          </span>
+        )}
+      </div>
+      <div className="flex items-end gap-6">
+        <div dir="ltr" className="flex flex-1 items-end justify-around gap-4">
+          {periods.map((p) => {
+            const label = new Date(now.getFullYear(), now.getMonth() + parseInt(p.period), 1)
+              .toLocaleDateString(locale, { month: 'short' });
+            return (
+              <div key={p.period} className="flex w-10 flex-col items-center gap-2">
+                <div
+                  className="flex w-full flex-col justify-end overflow-hidden rounded-[3px]"
+                  style={{ height: H }}
+                >
+                  {RECO_SEGMENTS.map((s) => (
+                    <div
+                      key={s.key}
+                      className={s.cls}
+                      style={{ height: (p[s.key] / maxTotal) * H }}
+                    />
+                  ))}
+                </div>
+                <span className="text-[11px] text-muted-foreground">{label}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          {[...RECO_SEGMENTS].reverse().map((s) => (
+            <span key={s.key} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className={cn('size-[9px] rounded-[2px]', s.cls)} />
+              {t(s.key)}
+              <span className="ms-auto ps-3 text-foreground tabular-nums">{latest[s.key]}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TargetCard({
+  target,
+  sym,
+  nl,
+}: {
+  target: NonNullable<StockAnalysis['target']>;
+  sym: string;
+  nl: string;
+}) {
+  const t = useTranslations('stock');
+  const lo = Math.min(target.low, target.current ?? target.low);
+  const hi = Math.max(target.high, target.current ?? target.high);
+  const pos = (v: number) => `${((v - lo) / (hi - lo || 1)) * 100}%`;
+
+  return (
+    <section className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-5">
+      <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+        {t('priceTarget')}
+      </h2>
+      <div dir="ltr" className="flex flex-col gap-3 px-1">
+        <div className="relative mt-2 h-1.5 rounded-full bg-well">
+          <div
+            className="absolute inset-y-0 rounded-full bg-border"
+            style={{ left: pos(target.low), right: `calc(100% - ${pos(target.high)})` }}
+          />
+          <span
+            className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary"
+            style={{ left: pos(target.mean) }}
+          />
+          {target.current !== undefined && (
+            <span
+              className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand bg-card"
+              style={{ left: pos(target.current) }}
+            />
+          )}
+        </div>
+        <div className="flex justify-between text-[13px] tabular-nums">
+          <span className="flex flex-col">
+            <span className="text-muted-foreground">{t('targetLow')}</span>
+            <span className="text-foreground">{sym}{fmtNum(target.low, nl)}</span>
+          </span>
+          <span className="flex flex-col items-center">
+            <span className="text-muted-foreground">{t('targetAvg')}</span>
+            <span className="font-semibold text-foreground">{sym}{fmtNum(target.mean, nl)}</span>
+          </span>
+          <span className="flex flex-col items-end">
+            <span className="text-muted-foreground">{t('targetHigh')}</span>
+            <span className="text-foreground">{sym}{fmtNum(target.high, nl)}</span>
+          </span>
+        </div>
+        {target.current !== undefined && (
+          <span className="text-xs text-muted-foreground">
+            <span className="me-1.5 inline-block size-2.5 rounded-full border-2 border-brand align-middle" />
+            {t('targetCurrent')} {sym}{fmtNum(target.current, nl)}
+          </span>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function UpgradesCard({ upgrades }: { upgrades: StockAnalysis['upgrades'] }) {
+  const t = useTranslations('stock');
+  const locale = useLocale();
+  const actionCls: Record<string, string> = { up: 'text-gain', down: 'text-loss' };
+
+  return (
+    <section className="flex flex-col gap-1 rounded-2xl border border-border bg-card p-5">
+      <h2 className="pb-2 text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+        {t('upgradesTitle')}
+      </h2>
+      <div className="flex flex-col divide-y divide-border">
+        {upgrades.slice(0, 8).map((u, i) => (
+          <div key={`${u.firm}-${u.date}-${i}`} className="flex items-center gap-3 py-2.5 text-[13px]">
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate font-medium text-foreground">{u.firm}</span>
+              <span className="text-xs text-muted-foreground">
+                {/* bdi keeps the arrow order LTR while aligning with the locale's text start */}
+                <bdi dir="ltr">
+                  {u.fromGrade && u.fromGrade !== u.toGrade ? `${u.fromGrade} → ` : ''}
+                  {u.toGrade}
+                </bdi>
+              </span>
+            </div>
+            <span className={cn('text-xs font-medium', actionCls[u.action] ?? 'text-muted-foreground')}>
+              {t(`action_${u.action}` as Parameters<typeof t>[0])}
+            </span>
+            <span className="w-20 text-end text-xs text-muted-foreground tabular-nums">
+              {fmtDate(new Date(u.date).toISOString().slice(0, 10), locale)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** Estimate (hollow) vs actual (filled, gain/loss) EPS dots per quarter. */
+function EpsBeatsCard({ eps, nl }: { eps: StockFinancials['epsHistory']; nl: string }) {
+  const t = useTranslations('stock');
+  const vals = eps.flatMap((q) => [q.actual, q.estimate]).filter((v): v is number => v !== undefined);
+  if (vals.length === 0) return null;
+  const H = 110;
+  const pad = (Math.max(...vals) - Math.min(...vals)) * 0.18 || 1;
+  const min = Math.min(...vals) - pad;
+  const max = Math.max(...vals) + pad;
+  const y = (v: number) => H - ((v - min) / (max - min)) * H;
+
+  return (
+    <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+          {t('epsBeats')}
+        </h2>
+        <div className="flex items-center gap-4">
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="size-[9px] rounded-full border-[1.5px] border-chart-2" />
+            {t('estimate')}
+          </span>
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="size-[9px] rounded-full bg-gain" />
+            {t('actual')}
+          </span>
+        </div>
+      </div>
+      <div dir="ltr" className="flex justify-around gap-3">
+        {eps.slice(-4).map((q) => {
+          const beat = q.actual !== undefined && q.estimate !== undefined && q.actual >= q.estimate;
+          return (
+            <div key={q.period} className="flex flex-col items-center gap-2">
+              <div className="relative w-16" style={{ height: H }}>
+                <div className="absolute inset-x-2 top-1/2 h-px bg-border" />
+                {q.estimate !== undefined && (
+                  <span
+                    className="absolute left-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-chart-2 bg-card"
+                    style={{ top: y(q.estimate) }}
+                    title={`${t('estimate')} ${fmtNum(q.estimate, nl)}`}
+                  />
+                )}
+                {q.actual !== undefined && (
+                  <span
+                    className={cn(
+                      'absolute left-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full',
+                      beat ? 'bg-gain' : 'bg-loss',
+                    )}
+                    style={{ top: y(q.actual) }}
+                    title={`${t('actual')} ${fmtNum(q.actual, nl)}`}
+                  />
+                )}
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[11px] text-muted-foreground">{q.period}</span>
+                {q.surprisePct !== undefined && (
+                  <span className={cn('text-xs tabular-nums', q.surprisePct >= 0 ? 'text-gain' : 'text-loss')}>
+                    {fmtPct(q.surprisePct, nl, 1)}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function HoldersCard({ holders, nl }: { holders: StockFinancials['holders']; nl: string }) {
+  const t = useTranslations('stock');
+  const hasBreakdown = holders.insidersPctHeld !== undefined || holders.institutionsPctHeld !== undefined;
+  if (!hasBreakdown && holders.top.length === 0) return null;
+
+  return (
+    <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
+      <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+        {t('topHolders')}
+      </h2>
+      {hasBreakdown && (
+        <div className="flex gap-3 text-[13px] tabular-nums">
+          {holders.insidersPctHeld !== undefined && (
+            <span className="rounded-lg bg-well px-3 py-1.5">
+              <span className="text-muted-foreground">{t('insidersHeld')} </span>
+              <span className="text-foreground" dir="ltr">{fmtNum(holders.insidersPctHeld, nl)}%</span>
+            </span>
+          )}
+          {holders.institutionsPctHeld !== undefined && (
+            <span className="rounded-lg bg-well px-3 py-1.5">
+              <span className="text-muted-foreground">{t('institutionsHeld')} </span>
+              <span className="text-foreground" dir="ltr">{fmtNum(holders.institutionsPctHeld, nl)}%</span>
+            </span>
+          )}
+        </div>
+      )}
+      {holders.top.length > 0 && (
+        <div className="flex flex-col">
+          <div className="flex justify-between border-b border-border pb-2 text-xs text-muted-foreground">
+            <span>{t('holderOrg')}</span>
+            <span className="flex gap-6">
+              <span className="w-16 text-end">{t('pctHeld')}</span>
+              <span className="w-20 text-end">{t('holderValue')}</span>
+            </span>
+          </div>
+          {holders.top.map((h) => (
+            <div
+              key={h.organization}
+              className="flex items-center justify-between border-b border-border py-2 text-[13px] last:border-0"
+            >
+              <span className="min-w-0 truncate pe-3 text-foreground">{h.organization}</span>
+              <span className="flex shrink-0 gap-6 tabular-nums">
+                <span className="w-16 text-end text-foreground" dir="ltr">{fmtNum(h.pctHeld, nl)}%</span>
+                <span className="w-20 text-end text-muted-foreground" dir="ltr">{fmtCompact(h.value, nl)}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
