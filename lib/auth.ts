@@ -8,8 +8,15 @@ import { db } from '@/src/db';
 // set (custom domain), else the project's production URL, else this
 // deployment's own URL. Every candidate is trusted so preview links can sign
 // in without per-deploy configuration.
+// A localhost BETTER_AUTH_URL is ignored when running on Vercel: it can only
+// have come from a stray local .env, and letting it win sends Google's OAuth
+// redirect_uri to localhost — which fails for every real user.
+const configuredUrl = process.env.BETTER_AUTH_URL;
+const localConfigOnVercel =
+  Boolean(process.env.VERCEL) && /localhost|127\.0\.0\.1/.test(configuredUrl ?? '');
+
 const originCandidates = [
-  process.env.BETTER_AUTH_URL,
+  localConfigOnVercel ? undefined : configuredUrl,
   process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`,
   process.env.VERCEL_URL && `https://${process.env.VERCEL_URL}`,
   process.env.VERCEL_BRANCH_URL && `https://${process.env.VERCEL_BRANCH_URL}`,

@@ -1,0 +1,12 @@
+# Local env files must never ship in a deployment bundle: Next loads .env at
+# runtime, so a local BETTER_AUTH_URL=http://localhost:3000 would win over the
+# real deployment URL (it did — OAuth redirect_uri pointed at localhost), and
+# local secrets have no business in the bundle. Real config comes from
+# `vercel env`. Git-based deploys never had this problem; CLI deploys did.
+.env
+.env.*
+!.env.example
+
+# Local-only tooling and artifacts.
+test-results
+playwright-report
