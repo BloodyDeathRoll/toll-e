@@ -161,7 +161,7 @@ export function getSessionState(cal: TradingCalendar, now: Date): SessionState {
 export function sessionWindow(
   cal: TradingCalendar,
   at: Date,
-): { start: number; end: number } | null {
+): { start: number; end: number; regular: { start: number; end: number } } | null {
   const local = toExchangeLocal(cal, at);
   if (cal.holidays.includes(local.isoDate)) return null;
   const hours = scheduleFor(cal, local.isoDate).hours[local.weekday];
@@ -172,5 +172,28 @@ export function sessionWindow(
   const midnight = at.getTime() - local.minuteOfDay * 60_000;
   const startMin = hours.preOpen ?? hours.open;
   const endMin = hours.postClose ?? hours.close;
-  return { start: midnight + startMin * 60_000, end: midnight + endMin * 60_000 };
+  return {
+    start: midnight + startMin * 60_000,
+    end: midnight + endMin * 60_000,
+    // Instruments without extended trading (indexes, most of TASE) should be
+    // plotted against the regular bell-to-bell session instead, or they sit
+    // marooned in the middle of an axis they never trade on.
+    regular: { start: midnight + hours.open * 60_000, end: midnight + hours.close * 60_000 },
+  };
+}
+
+/**
+ * The x-axis bounds for an intraday series: the extended session when the
+ * data actually reaches into pre/post hours, the regular session otherwise.
+ */
+export function intradayBounds(
+  cal: TradingCalendar,
+  firstT: number,
+  lastT: number,
+): { from: number; to: number } {
+  const win = sessionWindow(cal, new Date(lastT));
+  if (!win) return { from: firstT, to: lastT };
+  const extended = firstT < win.regular.start || lastT > win.regular.end;
+  const bounds = extended ? { start: win.start, end: win.end } : win.regular;
+  return { from: Math.min(bounds.start, firstT), to: Math.max(bounds.end, lastT) };
 }

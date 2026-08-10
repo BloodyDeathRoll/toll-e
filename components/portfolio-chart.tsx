@@ -2,7 +2,7 @@
 
 import { useId, useMemo } from 'react';
 import { useCharts } from '@/components/use-market-data';
-import { sessionWindow } from '@/src/markets/calendar';
+import { intradayBounds } from '@/src/markets/calendar';
 import { getMarket } from '@/src/markets/registry';
 import type { ChartRange } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,7 @@ export function PortfolioChart({
   rows,
   range,
   marketId,
+  previousClose,
   height = 77,
   className,
 }: {
@@ -29,6 +30,8 @@ export function PortfolioChart({
   range: ChartRange;
   /** Supplies the trading calendar that bounds an intraday x-axis. */
   marketId?: string;
+  /** Yesterday's portfolio value — drawn as the dashed reference line. */
+  previousClose?: number;
   height?: number;
   className?: string;
 }) {
@@ -61,26 +64,31 @@ export function PortfolioChart({
 
   const w = 402;
   const values = series.map((p) => p.v);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  // The dashed previous close stays in frame, so it joins the y-domain.
+  const base = range === '1d' ? previousClose : undefined;
+  const min = Math.min(...values, base ?? Infinity);
+  const max = Math.max(...values, base ?? -Infinity);
   const span = max - min || 1;
   const pad = 4;
 
   // Intraday: the axis spans the exchange's extended session, so a day in
   // progress fills only the part it has traded (the Yahoo shape). Other
   // ranges keep using the series' own extent.
-  const win = range === '1d' && marketId
-    ? sessionWindow(getMarket(marketId).calendar, new Date(series[series.length - 1].t))
-    : null;
-  const tFrom = win ? Math.min(win.start, series[0].t) : series[0].t;
-  const tTo = win ? Math.max(win.end, series[series.length - 1].t) : series[series.length - 1].t;
+  const bounds = range === '1d' && marketId
+    ? intradayBounds(getMarket(marketId).calendar, series[0].t, series[series.length - 1].t)
+    : { from: series[0].t, to: series[series.length - 1].t };
+  const tFrom = bounds.from;
+  const tTo = bounds.to;
   const tSpan = tTo - tFrom || 1;
   const x = (t: number) => ((t - tFrom) / tSpan) * w;
 
-  const ys = values.map((v) => height - pad - ((v - min) / span) * (height - pad * 2));
+  const yOf = (v: number) => height - pad - ((v - min) / span) * (height - pad * 2);
+  const ys = values.map(yOf);
   const line = series.map((p, i) => `${x(p.t).toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
   const area = `${x(series[0].t).toFixed(1)},${height} ${line} ${x(series[series.length - 1].t).toFixed(1)},${height}`;
-  const up = values[values.length - 1] >= values[0];
+  const up = base !== undefined
+    ? values[values.length - 1] >= base
+    : values[values.length - 1] >= values[0];
 
   return (
     <svg
@@ -102,6 +110,18 @@ export function PortfolioChart({
           <rect x="2" y="2" width="2" height="2" rx="1" className="fill-background" />
         </pattern>
       </defs>
+      {base !== undefined && (
+        <line
+          x1="0"
+          y1={yOf(base)}
+          x2={w}
+          y2={yOf(base)}
+          className="stroke-faint"
+          strokeWidth="1"
+          strokeDasharray="4 4"
+          vectorEffect="non-scaling-stroke"
+        />
+      )}
       <polygon points={area} fill={`url(#${id}-fade)`} />
       <polygon points={area} fill={`url(#${id}-dots)`} />
       <polyline

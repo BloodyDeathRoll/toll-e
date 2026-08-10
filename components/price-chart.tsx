@@ -1,7 +1,7 @@
 'use client';
 
 import { useId } from 'react';
-import { sessionWindow } from '@/src/markets/calendar';
+import { intradayBounds } from '@/src/markets/calendar';
 import { getMarket } from '@/src/markets/registry';
 import type { ChartPoint } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
@@ -56,12 +56,12 @@ export function PriceChart({
   // otherwise the data's own extent.
   const firstT = points[0].t;
   const lastT = points[points.length - 1].t;
-  const session =
+  const bounds =
     fullDay && intraday && marketId
-      ? sessionWindow(getMarket(marketId).calendar, new Date(lastT))
-      : null;
-  const xFrom = session ? Math.min(session.start, firstT) : firstT;
-  const xTo = session ? Math.max(session.end, lastT) : lastT;
+      ? intradayBounds(getMarket(marketId).calendar, firstT, lastT)
+      : { from: firstT, to: lastT };
+  const xFrom = bounds.from;
+  const xTo = bounds.to;
   const xSpan = xTo - xFrom || 1;
   const x = (t: number) => ((t - xFrom) / xSpan) * VB;
 

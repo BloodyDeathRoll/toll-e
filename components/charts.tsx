@@ -1,5 +1,6 @@
 import { useId } from 'react';
-import { sessionWindow, type TradingCalendar } from '@/src/markets/calendar';
+import { intradayBounds, type TradingCalendar } from '@/src/markets/calendar';
+import type { ChartPoint } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
 
 // Hand-rolled SVG marks matching the design frames.
@@ -14,22 +15,14 @@ interface SparklineProps {
    * renders two-tone per the design: gain-colored above, loss-colored below.
    */
   baseline?: number;
-  /**
-   * Fraction of the width the data occupies (0–1). Defaults to 1; a live
-   * trading day passes elapsed/total so the mark grows through the session.
-   */
-  fill?: number;
   width?: number;
   height?: number;
   className?: string;
 }
 
-export function Sparkline({ points, up, baseline, fill = 1, width = 64, height = 24, className }: SparklineProps) {
+export function Sparkline({ points, up, baseline, width = 64, height = 24, className }: SparklineProps) {
   const id = useId();
-  // `fill` < 1 leaves the rest of the session blank instead of stretching a
-  // part-traded day across the whole mark (see twoToneSpark).
-  const drawnW = width * Math.min(Math.max(fill, 0.02), 1);
-  const step = drawnW / (points.length - 1);
+  const step = width / (points.length - 1);
   const pts = points.map((y, i) => `${(i * step).toFixed(1)},${y}`).join(' ');
 
   if (baseline === undefined) {
@@ -100,21 +93,96 @@ export function twoToneSpark(closes: number[], height = 24): { points: number[];
 }
 
 /**
- * How much of the exchange's extended session has traded, 0–1. Intraday
- * marks draw across only this much of their width, so at the opening bell
- * you see a stub at the left rather than a full-width squiggle.
+ * Intraday sparkline drawn against the exchange's whole extended session:
+ * each point sits at its real time-of-day, so a session that opens at 09:30
+ * starts a third of the way in and a live day stops where it has traded —
+ * position and width both carry meaning, as on Yahoo.
+ *
+ * The dashed rule is the previous close, and the line is two-tone around it:
+ * green while above yesterday's close, red while below.
  */
-export function sessionFill(
-  points: Array<{ t: number }> | undefined,
-  calendar: TradingCalendar,
-): number {
-  if (!points?.length) return 1;
-  const last = points[points.length - 1].t;
-  const win = sessionWindow(calendar, new Date(last));
-  if (!win) return 1;
-  const span = win.end - win.start;
-  if (span <= 0) return 1;
-  return Math.min(1, Math.max(0, (last - win.start) / span));
+export function SessionSparkline({
+  points,
+  previousClose,
+  calendar,
+  width = 91,
+  height = 20,
+  className,
+}: {
+  points: ChartPoint[];
+  previousClose?: number;
+  calendar: TradingCalendar;
+  width?: number;
+  height?: number;
+  className?: string;
+}) {
+  const id = useId();
+  if (points.length < 2) return <span style={{ width, height }} className={className} aria-hidden />;
+
+  const last = points[points.length - 1];
+  const { from, to } = intradayBounds(calendar, points[0].t, last.t);
+  const span = to - from || 1;
+  const x = (t: number) => ((t - from) / span) * width;
+
+  const closes = points.map((p) => p.close);
+  const lo = Math.min(...closes, previousClose ?? Infinity);
+  const hi = Math.max(...closes, previousClose ?? -Infinity);
+  const pad = (hi - lo) * 0.15 || Math.max(Math.abs(hi) * 0.001, 0.01);
+  const yMin = lo - pad;
+  const yMax = hi + pad;
+  const y = (v: number) => (1 - (v - yMin) / (yMax - yMin || 1)) * height;
+
+  const line = points.map((p) => `${x(p.t).toFixed(1)},${y(p.close).toFixed(1)}`).join(' ');
+  const base = previousClose === undefined ? undefined : y(previousClose);
+  const up = previousClose === undefined
+    ? last.close >= points[0].close
+    : last.close >= previousClose;
+
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      aria-hidden
+      className={cn('shrink-0 overflow-visible', className)}
+    >
+      {base !== undefined && (
+        <>
+          <defs>
+            <clipPath id={`${id}-above`}>
+              <rect x="0" y={-height} width={width} height={base + height} />
+            </clipPath>
+            <clipPath id={`${id}-below`}>
+              <rect x="0" y={base} width={width} height={height * 2} />
+            </clipPath>
+          </defs>
+          <line
+            x1="0"
+            y1={base}
+            x2={width}
+            y2={base}
+            className="stroke-faint"
+            strokeWidth="1"
+            strokeDasharray="3 3"
+          />
+        </>
+      )}
+      {base === undefined ? (
+        <polyline
+          points={line}
+          fill="none"
+          strokeWidth="1.5"
+          stroke="currentColor"
+          className={up ? 'text-gain' : 'text-loss'}
+        />
+      ) : (
+        <>
+          <polyline points={line} fill="none" strokeWidth="1.5" className="stroke-gain" clipPath={`url(#${id}-above)`} />
+          <polyline points={line} fill="none" strokeWidth="1.5" className="stroke-loss" clipPath={`url(#${id}-below)`} />
+        </>
+      )}
+    </svg>
+  );
 }
 
 interface LineChartProps {
