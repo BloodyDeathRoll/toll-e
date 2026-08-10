@@ -359,23 +359,26 @@ export function TaxScreen() {
                         {fmtNum(m.cumDue, nl)}
                       </p>
                       <div className="flex flex-col gap-[7px] text-sm tabular-nums">
-                        <Row label={t('realizedGains')} value={fmtNum(m.gains ?? 0, nl)} />
-                        <Row label={t('realizedLosses')} value={fmtNum(-(m.losses ?? 0), nl)} />
+                        <Row label={t('realizedGains')} value={`${sym}${fmtNum(m.gains ?? 0, nl)}`} />
+                        <Row label={t('realizedLosses')} value={`${sym}${fmtNum(-(m.losses ?? 0), nl)}`} />
                         <div className="h-px bg-border" />
-                        <Row label={t('taxable')} value={fmtNum(m.net, nl)} bold />
+                        <Row label={t('taxable')} value={`${sym}${fmtNum(m.net, nl)}`} bold />
                         <div className="flex justify-end">
                           <MoreLink href="/transactions">{t('transactionsDetails')}</MoreLink>
                         </div>
                         <Row label={t('rate')} value={`${view.ratePct}%`} />
                         <Row
                           label={t('calcTax')}
-                          value={m.tax === null ? t('shielded') : fmtNum(m.tax, nl)}
+                          value={m.tax === null ? t('shielded') : `${sym}${fmtNum(m.tax, nl)}`}
                         />
                         {view.carriedApplied > 0 && (
-                          <Row label={t('carriedIn')} value={fmtNum(-view.carriedApplied, nl)} />
+                          <Row
+                            label={t('carriedIn')}
+                            value={`${sym}${fmtNum(-view.carriedApplied, nl)}`}
+                          />
                         )}
                         <div className="h-px bg-border" />
-                        <Row label={t('due')} value={fmtNum(m.cumDue, nl)} bold big />
+                        <Row label={t('due')} value={`${sym}${fmtNum(m.cumDue, nl)}`} bold big />
                       </div>
                     </div>
                   )}

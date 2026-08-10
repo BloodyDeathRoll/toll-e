@@ -224,7 +224,9 @@ export function PerformanceScreen() {
                   {t('combinedIn', { currency: data.displayCurrency })}
                 </span>
               </div>
-              <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1.2fr] border-t border-border bg-well px-5 py-2.5 text-[11px] font-semibold tracking-[0.04em] uppercase text-muted-foreground">
+              {/* Five columns never fit a phone — the table is desktop-only,
+                  and each month becomes a two-line row below that. */}
+              <div className="hidden grid-cols-[1fr_1fr_1fr_1fr_1.2fr] border-t border-border bg-well px-5 py-2.5 text-[11px] font-semibold tracking-[0.04em] uppercase text-muted-foreground md:grid">
                 <span>{tt('month')}</span>
                 <span className="text-end">{tt('gains')}</span>
                 <span className="text-end">{tt('losses')}</span>
@@ -232,19 +234,57 @@ export function PerformanceScreen() {
                 <span className="text-end">{t('taxCol')}</span>
               </div>
               {data.months.map((m) => (
-                <div
-                  key={m.month}
-                  className="grid grid-cols-[1fr_1fr_1fr_1fr_1.2fr] border-t border-border px-5 py-3 text-sm tabular-nums"
-                >
-                  <span className="text-foreground">{fmtMonth(m.month, locale)}</span>
-                  <span dir="ltr" className={cn('text-end', m.gains > 0 ? 'text-gain' : 'text-faint')}>
-                    {m.gains > 0 ? fmtNum(m.gains, nl) : '—'}
-                  </span>
-                  <span dir="ltr" className={cn('text-end', m.losses > 0 ? 'text-loss' : 'text-faint')}>
-                    {m.losses > 0 ? fmtNum(-m.losses, nl) : '—'}
-                  </span>
-                  <span dir="ltr" className="text-end text-foreground">{fmtNum(m.net, nl)}</span>
-                  <span dir="ltr" className="text-end text-foreground">{fmtNum(m.tax, nl)}</span>
+                <div key={m.month} className="border-t border-border">
+                  {/* Desktop: the full table row. */}
+                  <div className="hidden grid-cols-[1fr_1fr_1fr_1fr_1.2fr] px-5 py-3 text-sm tabular-nums md:grid">
+                    <span className="text-foreground">{fmtMonth(m.month, locale)}</span>
+                    <span dir="ltr" className={cn('text-end', m.gains > 0 ? 'text-gain' : 'text-faint')}>
+                      {m.gains > 0 ? money(m.gains, data.displayCurrency) : '—'}
+                    </span>
+                    <span dir="ltr" className={cn('text-end', m.losses > 0 ? 'text-loss' : 'text-faint')}>
+                      {m.losses > 0 ? money(-m.losses, data.displayCurrency) : '—'}
+                    </span>
+                    <span dir="ltr" className="text-end text-foreground">
+                      {money(m.net, data.displayCurrency)}
+                    </span>
+                    <span dir="ltr" className="text-end text-foreground">
+                      {money(m.tax, data.displayCurrency)}
+                    </span>
+                  </div>
+
+                  {/* Mobile: month and net on one line, the breakdown beneath. */}
+                  <div className="flex flex-col gap-1 px-5 py-3 md:hidden">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-sm text-foreground">{fmtMonth(m.month, locale)}</span>
+                      <span
+                        dir="ltr"
+                        className={cn(
+                          'text-sm font-semibold tabular-nums',
+                          m.net >= 0 ? 'text-gain' : 'text-loss',
+                        )}
+                      >
+                        {signed(m.net, data.displayCurrency)}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap justify-between gap-x-4 text-xs text-muted-foreground tabular-nums">
+                      <span>
+                        {tt('gains')}{' '}
+                        <span className="text-foreground">
+                          {m.gains > 0 ? money(m.gains, data.displayCurrency) : '—'}
+                        </span>
+                      </span>
+                      <span>
+                        {tt('losses')}{' '}
+                        <span className="text-foreground">
+                          {m.losses > 0 ? money(-m.losses, data.displayCurrency) : '—'}
+                        </span>
+                      </span>
+                      <span>
+                        {t('taxCol')}{' '}
+                        <span className="text-foreground">{money(m.tax, data.displayCurrency)}</span>
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </section>

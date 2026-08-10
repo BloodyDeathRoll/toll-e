@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ChartLine, EyeOff, FileText, Gauge, List, Menu, Search, Shield, X } from 'lucide-react';
+import { ChartLine, FileText, Gauge, List, Menu, Search, Shield, X } from 'lucide-react';
 import { Link, useRouter } from '@/src/i18n/navigation';
 import { LangCurrencyPicker } from './lang-currency';
 import { useMarket } from './market-context';
 import { SearchResults } from './search-results';
-import { usePrivacy } from '@/components/use-privacy';
 import { useSearch } from '@/components/use-market-data';
 import { cn } from '@/lib/utils';
 
@@ -30,7 +29,6 @@ export function AppHeader({
   const t = useTranslations();
   const router = useRouter();
   const { marketId } = useMarket();
-  const { on: privacyOn, toggle: togglePrivacy } = usePrivacy();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -57,7 +55,7 @@ export function AppHeader({
         <Menu className="size-6 text-foreground" aria-hidden />
       </button>
 
-      <div className="relative min-w-0 flex-1">
+      <div className="relative min-w-0 flex-1 transition-all duration-500 ease-out">
         <Search
           className="pointer-events-none absolute start-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
           aria-hidden
@@ -80,12 +78,17 @@ export function AppHeader({
         />
       </div>
 
-      {/* The currency selector yields its room to a search in progress. */}
+      {/* The currency selector yields its room to a search in progress.
+          overflow-hidden only while collapsing: leaving it on would clip the
+          selector's own dropdown, which made the control look dead. */}
       {currency && !action && (
         <div
           className={cn(
-            'overflow-hidden transition-all duration-200',
-            expanded ? 'w-0 opacity-0' : 'w-auto opacity-100',
+            // max-width, not width: 'auto' is not interpolatable, so a
+            // width transition just snaps. The upper bound only has to
+            // exceed the control's natural width.
+            'transition-[max-width,opacity,margin] duration-500 ease-out',
+            expanded ? '-me-4 max-w-0 overflow-hidden opacity-0' : 'max-w-[220px] opacity-100',
           )}
           aria-hidden={expanded}
         >
@@ -117,17 +120,6 @@ export function AppHeader({
                 <span className="text-base font-semibold text-foreground">{t(`menu.${key}`)}</span>
               </Link>
             ))}
-            <button
-              type="button"
-              onClick={togglePrivacy}
-              className="flex items-center gap-4 py-3 text-start"
-            >
-              <EyeOff className="size-5 text-subtle" aria-hidden />
-              <span className="text-base font-semibold text-foreground">
-                {t('menu.hideAmounts')}
-                {privacyOn && <span className="ms-2 text-xs text-brand">{t('menu.privacyOn')}</span>}
-              </span>
-            </button>
             {legalItems.map(({ key, href, icon: Icon }) => (
               <Link
                 key={key}

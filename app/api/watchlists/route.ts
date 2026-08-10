@@ -4,15 +4,29 @@ import { z } from 'zod';
 import { db } from '@/src/db';
 import { watchlistItems, watchlists } from '@/src/db/schema';
 import { getSession } from '@/lib/session';
+import { HOLDINGS_LIST } from '@/src/watchlists/constants';
+import { syncHoldingsWatchlist } from '@/src/server/holdings-watchlist';
 
 export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  const lists = await db
+  let lists = await db
     .select()
     .from(watchlists)
     .where(eq(watchlists.userId, session.user.id))
     .orderBy(asc(watchlists.sortOrder), asc(watchlists.createdAt));
+
+  // Backfill: positions recorded before the Holdings list existed (or before
+  // this feature shipped) never triggered a write-time sync, so build it on
+  // first read. Costs one reconcile per account, then never runs again.
+  if (!lists.some((l) => l.name === HOLDINGS_LIST)) {
+    await syncHoldingsWatchlist(session.user.id);
+    lists = await db
+      .select()
+      .from(watchlists)
+      .where(eq(watchlists.userId, session.user.id))
+      .orderBy(asc(watchlists.sortOrder), asc(watchlists.createdAt));
+  }
   const items = lists.length
     ? await db
         .select()

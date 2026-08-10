@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
+import { useMarket } from '@/components/app-shell/market-context';
 import { InstallSettingsRow } from '@/components/install-prompt';
-import { usePrivacy } from '@/components/use-privacy';
 import { authClient, signOut, useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
@@ -16,7 +16,7 @@ export function SettingsScreen() {
   const router = useRouter();
   const pathname = usePathname();
   const { data: session, isPending } = useSession();
-  const { on: privacyOn, toggle: togglePrivacy } = usePrivacy();
+  const { setMarketId } = useMarket();
 
   // Theme state mirrors the html class (set pre-paint by the layout script).
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -43,6 +43,9 @@ export function SettingsScreen() {
   };
   const pickMarket = async (market: string) => {
     setDefaultMarket(market);
+    // Switch the live lens too: saving a preference that only applies to the
+    // next fresh browser reads as the setting doing nothing.
+    setMarketId(market);
     await authClient.updateUser({ defaultMarket: market });
   };
 
@@ -118,19 +121,6 @@ export function SettingsScreen() {
             // app-header.tsx).
             // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- hard reload is the point
             (l) => window.location.assign(`/${l}${pathname === '/' ? '' : pathname}`),
-          ),
-        )}
-        {row(
-          t('hideAmounts'),
-          segment(
-            [
-              { value: 'off', label: t('off') },
-              { value: 'on', label: t('on') },
-            ],
-            privacyOn ? 'on' : 'off',
-            (v) => {
-              if ((v === 'on') !== privacyOn) togglePrivacy();
-            },
           ),
         )}
       </section>

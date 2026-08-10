@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
+import { useSession } from '@/lib/auth-client';
 import { marketIds } from '@/src/markets/registry';
 
 // The active market tab is a lens, not a data wall (toll-e-plan.md §2.2):
@@ -36,6 +37,17 @@ export function MarketProvider({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional one-shot rehydration
     if (stored && marketIds.includes(stored)) setMarketId(stored);
   }, []);
+
+  // Fall back to the account's default market for a browser that has never
+  // picked one, so the Settings preference actually lands somewhere.
+  const { data: session } = useSession();
+  const accountMarket = (session?.user as { defaultMarket?: string } | undefined)?.defaultMarket;
+  useEffect(() => {
+    if (!accountMarket || !marketIds.includes(accountMarket)) return;
+    if (localStorage.getItem(STORAGE_KEY)) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- account preference arrives async
+    setMarketId(accountMarket);
+  }, [accountMarket]);
 
   const set = (id: string) => {
     setMarketId(id);
