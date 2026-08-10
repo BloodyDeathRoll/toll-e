@@ -9,38 +9,62 @@ import { expect, test, type Page } from '@playwright/test';
 const seen = (page: Page, text: string | RegExp) =>
   page.getByText(text).filter({ visible: true }).first();
 
-test.describe('signed-out demo', () => {
-  test('portfolio dashboard renders demo holdings', async ({ page }) => {
+/**
+ * Real Google OAuth can't run headless, so signed-in surfaces go through the
+ * E2E_TEST_AUTH password path (never enabled in production — see lib/auth.ts).
+ * page.request shares the browser's cookie jar, so the session lands on the
+ * page; Better Auth rejects cross-origin posts, hence the explicit Origin.
+ */
+async function signIn(page: Page, baseURL: string) {
+  const creds = { email: 'e2e@test.dev', password: 'testpass123' };
+  const opts = { headers: { Origin: baseURL }, failOnStatusCode: false };
+  const signUp = await page.request.post('/api/auth/sign-up/email', {
+    data: { name: 'E2E Runner', ...creds },
+    ...opts,
+  });
+  test.skip(
+    signUp.status() === 404,
+    'E2E_TEST_AUTH not enabled — password sign-in is disabled here',
+  );
+  // 422 = the account survived a previous run, which is fine.
+  expect([200, 422]).toContain(signUp.status());
+  const res = await page.request.post('/api/auth/sign-in/email', { data: creds, ...opts });
+  expect(res.status()).toBe(200);
+}
+
+// Signed out, the app is a sign-in wall: the only reachable screens are the
+// sign-in card and the two legal documents.
+test.describe('signed-out wall', () => {
+  test('home is the bare sign-in card — no app chrome', async ({ page }) => {
     await page.goto('/en');
-    await expect(seen(page, 'Sign in')).toBeVisible();
-    await expect(seen(page, /Holdings · USD|Portfolio value/)).toBeVisible();
-    await expect(seen(page, 'NVDA')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Continue with Google/ })).toBeVisible();
+    await expect(seen(page, 'Investment tracking with real tax clarity')).toBeVisible();
+    // No nav, no search, and no credential fields on the wall itself.
+    await expect(page.getByRole('link', { name: 'Transactions' })).toHaveCount(0);
+    await expect(page.getByPlaceholder('Search ticker, company, index')).toHaveCount(0);
+    await expect(page.locator('input[type="password"]')).toHaveCount(0);
   });
 
-  test('markets page renders', async ({ page }) => {
-    await page.goto('/en/markets');
-    await expect(seen(page, 'Leading indexes')).toBeVisible();
+  test('app screens redirect to the wall', async ({ page }) => {
+    for (const path of ['/en/markets', '/en/tax', '/en/watchlists']) {
+      await page.goto(path);
+      await page.waitForURL('**/en');
+      await expect(page.getByRole('button', { name: /Continue with Google/ })).toBeVisible();
+    }
   });
 
-  test('tax page renders demo showcase', async ({ page }) => {
-    await page.goto('/en/tax');
-    await expect(seen(page, 'What you owe so far')).toBeVisible();
-  });
-
-  test('watchlists page renders sample lists', async ({ page }) => {
-    await page.goto('/en/watchlists');
-    await expect(seen(page, 'Sample lists')).toBeVisible();
-  });
-
-  test('mobile layout shows the bottom tab bar', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/en');
-    await expect(seen(page, 'Markets')).toBeVisible();
-    await expect(seen(page, 'Tax')).toBeVisible();
+  test('legal documents stay public', async ({ page }) => {
+    await page.goto('/en/terms');
+    await expect(seen(page, 'Terms of Use')).toBeVisible();
+    await page.goto('/en/privacy');
+    await expect(seen(page, 'Privacy Policy')).toBeVisible();
   });
 });
 
 test.describe('stock page tabs', () => {
+  test.beforeEach(async ({ page, baseURL }) => {
+    await signIn(page, baseURL!);
+  });
   test('summary shows key statistics', async ({ page }) => {
     await page.goto('/en/stock/NVDA');
     await expect(seen(page, 'Key statistics')).toBeVisible();
@@ -67,6 +91,9 @@ test.describe('stock page tabs', () => {
 });
 
 test.describe('pwa', () => {
+  test.beforeEach(async ({ page, baseURL }) => {
+    await signIn(page, baseURL!);
+  });
   test('is installable: manifest, worker, and icons all serve', async ({ page, request }) => {
     await page.goto('/en');
     await expect(page.locator('link[rel="manifest"]')).toHaveAttribute(
@@ -125,10 +152,10 @@ test.describe('pwa', () => {
 });
 
 test.describe('hebrew locale', () => {
-  test('renders RTL with Hebrew navigation', async ({ page }) => {
+  test('renders RTL with Hebrew copy', async ({ page }) => {
     await page.goto('/he');
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-    await expect(seen(page, 'תיק')).toBeVisible();
+    await expect(seen(page, 'מעקב השקעות עם בהירות מס אמיתית')).toBeVisible();
   });
 });
 
@@ -147,29 +174,14 @@ test.describe('auth', () => {
     await expect(page.getByRole('button', { name: /Continue with Google/ })).toBeVisible();
   });
 
-  // Real Google OAuth can't run headless, so the signed-in surfaces are
-  // exercised through the E2E_TEST_AUTH password path (never enabled in
-  // production — see lib/auth.ts).
-  test('signed-in dashboard renders', async ({ page, baseURL }) => {
-    const creds = { email: 'e2e@test.dev', password: 'testpass123' };
-    // page.request shares the browser's cookie jar, so the session lands on the
-    // page; Better Auth rejects cross-origin posts, hence the explicit Origin.
-    const opts = { headers: { Origin: baseURL! }, failOnStatusCode: false };
-    const signUp = await page.request.post('/api/auth/sign-up/email', {
-      data: { name: 'E2E Runner', ...creds },
-      ...opts,
-    });
-    test.skip(
-      signUp.status() === 404,
-      'E2E_TEST_AUTH not enabled — password sign-in is disabled here',
-    );
-    // 422 = the account survived a previous run, which is fine.
-    expect([200, 422]).toContain(signUp.status());
-    const signIn = await page.request.post('/api/auth/sign-in/email', { data: creds, ...opts });
-    expect(signIn.status()).toBe(200);
-
+  test('signed-in dashboard renders with app chrome', async ({ page, baseURL }) => {
+    await signIn(page, baseURL!);
     await page.goto('/en');
-    await expect(seen(page, /Holdings · USD|Portfolio value|No holdings yet/)).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Sign in' })).toHaveCount(0);
+    await expect(seen(page, /Holdings|No holdings yet/)).toBeVisible();
+    await expect(page.getByRole('button', { name: /Continue with Google/ })).toHaveCount(0);
+    // The tab bar is back, and Tax replaced Watchlists on it.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(seen(page, 'Transactions')).toBeVisible();
+    await expect(seen(page, 'Tax')).toBeVisible();
   });
 });
