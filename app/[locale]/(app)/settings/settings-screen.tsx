@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft } from 'lucide-react';
 import { Link, usePathname, useRouter } from '@/src/i18n/navigation';
+import { AppHeader } from '@/components/app-shell/app-header';
 import { InstallSettingsRow } from '@/components/install-prompt';
 import { usePrivacy } from '@/components/use-privacy';
 import { authClient, signOut, useSession } from '@/lib/auth-client';
@@ -80,13 +80,14 @@ export function SettingsScreen() {
   );
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3.5 p-4 md:py-7">
-      <div className="flex items-center gap-3 pt-1">
-        <button type="button" onClick={() => router.back()} aria-label={t('title')} className="md:hidden">
-          <ArrowLeft className="size-[18px] text-foreground rtl:-scale-x-100" aria-hidden />
-        </button>
-        <h1 className="text-[22px] font-bold tracking-tight text-foreground">{t('title')}</h1>
-      </div>
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
+      {/* Account is a tab destination, so it carries the app header rather
+          than a back arrow (which had nowhere meaningful to go). */}
+      <AppHeader />
+      <div className="flex flex-col gap-3.5 px-4 pb-4 md:py-7">
+        <h1 className="hidden text-[22px] font-bold tracking-tight text-foreground md:block">
+          {t('title')}
+        </h1>
 
       {/* Appearance & locale — work signed out too */}
       <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
@@ -202,6 +203,7 @@ export function SettingsScreen() {
           </Link>
         )}
       </section>
+      </div>
     </main>
   );
 }

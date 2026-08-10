@@ -163,7 +163,7 @@ export function HomeScreen() {
     <main className="flex flex-1 flex-col">
       {/* ---------- Mobile (Figma HP frame) ---------- */}
       <div className="flex flex-col md:hidden">
-        <AppHeader />
+        <AppHeader currency />
 
         {/* Portfolio value */}
         {loading && <div className="px-6">{valueSkeleton}</div>}

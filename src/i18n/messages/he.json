@@ -17,7 +17,8 @@
     "performance": "ביצועים",
     "transactions": "עסקאות",
     "account": "חשבון",
-    "new": "חדש"
+    "new": "חדש",
+    "searchNoResults": "אין תוצאות."
   },
   "market": {
     "menuTitle": "שוק",

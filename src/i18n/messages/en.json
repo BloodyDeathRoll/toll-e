@@ -17,7 +17,8 @@
     "performance": "Performance",
     "transactions": "Transactions",
     "account": "Account",
-    "new": "New"
+    "new": "New",
+    "searchNoResults": "No matches."
   },
   "market": {
     "menuTitle": "Market",
