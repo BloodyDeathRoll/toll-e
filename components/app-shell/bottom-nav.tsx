@@ -56,22 +56,21 @@ export function BottomNav() {
   };
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 bg-background md:hidden">
-      <ul className="flex items-end gap-4 px-6 pt-2 pb-[max(24px,env(safe-area-inset-bottom))]">
+    <nav className="fixed inset-x-0 bottom-0 z-40 bg-card md:hidden">
+      <ul className="flex items-end gap-4 px-6 pt-4 pb-[max(24px,env(safe-area-inset-bottom))]">
         {leftTabs.map(renderTab)}
-        <li className="flex flex-1">
-          <Link
-            href="/transactions/new"
-            className="flex flex-1 flex-col items-center gap-0.5"
-          >
-            <span className="flex size-14 items-center justify-center rounded-full bg-primary">
-              <Plus className="size-6 text-primary-foreground" aria-hidden />
-            </span>
-            <span className="text-xs text-foreground">{t('new')}</span>
-          </Link>
-        </li>
+        {/* The centre slot is empty in the bar; the button floats over it. */}
+        <li className="h-[41px] flex-1" aria-hidden />
         {rightTabs.map(renderTab)}
       </ul>
+      {/* Sits on the bar and breaks its top edge by 12px, label-less. */}
+      <Link
+        href="/transactions/new"
+        aria-label={t('new')}
+        className="absolute -top-3 start-1/2 flex size-14 -translate-x-1/2 items-center justify-center rounded-full bg-primary rtl:translate-x-1/2"
+      >
+        <Plus className="size-6 text-primary-foreground" aria-hidden />
+      </Link>
     </nav>
   );
 }
