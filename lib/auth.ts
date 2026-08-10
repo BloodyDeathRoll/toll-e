@@ -42,6 +42,11 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: testAuthEnabled,
   },
+  // The smoke suite signs in on nearly every test against a production build,
+  // where Better Auth's rate limiter is on by default and starts rejecting
+  // them. Relaxed only under the same test-auth flag, which production can
+  // never set.
+  ...(testAuthEnabled ? { rateLimit: { enabled: false } } : {}),
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',

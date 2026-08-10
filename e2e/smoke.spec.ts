@@ -15,19 +15,24 @@ const seen = (page: Page, text: string | RegExp) =>
  * page.request shares the browser's cookie jar, so the session lands on the
  * page; Better Auth rejects cross-origin posts, hence the explicit Origin.
  */
+let accountReady = false;
+
 async function signIn(page: Page, baseURL: string) {
   const creds = { email: 'e2e@test.dev', password: 'testpass123' };
   const opts = { headers: { Origin: baseURL }, failOnStatusCode: false };
-  const signUp = await page.request.post('/api/auth/sign-up/email', {
-    data: { name: 'E2E Runner', ...creds },
-    ...opts,
-  });
-  test.skip(
-    signUp.status() === 404,
-    'E2E_TEST_AUTH not enabled — password sign-in is disabled here',
-  );
-  // 422 = the account survived a previous run, which is fine.
-  expect([200, 422]).toContain(signUp.status());
+  if (!accountReady) {
+    const signUp = await page.request.post('/api/auth/sign-up/email', {
+      data: { name: 'E2E Runner', ...creds },
+      ...opts,
+    });
+    test.skip(
+      signUp.status() === 404,
+      'E2E_TEST_AUTH not enabled — password sign-in is disabled here',
+    );
+    // 422 = the account survived a previous run, which is fine.
+    expect([200, 422]).toContain(signUp.status());
+    accountReady = true;
+  }
   const res = await page.request.post('/api/auth/sign-in/email', { data: creds, ...opts });
   expect(res.status()).toBe(200);
 }
