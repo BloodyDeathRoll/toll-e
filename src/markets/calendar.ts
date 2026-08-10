@@ -193,10 +193,18 @@ export function intradayBounds(
   cal: TradingCalendar,
   firstT: number,
   lastT: number,
+  now: number = Date.now(),
 ): { from: number; to: number } {
   const win = sessionWindow(cal, new Date(lastT));
   if (!win) return { from: firstT, to: lastT };
-  const extended = firstT < win.regular.start || lastT > win.regular.end;
-  const bounds = extended ? { start: win.start, end: win.end } : win.regular;
+  // Once the bell has rung the day is complete, so the series fills the axis
+  // rather than leaving room for trading that is not coming. This also covers
+  // overnight, where the chart shows the last finished session. The test is
+  // against the clock, not the data: exchanges routinely stamp their final bar
+  // a few minutes early, and that must not read as "still trading".
+  if (now >= win.regular.end || lastT >= win.regular.end) return { from: firstT, to: lastT };
+  // Mid-session: reserve the whole day, extended hours included only for
+  // instruments that actually trade them.
+  const bounds = firstT < win.regular.start ? { start: win.start, end: win.end } : win.regular;
   return { from: Math.min(bounds.start, firstT), to: Math.max(bounds.end, lastT) };
 }

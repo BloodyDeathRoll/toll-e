@@ -21,7 +21,7 @@ import { useQuotes, useSearch } from '@/components/use-market-data';
 import { useWatchlists, type WatchlistData } from '@/components/use-watchlists';
 import { demoWatchlists } from '@/src/demo/data';
 import { HOLDINGS_LIST } from '@/src/watchlists/constants';
-import { getMarket, displaySymbol } from '@/src/markets/registry';
+import { getMarket, displaySymbol, marketForSymbol } from '@/src/markets/registry';
 import { fmtNum } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -62,18 +62,25 @@ export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {
     symbols: string[];
     demo?: boolean;
     managed?: boolean;
+    /** Size before the market filter — an empty list and one filtered down
+     *  to nothing need different words. */
+    total: number;
   }> = real
     ? real.map((l) => ({
         id: l.id,
         name: l.name === HOLDINGS_LIST ? t('holdings') : l.name,
-        symbols: l.symbols,
+        // A list can hold tickers from several markets; the selected market
+        // decides which of them are on screen.
+        symbols: l.symbols.filter((s) => marketForSymbol(s).id === marketId),
         managed: l.name === HOLDINGS_LIST,
+        total: l.symbols.length,
       }))
     : demoWatchlists.map((w, i) => ({
         id: `demo-${i}`,
         name: w.name,
-        symbols: w.items.map((q) => q.symbol),
+        symbols: w.items.map((q) => q.symbol).filter((s) => marketForSymbol(s).id === marketId),
         demo: true,
+        total: w.items.length,
       }));
   // Every list opens and closes on its own; opening one leaves the rest be.
   const openLists = lists.filter((l) => !collapsed.has(l.id));
@@ -231,6 +238,11 @@ export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {
                   />
                 </button>
               </div>
+              {open && l.symbols.length === 0 && (
+                <p className="border-t border-border py-3 text-[13px] text-muted-foreground">
+                  {t(l.total > 0 ? 'emptyInMarket' : 'emptyList')}
+                </p>
+              )}
               {open &&
                 l.symbols.map((s) => {
                   const q = quotes[s];
@@ -239,11 +251,12 @@ export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {
                     : undefined;
                   const price = q?.price ?? demoQuote?.price;
                   const pct = q?.changePct ?? demoQuote?.changePct ?? 0;
+                  const sm = marketForSymbol(s); // a list may span markets
                   return (
                     <div key={s} className="flex items-center justify-between gap-4 border-t border-border py-3">
                       <Link href={`/stock/${s}`} className="flex min-w-0 flex-col">
                         <span className="text-base font-bold text-foreground">
-                          {displaySymbol(s, market)}
+                          {displaySymbol(s, sm)}
                         </span>
                         <span className="truncate text-xs text-foreground">
                           {q?.name ?? demoQuote?.name ?? s}
@@ -254,8 +267,8 @@ export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {
                         <span className="flex flex-col items-end gap-0.5">
                           {price !== undefined && (
                             <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
-                              {market.currencySymbol}
-                              {fmtNum(price, nl)}
+                              {sm.currencySymbol}
+                              {fmtNum(price, sm.numberLocale)}
                             </span>
                           )}
                           <ChangePill pct={pct} numberLocale={nl} variant="soft" />

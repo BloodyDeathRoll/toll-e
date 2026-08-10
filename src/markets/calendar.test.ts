@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { getMarketState, getSessionState, scheduleFor, toExchangeLocal } from './calendar';
+import {
+  getMarketState,
+  getSessionState,
+  intradayBounds,
+  scheduleFor,
+  toExchangeLocal,
+} from './calendar';
 import { getMarket } from './registry';
 
 const us = getMarket('US').calendar;
@@ -112,5 +118,54 @@ describe('session phases (pre / open / post / closed)', () => {
   it('TASE has no post phase after close', () => {
     const s = getSessionState(il, utc('2026-08-04T15:00:00Z')); // 18:00 IDT
     expect(s.phase).toBe('closed');
+  });
+});
+
+describe('intradayBounds', () => {
+  // 2026-08-04 (Tue) EDT: pre 04:00, open 09:30, close 16:00, post 20:00.
+  const open = utc('2026-08-04T13:30:00Z').getTime();
+  const close = utc('2026-08-04T20:00:00Z').getTime();
+
+  const at = (iso: string) => utc(iso).getTime();
+
+  it('reserves the rest of the regular session mid-day for a regular-hours series', () => {
+    const b = intradayBounds(us, open, at('2026-08-04T15:00:00Z'), at('2026-08-04T15:00:00Z')); // 11:00 EDT
+    expect(b.from).toBe(open);
+    expect(b.to).toBe(close);
+  });
+
+  it('reserves the extended window when the series reaches into pre-market', () => {
+    const pre = utc('2026-08-04T08:00:00Z').getTime(); // 04:00 EDT
+    const b = intradayBounds(us, pre, at('2026-08-04T15:00:00Z'), at('2026-08-04T15:00:00Z'));
+    expect(b.from).toBe(pre);
+    expect(b.to).toBe(utc('2026-08-05T00:00:00Z').getTime()); // 20:00 EDT
+  });
+
+  it('fills the axis once the closing bell has rung', () => {
+    const b = intradayBounds(us, open, close, close);
+    expect(b).toEqual({ from: open, to: close });
+  });
+
+  it('fills the axis after hours, without reserving room to 20:00', () => {
+    const post = at('2026-08-04T22:00:00Z'); // 18:00 EDT
+    const b = intradayBounds(us, open, post, post);
+    expect(b).toEqual({ from: open, to: post });
+  });
+
+  it('fills the axis when the last bar is stamped just before the bell', () => {
+    const early = at('2026-08-04T19:55:00Z'); // 15:55 EDT, five minutes short
+    // Still trading at 15:55 — the rest of the session is reserved…
+    expect(intradayBounds(us, open, early, early).to).toBe(close);
+    // …but half an hour later the day is done and the line spans the axis.
+    expect(intradayBounds(us, open, early, at('2026-08-04T20:30:00Z'))).toEqual({
+      from: open,
+      to: early,
+    });
+  });
+
+  it('falls back to the data extent when the exchange is shut that day', () => {
+    const sat = utc('2026-08-08T14:00:00Z').getTime();
+    const b = intradayBounds(us, sat - 3_600_000, sat, sat);
+    expect(b).toEqual({ from: sat - 3_600_000, to: sat });
   });
 });

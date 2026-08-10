@@ -8,7 +8,7 @@ import { ChangePill } from '@/components/quote-bits';
 import { useQuotes } from '@/components/use-market-data';
 import { useWatchlists } from '@/components/use-watchlists';
 import { HOLDINGS_LIST } from '@/src/watchlists/constants';
-import { displaySymbol, getMarket } from '@/src/markets/registry';
+import { displaySymbol, getMarket, marketForSymbol } from '@/src/markets/registry';
 import { fmtNum } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -36,9 +36,15 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
     return () => document.removeEventListener('mousedown', onDown);
   }, []);
 
-  const lists = (state.status === 'data' ? state.lists : []).filter(
-    (l) => l.name !== HOLDINGS_LIST,
-  );
+  // A list can hold tickers from several markets; the selected market decides
+  // which of them are on screen, so ₪ never shows a dollar position.
+  const lists = (state.status === 'data' ? state.lists : [])
+    .filter((l) => l.name !== HOLDINGS_LIST)
+    .map((l) => ({
+      ...l,
+      symbols: l.symbols.filter((s) => marketForSymbol(s).id === marketId),
+      total: l.symbols.length,
+    }));
   const { quotes } = useQuotes(
     lists.filter((l) => !collapsed.has(l.id)).flatMap((l) => l.symbols),
     60_000,
@@ -116,11 +122,12 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
             {open &&
               (l.symbols.length === 0 ? (
                 <p className="border-t border-border py-3 text-[13px] text-muted-foreground">
-                  {t('emptyList')}
+                  {t(l.total > 0 ? 'emptyInMarket' : 'emptyList')}
                 </p>
               ) : (
                 l.symbols.map((s) => {
                   const q = quotes[s];
+                  const sm = marketForSymbol(s);
                   return (
                     <Link
                       key={s}
@@ -129,15 +136,15 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
                     >
                       <span className="flex min-w-0 flex-col">
                         <span className="text-base font-bold text-foreground">
-                          {displaySymbol(s, market)}
+                          {displaySymbol(s, sm)}
                         </span>
                         <span className="truncate text-xs text-foreground">{q?.name ?? s}</span>
                       </span>
                       <span className="flex shrink-0 flex-col items-end gap-0.5">
                         {q && (
                           <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
-                            {market.currencySymbol}
-                            {fmtNum(q.price, nl)}
+                            {sm.currencySymbol}
+                            {fmtNum(q.price, sm.numberLocale)}
                           </span>
                         )}
                         <ChangePill pct={q?.changePct ?? 0} numberLocale={nl} />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PositionsPayload } from '@/src/server/portfolios';
 
 // Client view of /api/positions: 'signed-out' | 'empty' (no portfolio or no
@@ -18,24 +18,35 @@ export type PortfolioState =
 
 export function usePortfolioPositions(marketId: string, refreshMs = 30_000) {
   const [state, setState] = useState<PortfolioState>({ status: 'loading' });
+  // The lens hydrates from localStorage a beat after mount, so a request for
+  // the previous market is often still in flight when the new one starts.
+  // Only the newest request may write state, or the old market's positions
+  // land under the new market's currency.
+  const gen = useRef(0);
 
   const load = useCallback(async () => {
+    const mine = ++gen.current;
+    const apply = (next: PortfolioState) => {
+      if (gen.current === mine) setState(next);
+    };
     try {
       const res = await fetch(`/api/positions?market=${marketId}`);
       if (res.status === 401) {
-        setState({ status: 'signed-out' });
+        apply({ status: 'signed-out' });
         return;
       }
       if (!res.ok) throw new Error(String(res.status));
       const json = await res.json();
       if (!json.portfolio || json.positions.length === 0) {
-        setState({ status: 'empty' });
+        apply({ status: 'empty' });
         return;
       }
-      setState({ status: 'data', data: json });
+      apply({ status: 'data', data: json });
     } catch {
       // Keep whatever we had; a transient failure shouldn't flip the UI.
-      setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+      if (gen.current === mine) {
+        setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+      }
     }
   }, [marketId]);
 

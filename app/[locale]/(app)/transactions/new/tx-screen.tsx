@@ -122,8 +122,9 @@ export function TxScreen() {
     proceeds: number;
     costBasis: number;
     gain: number;
-    shieldUsed: number;
+    poolUsed: number;
     taxDelta: number;
+    poolAfter: number;
     shieldAfter: number;
     ratePct: number;
   }
@@ -153,8 +154,10 @@ export function TxScreen() {
   const proceeds = serverPreview?.proceeds ?? shares * price;
   const costBasis = serverPreview?.costBasis ?? (avgCost !== undefined ? shares * avgCost : undefined);
   const gain = serverPreview?.gain ?? (costBasis !== undefined ? proceeds - costBasis : undefined);
+  // Only this year's earlier losses reduce what the broker withholds now; a
+  // registered shield from an earlier year comes back at filing instead.
   const offset = serverPreview
-    ? serverPreview.shieldUsed
+    ? serverPreview.poolUsed
     : gain !== undefined && gain > 0
       ? Math.min(gain, tax.carriedLoss)
       : 0;
@@ -164,7 +167,8 @@ export function TxScreen() {
     : gain !== undefined
       ? Math.max(0, gain - offset) * (tax.ratePct / 100)
       : undefined;
-  const shieldAfter = serverPreview ? serverPreview.shieldAfter : tax.carriedLoss - offset;
+  const poolAfter = serverPreview ? serverPreview.poolAfter : tax.carriedLoss - offset;
+  const shieldAfter = serverPreview?.shieldAfter ?? 0;
 
   const submit = async () => {
     if (!symbol || shares <= 0 || price < 0 || busy) return;
@@ -392,13 +396,13 @@ export function TxScreen() {
             {offset > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">
-                  {serverPreview ? t('offsetByShield') : t('offsetByCarried', { year: tax.carriedFromYear })}
+                  {serverPreview ? t('offsetByPool') : t('offsetByCarried', { year: tax.carriedFromYear })}
                 </span>
                 <span dir="ltr" className="text-foreground">{fmtNum(-offset, nl)}</span>
               </div>
             )}
             <div className="flex justify-between font-semibold">
-              <span className="text-foreground">{t('taxDueAt', { rate: ratePct })}</span>
+              <span className="text-foreground">{t('withheldAt', { rate: ratePct })}</span>
               <span dir="ltr" className="text-[15px] text-foreground">
                 {sym}
                 {fmtNum(due, nl)}
@@ -406,7 +410,8 @@ export function TxScreen() {
             </div>
           </div>
           <p className="rounded-lg bg-well p-3.5 text-xs leading-relaxed text-muted-foreground">
-            {t('carryNote', { amount: `${sym}${fmtNum(shieldAfter, nl)}` })}
+            {t('poolNote', { amount: `${sym}${fmtNum(poolAfter, nl)}` })}
+            {shieldAfter > 0 && ` ${t('shieldAtFilingNote')}`}
           </p>
         </section>
       )}

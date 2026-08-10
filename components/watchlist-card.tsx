@@ -7,7 +7,7 @@ import { SessionSparkline, Sparkline } from '@/components/charts';
 import { useChart, useQuotes } from '@/components/use-market-data';
 import { useWatchlists } from '@/components/use-watchlists';
 import { demoWatchlists } from '@/src/demo/data';
-import { getMarket, displaySymbol } from '@/src/markets/registry';
+import { getMarket, displaySymbol, marketForSymbol } from '@/src/markets/registry';
 import { fmtNum, fmtPct } from '@/lib/format';
 import type { Quote } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
@@ -22,7 +22,8 @@ export function WatchlistCard({ marketId }: { marketId: string }) {
     state.status === 'data'
       ? (state.lists.find((l) => l.symbols.length > 0) ?? state.lists[0])
       : undefined;
-  const symbols = realList?.symbols.slice(0, 5) ?? [];
+  const symbols =
+    realList?.symbols.filter((s) => marketForSymbol(s).id === marketId).slice(0, 5) ?? [];
   const { quotes } = useQuotes(symbols, 60_000);
 
   // Signed in with no lists yet: prompt instead of confusing demo data.
@@ -44,7 +45,7 @@ export function WatchlistCard({ marketId }: { marketId: string }) {
       )}
       {realList
         ? symbols.map((s) => (
-            <LiveRow key={s} symbol={s} quote={quotes[s]} numberLocale={market.numberLocale} marketId={marketId} />
+            <LiveRow key={s} symbol={s} quote={quotes[s]} numberLocale={marketForSymbol(s).numberLocale} />
           ))
         : !noLists && demoWatchlists[0].items.slice(3, 6).map((q) => (
             <Link
@@ -83,12 +84,10 @@ function LiveRow({
   symbol,
   quote,
   numberLocale,
-  marketId,
 }: {
   symbol: string;
   quote?: Quote;
   numberLocale: string;
-  marketId: string;
 }) {
   const { data: series } = useChart(symbol, '1d');
   const up = (quote?.changePct ?? 0) >= 0;
@@ -99,14 +98,14 @@ function LiveRow({
       className="flex items-center justify-between border-t border-border px-5 py-[11px] tabular-nums hover:bg-accent"
     >
       <span className="text-sm font-semibold text-foreground">
-        {displaySymbol(symbol, getMarket(marketId))}
+        {displaySymbol(symbol, marketForSymbol(symbol))}
       </span>
       <span className="flex items-center gap-3">
         {series && series.points.length > 1 ? (
           <SessionSparkline
             points={series.points}
             previousClose={quote?.previousClose ?? series.previousClose}
-            calendar={getMarket(marketId).calendar}
+            calendar={marketForSymbol(symbol).calendar}
             width={52}
             height={30}
           />

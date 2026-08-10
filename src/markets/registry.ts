@@ -85,6 +85,19 @@ export function getMarket(id: string): MarketDef {
   return m;
 }
 
+/**
+ * The market a symbol belongs to, from its provider suffix ('TEVA.TA' → IL).
+ * Lists can hold instruments from several markets at once, and each row must
+ * be priced in its own currency — the active lens says which market you are
+ * browsing, not what a given ticker trades in.
+ */
+export function marketForSymbol(symbol: string): MarketDef {
+  const suffixed = Object.values(markets).find(
+    (m) => m.symbolSuffix && symbol.endsWith(m.symbolSuffix),
+  );
+  return suffixed ?? Object.values(markets).find((m) => !m.symbolSuffix) ?? markets.US;
+}
+
 /** Strip the provider suffix for display: 'TEVA.TA' → 'TEVA'. */
 export function displaySymbol(symbol: string, market: MarketDef): string {
   return market.symbolSuffix && symbol.endsWith(market.symbolSuffix)

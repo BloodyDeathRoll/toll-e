@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { computeTax, type TaxComputation, type YearLedger } from '@/src/engine/tax';
+import { computeTax, type ShieldLayer, type TaxComputation, type YearLedger } from '@/src/engine/tax';
 import { listTransactions, toEngineTx, type PortfolioRow } from './portfolios';
 
 // Wire shape for tax data: full ledgers plus a trimmed per-sale drill-down
@@ -22,7 +22,11 @@ export type TaxYearPayload = Omit<YearLedger, 'sales'> & { sales: TaxSalePayload
 export interface TaxPayload {
   portfolio: { id: string; name: string; taxRatePct: number; currency: string };
   years: TaxYearPayload[];
+  /** Money value of the registered shield. */
   shieldRemaining: number;
+  /** Realized losses standing behind it — the secondary display figure. */
+  shieldLossRemaining: number;
+  shieldLayers: ShieldLayer[];
 }
 
 export function serializeTax(portfolio: PortfolioRow, tax: TaxComputation): TaxPayload {
@@ -53,6 +57,8 @@ export function serializeTax(portfolio: PortfolioRow, tax: TaxComputation): TaxP
         .reverse(), // newest first for "recent sales"
     })),
     shieldRemaining: tax.shieldRemaining,
+    shieldLossRemaining: tax.shieldLossRemaining,
+    shieldLayers: tax.shieldLayers,
   };
 }
 

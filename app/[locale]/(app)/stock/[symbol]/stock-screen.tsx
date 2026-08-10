@@ -21,7 +21,7 @@ import {
   useSummary,
 } from '@/components/use-market-data';
 import type { ChartRange, StockAnalysis, StockFinancials } from '@/src/market-data/types';
-import { getMarket } from '@/src/markets/registry';
+import { marketForSymbol } from '@/src/markets/registry';
 import { getDemoHolding, getDemoStock } from '@/src/demo/data';
 import { fmtCompact, fmtDate, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -48,7 +48,10 @@ export function StockScreen({ symbol }: { symbol: string }) {
   const locale = useLocale();
   const router = useRouter();
   const { marketId } = useMarket();
-  const market = getMarket(marketId);
+  // A stock page is about one instrument: its currency, number format and
+  // trading calendar come from where it trades, not from the market being
+  // browsed. The lens only picks which demo holding to fall back on.
+  const market = marketForSymbol(symbol);
   const nl = market.numberLocale;
   const sym = market.currencySymbol;
   const stock = getDemoStock(symbol);
@@ -391,7 +394,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                       timezone={series.timezone}
                       fullDay={range === '1D'}
                       previousClose={live?.previousClose ?? series.previousClose}
-                      marketId={marketId}
+                      marketId={market.id}
                     />
                   ) : (
                     <LineChart points={stock.chart} up={up} height={182} viewH={250} gridlines={[233]} />
@@ -542,7 +545,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   {fmtSigned(change, nl)} ({fmtPct(changePct, nl)})
                 </span>
               </div>
-              <SessionBadge marketId={marketId} />
+              <SessionBadge marketId={market.id} />
             </div>
           </div>
           <div className="flex items-center gap-2.5">
@@ -597,7 +600,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                       timezone={series.timezone}
                       fullDay={range === '1D'}
                       previousClose={live?.previousClose ?? series.previousClose}
-                      marketId={marketId}
+                      marketId={market.id}
                     />
                   ) : (
                     <LineChart points={stock.chart} up={up} height={250} viewH={250} gridlines={[40, 120, 200]} />

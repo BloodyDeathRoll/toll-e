@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TaxPayload } from '@/src/server/tax';
 
 export type TaxState =
@@ -12,23 +12,32 @@ export type TaxState =
 /** The lens market's tax ledgers; 'empty' until a portfolio has sales. */
 export function useTax(marketId: string) {
   const [state, setState] = useState<TaxState>({ status: 'loading' });
+  // Same stale-response guard as usePortfolioPositions: the lens can change
+  // while a request is in flight, and the loser must not write state.
+  const gen = useRef(0);
 
   const load = useCallback(async () => {
+    const mine = ++gen.current;
+    const apply = (next: TaxState) => {
+      if (gen.current === mine) setState(next);
+    };
     try {
       const res = await fetch(`/api/tax?market=${marketId}`);
       if (res.status === 401) {
-        setState({ status: 'signed-out' });
+        apply({ status: 'signed-out' });
         return;
       }
       if (!res.ok) throw new Error(String(res.status));
       const json = await res.json();
       if (!json.portfolio || json.years.length === 0) {
-        setState({ status: 'empty' });
+        apply({ status: 'empty' });
         return;
       }
-      setState({ status: 'data', data: json });
+      apply({ status: 'data', data: json });
     } catch {
-      setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+      if (gen.current === mine) {
+        setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+      }
     }
   }, [marketId]);
 

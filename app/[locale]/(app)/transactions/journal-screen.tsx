@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Check, ChevronDown, Trash2 } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
@@ -49,28 +49,38 @@ export function JournalScreen() {
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
 
+  // Only the newest load may write state: the lens hydrates a beat after
+  // mount, so a request for the previous market is often still in flight.
+  const gen = useRef(0);
+
   const load = useCallback(async () => {
+    const mine = ++gen.current;
+    const apply = (next: State) => {
+      if (gen.current === mine) setState(next);
+    };
     try {
       const pRes = await fetch('/api/portfolios');
       if (pRes.status === 401) {
-        setState({ status: 'signed-out' });
+        apply({ status: 'signed-out' });
         return;
       }
       const { portfolios } = await pRes.json();
       const portfolio = portfolios.find((p: { market: string }) => p.market === marketId);
       if (!portfolio) {
-        setState({ status: 'empty' });
+        apply({ status: 'empty' });
         return;
       }
       const tRes = await fetch(`/api/portfolios/${portfolio.id}/transactions`);
       const { transactions } = await tRes.json();
       if (transactions.length === 0) {
-        setState({ status: 'empty' });
+        apply({ status: 'empty' });
         return;
       }
-      setState({ status: 'data', portfolioId: portfolio.id, txs: transactions });
+      apply({ status: 'data', portfolioId: portfolio.id, txs: transactions });
     } catch {
-      setState((s) => (s.status === 'loading' ? { status: 'empty' } : s));
+      if (gen.current === mine) {
+        setState((s) => (s.status === 'loading' ? { status: 'empty' } : s));
+      }
     }
   }, [marketId]);
 
@@ -102,6 +112,14 @@ export function JournalScreen() {
   };
 
   const sorted = state.status === 'data' ? [...state.txs].sort(sorters[sort]) : [];
+
+  // Month captions only make sense while the list is in date order; under any
+  // other sort the dates jump around and the caption would lie about its rows.
+  const monthOf = (iso: string) => iso.slice(0, 7);
+  const monthLabel = (iso: string) =>
+    new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(
+      new Date(`${iso}T00:00:00`),
+    );
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
@@ -180,47 +198,54 @@ export function JournalScreen() {
 
       {state.status === 'data' && (
         <section className="flex flex-col px-6">
-          {sorted.map((tx) => {
+          {sorted.map((tx, i) => {
             const shares = Number(tx.shares);
             const price = Number(tx.pricePerShare);
+            const newMonth =
+              sort === 'date' &&
+              (i === 0 || monthOf(sorted[i - 1].tradeDate) !== monthOf(tx.tradeDate));
             return (
-              <div
-                key={tx.id}
-                className="flex items-center gap-4 border-b border-border py-[18px]"
-              >
-                <span
-                  className={cn(
-                    'w-16 rounded-full py-1 text-center text-sm font-semibold',
-                    tx.type === 'BUY' ? 'bg-gain/10 text-gain' : 'bg-primary/10 text-primary',
-                  )}
-                >
-                  {t(tx.type === 'BUY' ? 'buy' : 'sell')}
-                </span>
-                <Link
-                  href={`/transactions/new?edit=${tx.id}&portfolio=${state.portfolioId}`}
-                  className="flex flex-1 flex-col"
-                >
-                  <span className="text-base font-bold text-foreground">{tx.symbol}</span>
-                  <span className="text-xs text-muted-foreground">{fmtDate(tx.tradeDate, locale)}</span>
-                </Link>
-                <span className="private flex flex-col items-end tabular-nums">
-                  <span dir="ltr" className="text-base font-bold text-foreground">
-                    {market.currencySymbol}
-                    {fmtNum(shares * price, nl)}
+              <Fragment key={tx.id}>
+                {newMonth && (
+                  <h2 className="border-t border-border pt-4 pb-1.5 text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground first:border-t-0 first:pt-0">
+                    {monthLabel(tx.tradeDate)}
+                  </h2>
+                )}
+                <div className="flex items-center gap-4 border-b border-border py-[18px]">
+                  <span
+                    className={cn(
+                      'w-16 rounded-full py-1 text-center text-sm font-semibold',
+                      tx.type === 'BUY' ? 'bg-gain/10 text-gain' : 'bg-primary/10 text-primary',
+                    )}
+                  >
+                    {t(tx.type === 'BUY' ? 'buy' : 'sell')}
                   </span>
-                  <span dir="ltr" className="text-xs text-muted-foreground">
-                    {fmtNum(shares, nl, 0)} X {fmtNum(price, nl)}
+                  <Link
+                    href={`/transactions/new?edit=${tx.id}&portfolio=${state.portfolioId}`}
+                    className="flex flex-1 flex-col"
+                  >
+                    <span className="text-base font-bold text-foreground">{tx.symbol}</span>
+                    <span className="text-xs text-muted-foreground">{fmtDate(tx.tradeDate, locale)}</span>
+                  </Link>
+                  <span className="private flex flex-col items-end tabular-nums">
+                    <span dir="ltr" className="text-base font-bold text-foreground">
+                      {market.currencySymbol}
+                      {fmtNum(shares * price, nl)}
+                    </span>
+                    <span dir="ltr" className="text-xs text-muted-foreground">
+                      {fmtNum(shares, nl, 0)} X {fmtNum(price, nl)}
+                    </span>
                   </span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => remove(tx.id)}
-                  aria-label={t('delete')}
-                  className="text-faint transition-colors hover:text-loss"
-                >
-                  <Trash2 className="size-4" aria-hidden />
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => remove(tx.id)}
+                    aria-label={t('delete')}
+                    className="text-faint transition-colors hover:text-loss"
+                  >
+                    <Trash2 className="size-4" aria-hidden />
+                  </button>
+                </div>
+              </Fragment>
             );
           })}
         </section>

@@ -12,8 +12,9 @@ import { cn } from '@/lib/utils';
  * asks which lists it belongs to instead of silently dropping it in the first
  * one. Selection is multi-choice and only committed on Save.
  *
- * Holdings never appears — it mirrors the transactions and cannot be edited
- * by hand.
+ * Holdings is listed when the symbol is in it, so the user can see why the
+ * star is lit, but it is inert — that list mirrors the transactions and
+ * cannot be edited by hand.
  */
 export function WatchlistSheet({
   symbol,
@@ -27,6 +28,7 @@ export function WatchlistSheet({
   const t = useTranslations('lists');
   const { createList, patchList, reload } = useWatchlists();
   const editable = lists.filter((l) => l.name !== HOLDINGS_LIST);
+  const holdings = lists.find((l) => l.name === HOLDINGS_LIST && l.symbols.includes(symbol));
   const [picked, setPicked] = useState<Set<string>>(
     () => new Set(editable.filter((l) => l.symbols.includes(symbol)).map((l) => l.id)),
   );
@@ -85,6 +87,15 @@ export function WatchlistSheet({
         <h2 className="text-base font-medium text-foreground">{t('includeIn')}</h2>
 
         <div className="flex flex-col gap-3">
+          {holdings && (
+            <div
+              aria-disabled
+              className="flex items-center justify-between rounded-[20px] bg-primary/10 px-6 py-3.5 opacity-40"
+            >
+              <span className="text-base font-bold text-foreground">{holdings.name}</span>
+              <Check className="size-5 text-primary" aria-hidden />
+            </div>
+          )}
           {editable.map((l) => {
             const on = picked.has(l.id);
             return (

@@ -1,17 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
+import Image from 'next/image';
 import { useMarket } from '@/components/app-shell/market-context';
+import { getMarket, marketIds } from '@/src/markets/registry';
 import { InstallSettingsRow } from '@/components/install-prompt';
+import { Check, ChevronDown } from 'lucide-react';
+import { routing } from '@/src/i18n/routing';
 import { authClient, signOut, useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
 export function SettingsScreen() {
   const t = useTranslations('settings');
   const ta = useTranslations('auth');
+  const tm = useTranslations('market');
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -31,16 +36,9 @@ export function SettingsScreen() {
     setTheme(dark ? 'dark' : 'light');
   };
 
-  const [displayCurrency, setDisplayCurrency] = useState<string | null>(null);
   const [defaultMarket, setDefaultMarket] = useState<string | null>(null);
-  const user = session?.user as
-    | { name: string; email: string; displayCurrency?: string; defaultMarket?: string }
-    | undefined;
+  const user = session?.user as { name: string; email: string; defaultMarket?: string } | undefined;
 
-  const pickCurrency = async (ccy: string) => {
-    setDisplayCurrency(ccy);
-    await authClient.updateUser({ displayCurrency: ccy });
-  };
   const pickMarket = async (market: string) => {
     setDefaultMarket(market);
     // Switch the live lens too: saving a preference that only applies to the
@@ -50,7 +48,7 @@ export function SettingsScreen() {
   };
 
   const segment = (
-    options: Array<{ value: string; label: string }>,
+    options: Array<{ value: string; label: React.ReactNode }>,
     active: string,
     onPick: (v: string) => void,
     disabled = false,
@@ -110,49 +108,32 @@ export function SettingsScreen() {
         )}
         {row(
           t('language'),
-          segment(
-            [
-              { value: 'en', label: 'English' },
-              { value: 'he', label: 'עברית' },
-            ],
-            locale,
+          <Dropdown
+            options={routing.locales.map((l) => ({
+              value: l,
+              badge: <Flag locale={l} />,
+              name: localeNames[l] ?? l,
+            }))}
+            active={locale}
             // Hard navigation — a client locale transition remounts the
             // [locale] layout and trips React's script-tag error (see
             // app-header.tsx).
             // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- hard reload is the point
-            (l) => window.location.assign(`/${l}${pathname === '/' ? '' : pathname}`),
-          ),
-        )}
-      </section>
-
-      {/* Preferences — persisted on the account */}
-      <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
-        <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-          {t('preferences')}
-        </h2>
-        {row(
-          t('displayCurrency'),
-          segment(
-            [
-              { value: 'USD', label: '$ USD' },
-              { value: 'ILS', label: '₪ ILS' },
-            ],
-            displayCurrency ?? user?.displayCurrency ?? 'USD',
-            pickCurrency,
-            !user,
-          ),
+            onPick={(l) => window.location.assign(`/${l}${pathname === '/' ? '' : pathname}`)}
+          />,
         )}
         {row(
           t('defaultMarket'),
-          segment(
-            [
-              { value: 'US', label: '$ US' },
-              { value: 'IL', label: '₪ IL' },
-            ],
-            defaultMarket ?? user?.defaultMarket ?? 'US',
-            pickMarket,
-            !user,
-          ),
+          <Dropdown
+            options={marketIds.map((id) => ({
+              value: id,
+              badge: getMarket(id).currencySymbol,
+              name: tm(`stripName.${id}`),
+            }))}
+            active={defaultMarket ?? user?.defaultMarket ?? 'US'}
+            onPick={pickMarket}
+            disabled={!user}
+          />,
         )}
         {!user && !isPending && (
           <p className="text-xs text-muted-foreground">{t('signInForPrefs')}</p>
@@ -195,5 +176,88 @@ export function SettingsScreen() {
       </section>
       </div>
     </main>
+  );
+}
+
+/** Language is chosen by flag, exactly as in the header picker. */
+function Flag({ locale }: { locale: string }) {
+  return (
+    <Image
+      src={locale === 'he' ? '/flags/il.svg' : '/flags/us.svg'}
+      alt={locale === 'he' ? 'עברית' : 'English'}
+      width={18}
+      height={17}
+    />
+  );
+}
+
+const localeNames: Record<string, string> = { en: 'English', he: 'עברית' };
+
+/**
+ * Language and Market are the app's two scaling axes, so both are dropdowns:
+ * a third language or a fourth market is a registry entry, not a redesign.
+ * The trigger carries the identity alone — flag for language, currency symbol
+ * for market — with the full name spelled out in the menu.
+ */
+function Dropdown({
+  options,
+  active,
+  onPick,
+  disabled,
+}: {
+  options: Array<{ value: string; badge: React.ReactNode; name: string }>;
+  active: string;
+  onPick: (value: string) => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, []);
+
+  const current = options.find((o) => o.value === active) ?? options[0];
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        disabled={disabled}
+        aria-expanded={open}
+        aria-label={current?.name}
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          'flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-[13px] text-foreground',
+          disabled && 'opacity-50',
+        )}
+      >
+        {current?.badge}
+        <ChevronDown className="size-4 text-muted-foreground" aria-hidden />
+      </button>
+      {open && (
+        <div className="absolute end-0 top-full z-50 mt-1.5 flex min-w-[180px] flex-col gap-3 rounded-[20px] bg-well p-5 shadow-lg">
+          {options.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                if (o.value !== active) onPick(o.value);
+              }}
+              className="flex items-center gap-3 text-start text-[13px] text-foreground"
+            >
+              <span className="flex w-5 justify-center">{o.badge}</span>
+              <span className="flex-1">{o.name}</span>
+              {o.value === active && <Check className="size-4" aria-hidden />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

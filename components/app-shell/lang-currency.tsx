@@ -6,42 +6,39 @@ import { useLocale } from 'next-intl';
 import { Check, ChevronDown } from 'lucide-react';
 import { usePathname } from '@/src/i18n/navigation';
 import { authClient, useSession } from '@/lib/auth-client';
+import { useMarket } from './market-context';
+import { getMarket } from '@/src/markets/registry';
 import { cn } from '@/lib/utils';
 
-const CURRENCY_KEY = 'toll-e.currency';
-
-const currencyLabel: Record<string, string> = { USD: '$USD', ILS: '₪NIS' };
-
-/** language (flag) × display currency rows, in design order. */
+/**
+ * language (flag) × market (currency symbol) rows, in design order. The
+ * symbol picks the *market* — $ is the US portfolio and its indexes, ₪ the
+ * Israeli one — so all four combinations are reachable: either portfolio in
+ * either language.
+ */
 const combos = [
-  { locale: 'en', currency: 'USD' },
-  { locale: 'he', currency: 'USD' },
-  { locale: 'en', currency: 'ILS' },
-  { locale: 'he', currency: 'ILS' },
+  { locale: 'en', market: 'US' },
+  { locale: 'he', market: 'US' },
+  { locale: 'en', market: 'IL' },
+  { locale: 'he', market: 'IL' },
 ] as const;
 
 const flagSrc = (locale: string) => (locale === 'he' ? '/flags/il.svg' : '/flags/us.svg');
 
 /**
- * The design's language × display-currency selector (flag + $USD/₪NIS pill).
- * Currency persists to the account (localStorage for guests); language
- * switches via a full navigation — a client locale transition remounts the
- * [locale] layout and trips React's script-tag error on the init script.
+ * The design's language × market selector. It is the same pair of choices as
+ * the Account page's Language and Default market rows, and writes the same
+ * state, so the two controls never disagree. Language switches via a full
+ * navigation — a client locale transition remounts the [locale] layout and
+ * trips React's script-tag error on the init script.
  */
 export function LangCurrencyPicker({ compact = false }: { compact?: boolean }) {
   const locale = useLocale();
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { marketId, setMarketId } = useMarket();
   const [open, setOpen] = useState(false);
-  const [currency, setCurrency] = useState('USD');
   const ref = useRef<HTMLDivElement>(null);
-
-  // Signed-in preference wins; localStorage keeps the choice for guests.
-  const userCurrency = (session?.user as { displayCurrency?: string } | undefined)?.displayCurrency;
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate stored preference
-    setCurrency(userCurrency ?? localStorage.getItem(CURRENCY_KEY) ?? 'USD');
-  }, [userCurrency]);
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -53,11 +50,9 @@ export function LangCurrencyPicker({ compact = false }: { compact?: boolean }) {
 
   const pick = (combo: (typeof combos)[number]) => {
     setOpen(false);
-    if (combo.currency !== currency) {
-      setCurrency(combo.currency);
-      localStorage.setItem(CURRENCY_KEY, combo.currency);
-      if (session) void authClient.updateUser({ displayCurrency: combo.currency });
-      window.dispatchEvent(new CustomEvent('toll-e:currency', { detail: combo.currency }));
+    if (combo.market !== marketId) {
+      setMarketId(combo.market); // persists the lens for this browser
+      if (session) void authClient.updateUser({ defaultMarket: combo.market });
     }
     if (combo.locale !== locale) {
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- hard reload is the point
@@ -77,23 +72,25 @@ export function LangCurrencyPicker({ compact = false }: { compact?: boolean }) {
         )}
       >
         <Image src={flagSrc(locale)} alt="" width={16} height={15} aria-hidden />
-        <span className="text-foreground">{currencyLabel[currency] ?? currency}</span>
+        <span className="text-foreground">{getMarket(marketId).currencySymbol}</span>
         <ChevronDown className="size-4 text-foreground" aria-hidden />
       </button>
       {open && (
         <div className="absolute end-0 top-full z-50 mt-1.5 flex flex-col gap-[13px] rounded-[20px] bg-well p-6 shadow-lg">
           {combos.map((combo) => {
-            const active = combo.locale === locale && combo.currency === currency;
+            const active = combo.locale === locale && combo.market === marketId;
             return (
               <button
-                key={combo.locale + combo.currency}
+                key={combo.locale + combo.market}
                 type="button"
                 onClick={() => pick(combo)}
                 className="flex items-center justify-end gap-2"
               >
                 {active && <Check className="size-4 text-foreground" aria-hidden />}
                 <Image src={flagSrc(combo.locale)} alt="" width={16} height={15} aria-hidden />
-                <span className="text-base text-foreground">{currencyLabel[combo.currency]}</span>
+                <span className="text-base text-foreground">
+                  {getMarket(combo.market).currencySymbol}
+                </span>
               </button>
             );
           })}

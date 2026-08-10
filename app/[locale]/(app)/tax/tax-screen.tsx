@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ChevronDown, Shield } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { useMarket } from '@/components/app-shell/market-context';
-import { MoreLink } from '@/components/more-link';
+import { MoreLink, MoreButton } from '@/components/more-link';
 import { ReserveBar } from '@/components/reserve-bar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTax } from '@/components/use-tax';
@@ -23,7 +23,10 @@ interface MonthRow {
   gains: number | null;
   losses: number | null;
   net: number;
-  tax: number | null;
+  /** Earlier-in-the-year losses this month's gains absorbed. */
+  poolUsed: number;
+  /** Withheld at source at month end; null ⇒ nothing withheld. */
+  paid: number | null;
 }
 
 interface SaleRow {
@@ -42,14 +45,24 @@ interface TaxView {
   year: number;
   years: number[];
   ratePct: number;
-  due: number;
   realizedGains: number;
   realizedLosses: number;
   net: number;
-  carriedApplied: number;
-  carriedFromYear: number | null;
   taxable: number;
+  /** Withheld at source across the year — the cash already gone. */
+  paid: number;
+  /** taxable × rate, before the registered shield. */
+  owedBeforeShield: number;
+  /** Registered shield applied at filing (money). */
+  shieldApplied: number;
+  /** The year's true liability. */
+  owed: number;
+  /** paid − owed, back from the government in the following year's filing. */
+  refund: number;
+  carriedFromYear: number | null;
+  /** Registered shield left: money primary, underlying loss secondary. */
   shieldLeft: number;
+  shieldLossLeft: number;
   months: MonthRow[];
   sales: SaleRow[];
   filingDue: string;
@@ -71,9 +84,20 @@ export function TaxScreen() {
   // undefined = "latest open" default; null = all collapsed.
   const [openMonth, setOpenMonthRaw] = useState<number | null | undefined>(undefined);
   const [openYearState, setOpenYearRaw] = useState<number | null | undefined>(undefined);
+  const monthlyRef = useRef<HTMLElement>(null);
+  // Armed by "Detailed view" on the yearly tab; the scroll has to wait for the
+  // monthly section to render, and a ref keeps it out of the render cycle.
+  const jumpToMonthly = useRef(false);
+
+  useEffect(() => {
+    if (mobileTab !== 'monthly' || !jumpToMonthly.current) return;
+    jumpToMonthly.current = false;
+    monthlyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [mobileTab]);
 
   const real = state.status === 'data' ? state.data : null;
   const demoTax = demo[marketId].tax;
+  const demoMonthlyPaid = demoTax.months.reduce((s, m) => s + (m.tax ?? 0), 0);
 
   if (state.status === 'loading') {
     return (
@@ -114,7 +138,10 @@ export function TaxScreen() {
         .sort((a, b) => b.year - a.year)
         .map((y) => ({
           year: y.year,
-          due: y.due,
+          owed: y.owed,
+          paid: y.paid,
+          refund: y.refundNextYear,
+          registered: y.registered,
           shieldOut: y.shieldOut,
           gains: y.realizedGains,
           losses: y.realizedLosses,
@@ -124,7 +151,10 @@ export function TaxScreen() {
     : [
         {
           year: demoTax.year,
-          due: demoTax.due,
+          owed: demoTax.due,
+          paid: demoTax.due,
+          refund: 0,
+          registered: 0,
           shieldOut: 0,
           gains: demoTax.realizedGains,
           losses: demoTax.realizedLosses,
@@ -143,20 +173,25 @@ export function TaxScreen() {
       year,
       years,
       ratePct: ledger.ratePct,
-      due: ledger.due,
       realizedGains: ledger.realizedGains,
       realizedLosses: ledger.realizedLosses,
       net: ledger.net,
-      carriedApplied: ledger.shieldUsed,
-      carriedFromYear: null,
       taxable: ledger.taxable,
+      paid: ledger.paid,
+      owedBeforeShield: ledger.owedBeforeShield,
+      shieldApplied: ledger.shieldUsed,
+      owed: ledger.owed,
+      refund: ledger.refundNextYear,
+      carriedFromYear: null,
       shieldLeft: ledger.shieldOut,
+      shieldLossLeft: ledger.shieldLossOut,
       months: ledger.months.map((m) => ({
         month: m.month,
         gains: m.gains > 0 ? m.gains : null,
         losses: m.losses > 0 ? -m.losses : null,
         net: m.net,
-        tax: m.tax,
+        poolUsed: m.poolUsed,
+        paid: m.paid,
       })),
       sales: ledger.sales.map((s) => ({
         id: s.saleTxId,
@@ -175,15 +210,21 @@ export function TaxScreen() {
       year: demoTax.year,
       years: [demoTax.year, demoTax.year - 1],
       ratePct: demoTax.ratePct,
-      due: demoTax.due,
       realizedGains: demoTax.realizedGains,
       realizedLosses: demoTax.realizedLosses,
       net: demoTax.realizedGains - demoTax.realizedLosses,
-      carriedApplied: demoTax.carriedLoss,
+      taxable: demoTax.realizedGains - demoTax.realizedLosses,
+      // The demo frames are static design data: they carry the withheld figures
+      // per month and the post-shield bill, so the rest is derived from those.
+      paid: demoMonthlyPaid,
+      owedBeforeShield: demoTax.due + (demoTax.carriedLoss * demoTax.ratePct) / 100,
+      shieldApplied: (demoTax.carriedLoss * demoTax.ratePct) / 100,
+      owed: demoTax.due,
+      refund: demoMonthlyPaid - demoTax.due,
       carriedFromYear: demoTax.carriedFromYear,
-      taxable: demoTax.taxable,
       shieldLeft: 0,
-      months: demoTax.months,
+      shieldLossLeft: 0,
+      months: demoTax.months.map((m) => ({ ...m, paid: m.tax })),
       sales: demoTax.sales.map((s, i) => ({
         id: `demo-${i}`,
         label: locale === 'he' && s.nameHe ? s.nameHe : s.symbol,
@@ -209,10 +250,10 @@ export function TaxScreen() {
     );
   }
 
-  const carriedLabel =
+  const shieldLabel =
     view.carriedFromYear !== null
       ? t('lossCarriedFrom', { year: view.carriedFromYear })
-      : t('carriedIn');
+      : t('shieldApplied');
 
   const yearToggle = (
     <div className="flex max-w-full gap-0.5 overflow-x-auto rounded-lg border border-border bg-card p-[3px]" dir="ltr">
@@ -239,11 +280,18 @@ export function TaxScreen() {
     <div className="flex flex-col gap-[7px] text-sm tabular-nums">
       <Row label={t('realizedGains')} value={fmtNum(view.realizedGains, nl)} />
       <Row label={t('realizedLosses')} value={fmtNum(-view.realizedLosses, nl)} />
-      {view.carriedApplied > 0 && <Row label={carriedLabel} value={fmtNum(-view.carriedApplied, nl)} />}
       <div className="h-px bg-border" />
       <Row label={t('taxable')} value={fmtNum(view.taxable, nl)} bold />
       <Row label={t('rate')} value={`${view.ratePct}%`} />
-      <Row label={t('due')} value={fmtNum(view.due, nl)} bold big />
+      <Row label={t('taxOnYear')} value={fmtNum(view.owedBeforeShield, nl)} />
+      {view.shieldApplied > 0 && <Row label={shieldLabel} value={fmtNum(-view.shieldApplied, nl)} />}
+      <div className="h-px bg-border" />
+      <Row label={t('owed')} value={fmtNum(view.owed, nl)} bold big />
+      {/* The cash side: withheld month by month, the excess back at filing. */}
+      <Row label={t('withheldAtSource')} value={fmtNum(view.paid, nl)} />
+      {view.refund > 0 && (
+        <Row label={t('refundIn', { year: view.year + 1 })} value={fmtNum(view.refund, nl)} />
+      )}
     </div>
   );
 
@@ -297,17 +345,17 @@ export function TaxScreen() {
     </>
   );
 
-  // Mobile month accordions: newest first, with cumulative due through each
-  // month (the year picture "as of" that month).
+  // Mobile month accordions: newest first, with tax withheld cumulatively
+  // through each month (the year picture "as of" that month).
   const cumByMonth = new Map<number, number>();
-  let runningDue = 0;
+  let runningPaid = 0;
   for (const m of [...view.months].sort((a, b) => a.month - b.month)) {
-    runningDue += m.tax ?? 0;
-    cumByMonth.set(m.month, runningDue);
+    runningPaid += m.paid ?? 0;
+    cumByMonth.set(m.month, runningPaid);
   }
   const monthRows = [...view.months]
     .sort((a, b) => b.month - a.month)
-    .map((m) => ({ ...m, cumDue: cumByMonth.get(m.month) ?? 0 }));
+    .map((m) => ({ ...m, cumPaid: cumByMonth.get(m.month) ?? 0 }));
   const openMonthEff = openMonth === undefined ? (monthRows[0]?.month ?? null) : openMonth;
   const openYearEff = openYearState === undefined ? (yearRows[0]?.year ?? null) : openYearState;
 
@@ -326,7 +374,7 @@ export function TaxScreen() {
         />
 
         {mobileTab === 'monthly' && (
-          <section className="flex flex-col px-6 pt-6">
+          <section ref={monthlyRef} className="flex scroll-mt-4 flex-col px-6 pt-6">
             {monthRows.map((m) => {
               const open = openMonthEff === m.month;
               const label = `${fmtMonth(m.month, locale, 'short')} ${view.year}`;
@@ -348,7 +396,7 @@ export function TaxScreen() {
                     {!open && (
                       <span dir="ltr" className="private self-start text-xl font-bold text-foreground tabular-nums">
                         {sym}
-                        {fmtNum(m.cumDue, nl)}
+                        {fmtNum(m.cumPaid, nl)}
                       </span>
                     )}
                   </button>
@@ -356,7 +404,7 @@ export function TaxScreen() {
                     <div className="flex flex-col gap-2 pt-1">
                       <p dir="ltr" className="private self-start text-[28px] font-bold tracking-tight text-foreground tabular-nums">
                         {sym}
-                        {fmtNum(m.cumDue, nl)}
+                        {fmtNum(m.cumPaid, nl)}
                       </p>
                       <div className="flex flex-col gap-[7px] text-sm tabular-nums">
                         <Row label={t('realizedGains')} value={`${sym}${fmtNum(m.gains ?? 0, nl)}`} />
@@ -366,19 +414,18 @@ export function TaxScreen() {
                         <div className="flex justify-end">
                           <MoreLink href="/transactions">{t('transactionsDetails')}</MoreLink>
                         </div>
+                        {/* Only earlier losses in this same year reach a month;
+                            the registered shield settles at filing, not here. */}
+                        {m.poolUsed > 0 && (
+                          <Row label={t('offsetByPool')} value={`${sym}${fmtNum(-m.poolUsed, nl)}`} />
+                        )}
                         <Row label={t('rate')} value={`${view.ratePct}%`} />
                         <Row
-                          label={t('calcTax')}
-                          value={m.tax === null ? t('shielded') : `${sym}${fmtNum(m.tax, nl)}`}
+                          label={t('withheldThisMonth')}
+                          value={m.paid === null ? t('shielded') : `${sym}${fmtNum(m.paid, nl)}`}
                         />
-                        {view.carriedApplied > 0 && (
-                          <Row
-                            label={t('carriedIn')}
-                            value={`${sym}${fmtNum(-view.carriedApplied, nl)}`}
-                          />
-                        )}
                         <div className="h-px bg-border" />
-                        <Row label={t('due')} value={`${sym}${fmtNum(m.cumDue, nl)}`} bold big />
+                        <Row label={t('withheldYtd')} value={`${sym}${fmtNum(m.cumPaid, nl)}`} bold big />
                       </div>
                     </div>
                   )}
@@ -410,29 +457,29 @@ export function TaxScreen() {
                     {!open && (
                       <span dir="ltr" className="private self-start text-xl font-bold text-foreground tabular-nums">
                         {sym}
-                        {fmtNum(y.due, nl)}
+                        {fmtNum(y.paid, nl)}
                       </span>
                     )}
                   </button>
                   {open && (
                     <div className="flex flex-col gap-3 pt-2">
-                      {y.due > 0 ? (
+                      {y.paid > 0 || y.owed > 0 ? (
                         <>
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-xs text-muted-foreground">{t('totalYearly')}</span>
+                            <span className="text-xs text-muted-foreground">{t('withheldThisYear')}</span>
                             <span dir="ltr" className="private self-start text-[28px] font-bold tracking-tight text-foreground tabular-nums">
                               {sym}
-                              {fmtNum(y.due, nl)}
+                              {fmtNum(y.paid, nl)}
                             </span>
                           </div>
                           <div className="flex items-end justify-between">
                             <div className="flex flex-col gap-0.5">
                               <span className="text-xs text-muted-foreground">
-                                {t('taxDueBy', { date: fmtDate(`${y.year + 1}-04-30`, locale) })}
+                                {t('trueLiability', { date: fmtDate(`${y.year + 1}-04-30`, locale) })}
                               </span>
                               <span dir="ltr" className="private text-xl font-bold text-loss tabular-nums">
                                 {sym}
-                                {fmtNum(y.due, nl)}
+                                {fmtNum(y.owed, nl)}
                               </span>
                             </div>
                             <div className="flex flex-col items-end gap-0.5 text-end">
@@ -443,10 +490,24 @@ export function TaxScreen() {
                               </span>
                             </div>
                           </div>
+                          {/* The gap between the two comes back at filing. */}
+                          {y.refund > 0 && (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-xs text-muted-foreground">
+                                {t('refundIn', { year: y.year + 1 })}
+                              </span>
+                              <span dir="ltr" className="private text-xl font-bold text-gain tabular-nums">
+                                {sym}
+                                {fmtNum(y.refund, nl)}
+                              </span>
+                            </div>
+                          )}
                         </>
                       ) : (
                         <div className="flex flex-col gap-1">
-                          <span className="text-xs text-muted-foreground">{t('lossShield')}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {y.registered > 0 ? t('shieldRegistered') : t('lossShield')}
+                          </span>
                           <span className="flex items-center gap-2">
                             <Shield className="size-5 text-gain" aria-hidden />
                             <span dir="ltr" className="private text-[28px] font-bold tracking-tight text-foreground tabular-nums">
@@ -456,7 +517,16 @@ export function TaxScreen() {
                           </span>
                         </div>
                       )}
-                      <MoreLink href="/transactions">{t('detailedView')}</MoreLink>
+                      <MoreButton
+                        onClick={() => {
+                          setPickedYear(y.year);
+                          setOpenMonthRaw(undefined); // back to "latest month open"
+                          setMobileTab('monthly');
+                          jumpToMonthly.current = true;
+                        }}
+                      >
+                        {t('detailedView')}
+                      </MoreButton>
                     </div>
                   )}
                 </div>
@@ -493,15 +563,15 @@ export function TaxScreen() {
             <div className="flex gap-5">
               <section className="flex flex-1 flex-col gap-3 rounded-2xl border border-border bg-card p-5">
                 <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-                  {t('setAsideNow')}
+                  {t('withheldThisYear')}
                 </h2>
                 <p dir="ltr" className="private self-start text-[32px] font-semibold tracking-tight text-foreground tabular-nums">
                   {sym}
-                  {fmtNum(view.due, nl)}
+                  {fmtNum(view.paid, nl)}
                 </p>
                 {view.cash ? (
                   <>
-                    <ReserveBar held={view.cash.held} due={view.due} />
+                    <ReserveBar held={view.cash.held} due={view.paid} />
                     <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
                       <span>{t('heldInCash', { amount: fmtNum(view.cash.held, nl) })}</span>
                       <span>{t('short', { amount: fmtNum(view.cash.short, nl) })}</span>
@@ -509,7 +579,12 @@ export function TaxScreen() {
                   </>
                 ) : (
                   <p className="text-[13px] text-muted-foreground">
-                    {t('setAsideNote', { year: view.year })}
+                    {view.refund > 0
+                      ? t('refundNote', {
+                          amount: `${sym}${fmtNum(view.refund, nl)}`,
+                          year: view.year + 1,
+                        })
+                      : t('withheldNote', { year: view.year })}
                   </p>
                 )}
               </section>
@@ -535,9 +610,15 @@ export function TaxScreen() {
                   {sym}
                   {fmtNum(view.shieldLeft, nl, 0)}
                 </p>
+                {/* Money value leads; the loss standing behind it is secondary. */}
                 <p className="text-[13px] text-muted-foreground tabular-nums">
-                  {view.carriedApplied > 0
-                    ? t('usedNote', { amount: fmtNum(view.carriedApplied, nl) })
+                  {view.shieldLossLeft > 0 && (
+                    <span className="private">
+                      {t('behindLosses', { amount: `${sym}${fmtNum(view.shieldLossLeft, nl, 0)}` })}{' '}
+                    </span>
+                  )}
+                  {view.shieldApplied > 0
+                    ? t('usedNote', { amount: fmtNum(view.shieldApplied, nl) })
                     : t('noShieldNote')}
                 </p>
               </section>
@@ -557,7 +638,7 @@ export function TaxScreen() {
                 <span className="text-end">{t('gains')}</span>
                 <span className="text-end">{t('losses')}</span>
                 <span className="text-end">{t('net')}</span>
-                <span className="text-end">{t('taxAtRate', { rate: view.ratePct })}</span>
+                <span className="text-end">{t('withheldAtRate', { rate: view.ratePct })}</span>
               </div>
               {view.months.map((m) => (
                 <div
@@ -573,9 +654,9 @@ export function TaxScreen() {
                   </span>
                   <span dir="ltr" className="private text-end text-foreground">{fmtNum(m.net, nl)}</span>
                   <span
-                    className={cn('private text-end', m.tax === null ? 'text-muted-foreground' : 'text-foreground')}
+                    className={cn('private text-end', m.paid === null ? 'text-muted-foreground' : 'text-foreground')}
                   >
-                    {m.tax === null ? t('shielded') : <span dir="ltr">{fmtNum(m.tax, nl)}</span>}
+                    {m.paid === null ? t('shielded') : <span dir="ltr">{fmtNum(m.paid, nl)}</span>}
                   </span>
                 </div>
               ))}
@@ -584,7 +665,7 @@ export function TaxScreen() {
                 <span dir="ltr" className="private text-end text-gain">{fmtSigned(view.realizedGains, nl)}</span>
                 <span dir="ltr" className="private text-end text-loss">{fmtSigned(-view.realizedLosses, nl)}</span>
                 <span dir="ltr" className="private text-end text-foreground">{fmtNum(view.net, nl)}</span>
-                <span dir="ltr" className="private text-end text-foreground">{fmtNum(view.due, nl)}</span>
+                <span dir="ltr" className="private text-end text-foreground">{fmtNum(view.paid, nl)}</span>
               </div>
             </section>
           </div>
@@ -613,13 +694,16 @@ export function TaxScreen() {
                 {t('lossShield')}
               </h2>
               <p className="private text-sm leading-relaxed text-foreground">
-                {view.carriedApplied > 0
+                {view.shieldApplied > 0
                   ? t('shieldNoteApplied', {
-                      amount: `${sym}${fmtNum(view.carriedApplied, nl, 0)}`,
+                      amount: `${sym}${fmtNum(view.shieldApplied, nl, 0)}`,
                       taxYear: view.year,
-                      saved: `${sym}${fmtNum((view.carriedApplied * view.ratePct) / 100, nl, 0)}`,
+                      refundYear: view.year + 1,
                     })
-                  : t('shieldNoteNone', { amount: `${sym}${fmtNum(view.shieldLeft, nl, 0)}` })}
+                  : t('shieldNoteNone', {
+                      amount: `${sym}${fmtNum(view.shieldLeft, nl, 0)}`,
+                      losses: `${sym}${fmtNum(view.shieldLossLeft, nl, 0)}`,
+                    })}
               </p>
               <MoreLink href="/tax">{t('howCarriedLossesWork')}</MoreLink>
             </section>

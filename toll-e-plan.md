@@ -28,7 +28,7 @@ The tracking experience is deliberately modeled on the Yahoo Finance app (our 22
 2. User records transactions: **Buy / Sell** (quantity, price, date, commission, note). Short/Cover deferred to a later phase.
 3. Holdings, portfolio performance, and cost basis update instantly.
 4. Every **Sell** is a tax event: the engine matches sold shares to open lots (FIFO), computes realized profit, and rolls it into the monthly and yearly tax ledgers.
-5. The **Tax view** always shows: realized gains/losses this month & year, tax accrued, recommended cash reserve, and the loss-carryforward shield.
+5. The **Tax view** always shows: realized gains/losses this month & year, tax withheld at source, what the year actually owes, the refund expected next year, and the registered loss shield.
 
 ### 2.2 The market system — two tabs now, N markets by design
 
@@ -111,9 +111,9 @@ Short selling & cover, options/derivatives, **cash/wallet tracking (decided: v1 
 - **Per-portfolio tax profile**: a single rate, default **25%** (Israel's real capital-gains rate). User may set any rate; **0% hides all tax UI** for that portfolio. Changing the rate **recomputes everything retroactively** — trivial because tax is always *derived*, never stored as source of truth.
 - **Tax event**: every Sell. Realized profit = proceeds − cost basis of matched lots − allocated commissions.
 - **Lot matching: FIFO** (the Israeli banking-system convention). The engine keeps per-buy open lots; a sell consumes them oldest-first, splitting lots when partial.
-- **Monthly ledger**: net realized P&L per calendar month → monthly tax accrual (mirrors how Israeli brokers withhold monthly; fine-grained per-sale timing not needed).
-- **Yearly ledger with loss shield**: within a tax year, losses offset gains. If the year nets to a loss, it becomes a **carryforward tax shield**, applied automatically against future years' gains before tax is computed (indefinite carryforward, matching Israeli law). The shield balance is always visible.
-- **Reserve recommendation**: cash the user should keep aside = tax accrued YTD not yet paid/withheld. Shown prominently — this is the "how much should I hold back?" answer.
+- **Monthly ledger — withholding at source.** Israeli brokers settle monthly, and **order matters**. A running loss pool carries *forward within the year only*: a loss month adds to it, a gain month draws it down first, and only the remainder is withheld at that month's end. A gain in February is withheld even if a loss follows in November — the pool never reaches backwards.
+- **Yearly ledger — the shield is a refund, not a discount.** At year end the year is computed standalone: net = gains − losses. A year that nets to a **loss registers `|net| × rate` with the government** as shield — a *money* amount, locked at the rate in force when that year closed, carried indefinitely and consumed oldest-layer-first. A year that nets to a **gain owes `net × rate`, and prior-year shield offsets that liability** — but nothing is applied at source, so the tax is withheld in full during the year and the difference (`paid − owed`) comes back as a **refund in the following year's filing**. Over-withholding caused purely by month ordering refunds through the same channel.
+- **Two figures, never conflated**: `paid` (cash withheld at source) and `owed` (the year's true liability after the shield). The gap is `refundNextYear`. The shield displays as **money primary, underlying loss secondary**.
 
 **Computation is pure & deterministic**: `f(transactions, taxProfile) → {lots, realizedEvents, monthlyLedger, yearlyLedger, shield}`. Recompute on any transaction change (edit/delete/backdate) or rate change. This makes retroactive edits, imports, and rate switches free of migration pain.
 
@@ -137,7 +137,7 @@ The engine takes a pluggable `TaxRuleSet`, so these slot in later without schema
 
 ### 3.4 Tax UI & the Performance page
 
-- **Portfolio tax panel** (in the portfolio's native currency): "Tax due this month $X · YTD realized $Y · Tax accrued $Z · Shield balance $W · Recommended reserve $Z−paid".
+- **Portfolio tax panel** (in the portfolio's native currency): "Withheld this month $X · YTD realized $Y · Withheld YTD $Z · Owed for the year $W · Refund expected $Z−W · Shield balance $V".
 - **Per-portfolio Tax page**: monthly table (realized gains, losses, net, tax), yearly summary cards, shield history (created/consumed), per-sale drill-down showing matched lots — the "show your work" view that builds trust. All native currency.
 - Every Sell confirmation shows its tax impact immediately, in the portfolio's currency.
 

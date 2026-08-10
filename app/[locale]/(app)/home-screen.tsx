@@ -88,20 +88,24 @@ export function HomeScreen() {
     taxState.status === 'data'
       ? taxState.data.years.reduce((a, b) => (b.year > a.year ? b : a))
       : null;
+  // Headline is the cash actually withheld at source; the shield shows up as
+  // next year's refund rather than as a reduction here.
   const reserve = realLedger
     ? {
         year: realLedger.year,
-        due: realLedger.due,
+        paid: realLedger.paid,
+        refund: realLedger.refundNextYear,
         net: realLedger.net,
-        carried: realLedger.shieldUsed,
+        shieldApplied: realLedger.shieldUsed,
         taxable: realLedger.taxable,
         isReal: true,
       }
     : {
         year: data.tax.year,
-        due: data.tax.due,
+        paid: data.tax.due,
+        refund: 0,
         net: data.tax.realizedGains - data.tax.realizedLosses,
-        carried: data.tax.carriedLoss,
+        shieldApplied: (data.tax.carriedLoss * data.tax.ratePct) / 100,
         taxable: data.tax.taxable,
         isReal: false,
       };
@@ -458,11 +462,11 @@ export function HomeScreen() {
           ) : (
           <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
             <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-              {t('home.taxReserveYear', { year: reserve.year })}
+              {t('home.taxWithheldYear', { year: reserve.year })}
             </h2>
             <p dir="ltr" className="private self-start text-[30px] font-semibold tracking-tight text-foreground tabular-nums">
               {sym}
-              {fmtNum(reserve.due, nl)}
+              {fmtNum(reserve.paid, nl)}
             </p>
             {!reserve.isReal && (
               <>
@@ -480,13 +484,23 @@ export function HomeScreen() {
                 <span dir="ltr" className="private text-foreground">{fmtNum(reserve.net, nl)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('home.lossCarriedIn')}</span>
-                <span dir="ltr" className="private text-foreground">{fmtNum(-reserve.carried, nl)}</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('home.taxableAt', { rate: taxRate })}</span>
                 <span dir="ltr" className="private text-foreground">{fmtNum(reserve.taxable, nl)}</span>
               </div>
+              {reserve.shieldApplied > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t('home.shieldApplied')}</span>
+                  <span dir="ltr" className="private text-foreground">{fmtNum(-reserve.shieldApplied, nl)}</span>
+                </div>
+              )}
+              {reserve.refund > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    {t('home.refundIn', { year: reserve.year + 1 })}
+                  </span>
+                  <span dir="ltr" className="private text-gain">{fmtNum(reserve.refund, nl)}</span>
+                </div>
+              )}
             </div>
             <MoreLink href="/tax">{t('home.openTaxView')}</MoreLink>
           </section>

@@ -1,122 +1,119 @@
-# Session Handoff — 2026-08-07
+# Session Handoff — 2026-08-11
 
 ## Goal
-Finish Phase 4 of toll-e (stock-page depth, polish, Hebrew pass), then ship it:
-deploy to Vercel with a real database, add a Yahoo-outage fallback, make the app
-installable as a PWA, and replace email/password auth with Google-only sign-in.
+Rewrite the tax engine to model Israeli capital-gains tax the way it actually
+works — withheld at source month by month, with prior-year loss shield coming
+back as a refund the following year — and carry that change through the plan,
+the mobile screens, and the demo fixtures.
 
 ## Current State
-**Live and public at https://toll-e.vercel.app** — Neon Postgres, live Yahoo data,
-auto-deploy on push to main. All local gates green: 42 vitest, 15 Playwright e2e,
-typecheck, lint, production build. Working tree clean except `handoff.md`.
+Green: `pnpm typecheck`, `pnpm test` (74 tests, 5 files), `pnpm lint`, and
+`en`/`he` message-key parity all pass.
 
-Working and verified in production:
-- Stock page News / Analysis / Financials tabs on real Yahoo data.
-- Google OAuth: Google serves a real consent screen branded "toll-e",
-  `redirect_uri = https://toll-e.vercel.app/api/auth/callback/google`. Password
-  sign-up correctly refused (`EMAIL_PASSWORD_SIGN_UP_DISABLED`).
-  **Not end-to-end tested** — the last step needs a human typing a Google password.
-- PWA: manifest, service worker, icons all serve; install sheet verified locally
-  (appears, `prompt()` fires, dismissal sticks, Settings row persists, HE RTL ok).
-- Yahoo works from Vercel's datacenter IPs (the main deploy risk, now cleared).
+- Engine (`src/engine/tax/index.ts`) fully rewritten and covered by 18 tests.
+- Tax page, Home reserve card, sell preview, Performance page all migrated.
+- Demo fixtures corrected and pinned by a new guard test.
+- `toll-e-plan.md` §3.1 rewritten to match.
+- **Nothing is committed.** All work is uncommitted in the working tree.
+- **Not verified in a browser.** Only screenshots the user supplied were
+  reviewed; the new Performance layout has not been seen rendered.
 
-Known broken / incomplete:
-- **CI does not run on push.** No Actions check suite is created since commit
-  `cc33fc2`; manual `workflow_dispatch` DOES create a run. Cause unknown.
-- Local Google sign-in will fail until `http://localhost:3000/api/auth/callback/google`
-  is added to the same Google OAuth client (only the prod URI is registered).
-- Tax export button still visual-only; TASE hours still `TODO(verify)`; holidays
-  arrays empty; portfolio value history ignores intra-period transactions.
-- Mobile has no overlay chart / checkboxes (desktop-only by design).
+Working tree also contains another session's work (see Active Files).
 
 ## Active Files
-- `src/market-data/{types,yahoo,index}.ts` — added `getNews`/`getAnalysis`/`getFinancials`
-  + per-class TTLs (news 15m, analysis 6h, financials 24h) + `yahoo()` kill-switch wrapper.
-- `src/market-data/fallback.ts` — NEW. BoI → Frankfurter FX; quotes/charts replayed
-  from persisted `price_history`.
-- `app/api/market/{news,analysis,financials}/[symbol]/route.ts` — NEW routes.
-- `app/[locale]/(app)/stock/[symbol]/stock-screen.tsx` — three tabs, `?tab=` deep links,
-  EPS/recommendation/target/holders cards, watchlist star wiring.
-- `components/watchlist-star.tsx` — NEW. Star + per-list dropdown picker.
-- `components/{privacy-toggle,use-privacy,stale-badge}.{tsx,ts}` — NEW. Privacy blur + stale chips.
-- `components/install-prompt.tsx`, `lib/install.ts` — NEW. PWA install sheet + Settings row.
-- `app/manifest.ts`, `public/sw.js`, `public/icon-*.png`, `scripts/generate-icons.py` — NEW PWA assets.
-- `lib/auth.ts` — Google-only; origin derived from Vercel env; localhost URL ignored on Vercel.
-- `app/[locale]/(auth)/auth-form.tsx` — rewritten as a single Google button.
-- `e2e/smoke.spec.ts`, `playwright.config.ts` — NEW smoke suite (15 tests).
-- `.vercelignore` — NEW. Keeps local env files out of deployment bundles.
-- `.env.local` / `.env.local.example` — renamed this session (was `.env` / `.env.example`).
+
+Mine this session:
+- `src/engine/tax/index.ts` — the rewrite: pool walk, shield layers, refund.
+- `src/engine/tax/tax.test.ts` — rewritten to the new spec (18 tests).
+- `src/demo/demo-tax.test.ts` — NEW, 12 tests pinning demo data to engine rules.
+- `src/demo/data.ts` — fixture numbers corrected; `poolUsed` added to rows.
+- `src/server/tax.ts` — payload gains `shieldLossRemaining`, `shieldLayers`.
+- `src/server/performance.ts` — `taxDue` split into `taxPaid`/`taxOwed`/`taxRefund`.
+- `app/[locale]/(app)/tax/tax-screen.tsx` — panels rebuilt on the new fields.
+- `app/[locale]/(app)/home-screen.tsx` — reserve card now leads with withheld.
+- `app/[locale]/(app)/performance/performance-screen.tsx` — paid/owed/refund + year total.
+- `app/[locale]/(app)/transactions/new/tx-screen.tsx` — sell preview uses pool, not shield.
+- `src/i18n/messages/{en,he}.json` — keys added and retired in `taxPage`/`home`/`tx`/`perf`.
+- `toll-e-plan.md` — §3.1, plus lines 31 and 140.
+
+NOT mine — a peer session (`toll-e-7e`) worked in this tree concurrently:
+`journal-screen.tsx`, `more-link.tsx`, `watchlist-sheet.tsx`,
+`lang-currency.tsx`, `src/markets/calendar.ts`, `src/markets/calendar.test.ts`.
+It also landed commit `4491e6c`. Do not attribute those to the tax work.
 
 ## Changes Made This Session
-1. **Phase 4 stock tabs** — News (filtered to `relatedTickers` containing the symbol;
-   Yahoo search news is fuzzy and returns unrelated articles otherwise), Analysis,
-   Financials with a real annual/quarterly toggle. Added `?tab=` deep-linking, mainly
-   so the tabs are testable headlessly.
-2. **Playwright smoke suite + CI e2e job** — `workers: 1` on purpose: parallel first-hits
-   stampede Turbopack's cold compile and 500 with chunk/JSON races.
-3. **Watchlist wiring** — star toggles the default list; desktop button is a per-list
-   picker; "Move to list" enabled. Verified with a throwaway browser script against the
-   real API, then cleaned the test data up.
-4. **Polish + privacy + Hebrew** — signed-in empty states replace demo data, skeletons,
-   stale badges, `.private` blur via `html[data-privacy]` restored pre-paint. EN/HE key
-   parity was already 100%; verified every screen in Hebrew by screenshot.
-5. **Yahoo fallback** (`src/market-data/fallback.ts`) — FX falls back to Bank of Israel
-   (the plan's tax-grade source) then ECB/Frankfurter; quotes and daily charts replay from
-   `price_history`. News/analysis/financials have no free fallback and degrade to empty
-   states. `MARKET_DATA_DISABLE_YAHOO=1` simulates an outage; drill passed.
-6. **Vercel deploy** — Neon via marketplace integration, migrations applied,
-   `BETTER_AUTH_SECRET` generated per environment, SSO protection disabled (user chose
-   "make it public").
-7. **Google-only auth** — password auth survives ONLY behind `E2E_TEST_AUTH=1` AND
-   `VERCEL_ENV !== 'production'`, so a stray env var cannot reopen sign-up on the live site.
-8. **PWA** — ported from `~/Projects/rosa` (which is Vite/Preact, so only the install
-   logic transferred; manifest/SW were rewritten Next-native). The service worker
-   deliberately caches NOTHING — a stale portfolio value is worse than an offline message.
-9. **Env rename** to `.env.local` / `.env.local.example` with ignore rules updated.
+
+1. **Established the correct model** over several rounds with the user. The old
+   engine subtracted prior-year shield from the current year's taxable. Wrong.
+   The real mechanics:
+   - *Within a year:* broker withholds at source. A running loss pool carries
+     forward **within the year only**; a gain month draws it down first, the
+     remainder is taxed and paid at month end. Order matters — a February gain
+     is withheld even if November loses.
+   - *Across years:* nothing applies at source. The year is paid in full. A
+     loss year registers `|net| × rate` with the government. A later year's
+     shield offsets its liability, and `paid − owed` returns as a refund in the
+     following year's filing.
+2. **Engine rewrite.** `MonthLedger.tax` → `paid`, plus `poolIn/poolUsed/poolOut`.
+   `YearLedger.due` → `paid`, `owedBeforeShield`, `shieldUsed`, `owed`,
+   `refundNextYear`, `registered`.
+3. **Shield as layers** (`ShieldLayer[]`), consumed oldest-first, each locking
+   the rate at registration. WHY: the user confirmed a 40k loss registered at
+   25% stays worth exactly 10k if the rate later changes. Layers also give the
+   money-primary / loss-secondary display the user asked for.
+   NOTE: `TaxRuleSet` holds one flat rate, so today every layer registers at the
+   same rate — the rate-lock is architecture for §3.3, not reachable behavior.
+4. **Consumers migrated**, plus i18n keys added/retired in both locales.
+5. **Rounding fix** found on self-review: year `paid` summed unrounded month
+   values, so a month column could foot a cent off the year. Now accumulates
+   the rounded figure.
+6. **Demo fixtures corrected** (they contradicted the engine): US May
+   1,725 → 1,325, IL May 5,400 → 3,950 (earlier losses absorbed); `taxable` was
+   post-shield, now year net; `short` now measured against withheld.
+   `src/demo/demo-tax.test.ts` walks the pool independently to stop drift.
+7. **Performance page** (mobile) now answers all four of the user's questions:
+   tax paid, what should have been paid, refund expected, year total.
 
 ## Failed Attempts
-- **`.env` was being uploaded by `vercel deploy`.** Next loads it at runtime, so
-  `BETTER_AUTH_URL=http://localhost:3000` beat the real URL and Google's OAuth
-  `redirect_uri` pointed at localhost — would have broken sign-in for every user.
-  Fixed by `.vercelignore` + ignoring a localhost URL when `process.env.VERCEL` is set.
-  Git-based deploys never had this problem.
-- **A test account leaked into the production database.** The Neon integration overwrote
-  `.env.local`, so a local Playwright run wrote `shahar@test.dev`/`testpass123` to Neon.
-  Purged; all user tables are at 0. Watch for this: any local command run while
-  `.env.local` holds Neon credentials hits production.
-- **Better Auth rejected every production request** ("Invalid origin") because Vercel
-  deployment hosts are dynamic. Fixed by deriving `baseURL`/`trustedOrigins`. Note the
-  canonical production URL is `toll-e.vercel.app`, NOT the longer
-  `toll-e-bloodydeathroll-…` alias — testing the alias produces a false origin failure.
-- **Quota was the WRONG diagnosis for CI not running.** Manual dispatch works, and ~12
-  runs at ~2 min is nowhere near the 2000-minute free tier. `/timing` reports 0 billable
-  ms for every run (inconclusive). Not `[skip ci]` either — no markers in the messages.
-- **Stooq is dead as a fallback source** — quote CSV 404s and history is behind a
-  JavaScript proof-of-work wall. Do not retry it.
-- Playwright's `request` fixture sends no `Origin` header (Better Auth CSRF rejects it)
-  and its cookies don't reach the page — use `page.request` with an explicit `Origin`.
-- Both mobile and desktop layouts render simultaneously (one is `display:none`), so every
-  e2e text lookup must filter to `{ visible: true }` or it hits a strict-mode violation.
-- The install sheet's scrim and its "Not now" button shared an accessible name — gave the
-  scrim its own `close` label.
+
+- **Explained the model wrong first.** The opening explanation described the
+  shield as reducing the current year's tax directly, matching the old code and
+  `toll-e-plan.md:115`. Both were wrong. Do not trust the pre-session plan text
+  on this topic — §3.1 is now the corrected source.
+- **Reported a live bug that wasn't one.** Claimed the Performance page showed
+  a visible mismatch between "Tax accrued" and the month rows. The user's
+  screenshot disproved it: with `SHIELD = $0.00`, paid equals owed and the page
+  was consistent (673.70 + 483.10 = 1,156.80). The discrepancy only exists once
+  a shield is registered. Verify against real data before calling something broken.
+- **Over-explained repeatedly.** The user asked three times for shorter, plainer
+  answers and pushed back hard on verbosity and on desktop examples. This project
+  is **mobile-only right now** — the desktop layouts exist in code but are not
+  being worked on, so do not use them for examples.
+- **Paused work on a stale premise.** On finding a peer session editing the same
+  file, the user chose "pause the UI". The peer then confirmed it was hands-off
+  on those screens and that the migration was what had typecheck red and blocked
+  its commit. Pausing could not reach green either way, so the work was finished
+  instead and the peer notified.
 
 ## Next Step
-**Finish diagnosing why pushes stop triggering CI.** A run was dispatched manually
-(`gh run view 31128119882`) but never checked; the immediate question is whether a
-dispatched run *executes* or hangs queued:
-```
-gh run view 31128119882 --json status,conclusion,jobs
-gh api repos/BloodyDeathRoll/toll-e/commits/$(git rev-parse HEAD)/check-suites \
-  --jq '.check_suites[] | "\(.app.slug) \(.status)"'
-```
-If dispatch executes fine, the push event itself is the problem — check repo Settings →
-Actions, and whether the Vercel/Claude/Render GitHub apps interfere. Reading billing needs
-`! gh auth refresh -h github.com -s user` (interactive, must be run by the user).
 
-Follow-ups:
-- Add `http://localhost:3000/api/auth/callback/google` to the Google OAuth client so local
-  sign-in works; then sign in once on production to confirm the round-trip.
-- Consider rotating the Google client secret — earlier CLI deploys shipped `.env` into
-  deployment bundles (private to the Vercel account, not a public leak).
-- Remaining Phase 4/v1 gaps: tax export button, TASE hours `TODO(verify)`, true portfolio
-  value history (positions × `price_history` replay).
+Run the app and look at the two migrated screens on a phone viewport — nothing
+has been visually verified:
+
+```
+pnpm dev        # then /performance and /tax
+```
+
+To actually exercise the shield path (paid ≠ owed), the account needs a prior
+loss year; current data has `SHIELD = $0.00`, so the new lines stay hidden.
+
+Then:
+1. Commit. The tree mixes this work with the peer session's — check `git diff`
+   per file against the Active Files list above before staging.
+2. Decide the open UI question: `tax-screen.tsx:190` still shows per-sale tax as
+   `gain × rate`, ignoring the pool, so a sale can read higher than its month.
+   Desktop-only (the sales card is inside the `hidden md:flex` block), so it can
+   wait. Fix would be to split the month's `poolUsed` across its gain sales
+   proportionally.
+3. `src/server/performance.ts` recomputes `computeTax` twice per portfolio (once
+   to collect years, once for the selected year). Pre-existing, not touched.

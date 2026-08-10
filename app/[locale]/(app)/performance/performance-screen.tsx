@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/src/i18n/navigation';
+import { useMarket } from '@/components/app-shell/market-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMarket } from '@/src/markets/registry';
 import { fmtDate, fmtMoney, fmtMoneySigned, fmtMonth, fmtNum } from '@/lib/format';
@@ -16,45 +17,62 @@ type State =
   | { status: 'data'; data: PerformancePayload };
 
 /**
- * Performance / Profile (§3.4) — the combined picture across portfolios in
- * the user's display currency, native figures primary with the conversion in
- * brackets. Also the profile surface: display currency, language, default
- * market. No design frame exists for this page; it follows the app's system.
+ * Performance (§3.4) — the picture for the market being viewed: its
+ * portfolios, in its own currency. Scoped to the lens like every other
+ * screen, so ₪ never shows a dollar portfolio's numbers. No design frame
+ * exists for this page; it follows the app's system.
  */
 export function PerformanceScreen() {
   const t = useTranslations('perf');
   const tt = useTranslations('taxPage');
   const locale = useLocale();
+  const { marketId } = useMarket();
   const [state, setState] = useState<State>({ status: 'loading' });
   const [year, setYear] = useState<number | null>(null);
-  // Display currency comes from the account setting (changed on /settings).
-  const currency = null as string | null;
   const nl = locale === 'he' ? 'he-IL' : 'en-US';
+  // Only the newest request may write state: the lens hydrates a beat after
+  // mount, so the previous market's request is often still in flight.
+  const gen = useRef(0);
 
   const load = useCallback(async () => {
-    const params = new URLSearchParams();
+    const mine = ++gen.current;
+    const apply = (next: State) => {
+      if (gen.current === mine) setState(next);
+    };
+    const params = new URLSearchParams({ market: marketId });
     if (year) params.set('year', String(year));
-    if (currency) params.set('currency', currency);
     try {
       const res = await fetch(`/api/performance?${params}`);
       if (res.status === 401) {
-        setState({ status: 'signed-out' });
+        apply({ status: 'signed-out' });
         return;
       }
       if (!res.ok) throw new Error(String(res.status));
       const json = await res.json();
-      setState(json.empty ? { status: 'empty' } : { status: 'data', data: json });
+      apply(json.empty ? { status: 'empty' } : { status: 'data', data: json });
     } catch {
-      setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+      if (gen.current === mine) {
+        setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+      }
     }
-  }, [year, currency]);
+  }, [year, marketId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch on param change
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset on lens/year change
+    setState({ status: 'loading' });
     load();
   }, [load]);
 
   const data = state.status === 'data' ? state.data : null;
+  const yearTotals = (data?.months ?? []).reduce(
+    (a, m) => ({
+      gains: a.gains + m.gains,
+      losses: a.losses + m.losses,
+      net: a.net + m.net,
+      tax: a.tax + m.tax,
+    }),
+    { gains: 0, losses: 0, net: 0, tax: 0 },
+  );
   const money = (v: number, ccy: string) => fmtMoney(v, ccy, nl);
   const signed = (v: number, ccy: string) => fmtMoneySigned(v, ccy, nl);
 
@@ -138,7 +156,32 @@ export function PerformanceScreen() {
           <div className="flex flex-col gap-3.5 md:flex-row md:gap-5">
             {statCard(t('realizedYtd', { year: data.year }), data.totals.realized)}
             {statCard(t('unrealized'), data.totals.unrealized)}
-            {statCard(t('taxAccrued'), data.totals.taxDue, false)}
+            {/* Withheld leads — it is the cash actually gone. When the shield
+                or month ordering makes the year owe less, both sides show. */}
+            <section className="flex flex-1 flex-col gap-2 rounded-2xl border border-border bg-card p-5">
+              <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+                {t('taxPaidCard')}
+              </h2>
+              <p dir="ltr" className="private self-start text-[26px] font-semibold tracking-tight text-foreground tabular-nums md:text-[30px]">
+                {money(data.totals.taxPaid, data.displayCurrency)}
+              </p>
+              {data.totals.taxRefund > 0 && (
+                <div className="flex flex-col gap-1 pt-0.5 text-[13px] tabular-nums">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t('shouldHavePaid')}</span>
+                    <span dir="ltr" className="private text-foreground">
+                      {money(data.totals.taxOwed, data.displayCurrency)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{t('refundIn', { year: data.year + 1 })}</span>
+                    <span dir="ltr" className="private text-gain">
+                      {money(data.totals.taxRefund, data.displayCurrency)}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </section>
           </div>
           <p className="px-1 text-xs text-muted-foreground">
             {t('fxNote', {
@@ -156,7 +199,8 @@ export function PerformanceScreen() {
               <span>{t('portfolio')}</span>
               <span className="text-end">{t('realizedCol')}</span>
               <span className="text-end">{t('unrealizedCol')}</span>
-              <span className="text-end">{t('taxCol')}</span>
+              <span className="text-end">{t('paidCol')}</span>
+              <span className="text-end">{t('owedCol')}</span>
               <span className="text-end">{t('shieldCol')}</span>
             </div>
             {data.portfolios.map((p) => {
@@ -182,7 +226,7 @@ export function PerformanceScreen() {
               return (
                 <div
                   key={p.id}
-                  className="grid grid-cols-2 gap-y-3 border-t border-border px-5 py-3.5 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] md:gap-y-0"
+                  className="grid grid-cols-2 gap-y-3 border-t border-border px-5 py-3.5 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_1fr] md:gap-y-0"
                 >
                   <span className="col-span-2 flex flex-col gap-0.5 md:col-span-1">
                     <span className="text-sm font-semibold text-foreground">{p.name}</span>
@@ -199,9 +243,13 @@ export function PerformanceScreen() {
                   </span>
                   {cell(p.unrealized, p.converted.unrealized)}
                   <span className="flex flex-col gap-0.5 md:hidden">
-                    <span className="text-[11px] uppercase text-muted-foreground">{t('taxCol')}</span>
+                    <span className="text-[11px] uppercase text-muted-foreground">{t('paidCol')}</span>
                   </span>
-                  {cell(p.taxDue, p.converted.taxDue, false)}
+                  {cell(p.taxPaid, p.converted.taxPaid, false)}
+                  <span className="flex flex-col gap-0.5 md:hidden">
+                    <span className="text-[11px] uppercase text-muted-foreground">{t('owedCol')}</span>
+                  </span>
+                  {cell(p.taxOwed, p.converted.taxOwed, false)}
                   <span className="flex flex-col gap-0.5 md:hidden">
                     <span className="text-[11px] uppercase text-muted-foreground">{t('shieldCol')}</span>
                   </span>
@@ -231,7 +279,7 @@ export function PerformanceScreen() {
                 <span className="text-end">{tt('gains')}</span>
                 <span className="text-end">{tt('losses')}</span>
                 <span className="text-end">{tt('net')}</span>
-                <span className="text-end">{t('taxCol')}</span>
+                <span className="text-end">{t('paidCol')}</span>
               </div>
               {data.months.map((m) => (
                 <div key={m.month} className="border-t border-border">
@@ -280,13 +328,62 @@ export function PerformanceScreen() {
                         </span>
                       </span>
                       <span>
-                        {t('taxCol')}{' '}
+                        {t('paidCol')}{' '}
                         <span className="text-foreground">{money(m.tax, data.displayCurrency)}</span>
                       </span>
                     </div>
                   </div>
                 </div>
               ))}
+
+              {/* Year total — the month rows add up to exactly this. */}
+              <div className="border-t border-border bg-well">
+                <div className="hidden grid-cols-[1fr_1fr_1fr_1fr_1.2fr] px-5 py-3 text-sm font-semibold tabular-nums md:grid">
+                  <span className="text-foreground">{tt('yearToDate')}</span>
+                  <span dir="ltr" className="text-end text-gain">
+                    {money(yearTotals.gains, data.displayCurrency)}
+                  </span>
+                  <span dir="ltr" className="text-end text-loss">
+                    {money(-yearTotals.losses, data.displayCurrency)}
+                  </span>
+                  <span dir="ltr" className="text-end text-foreground">
+                    {money(yearTotals.net, data.displayCurrency)}
+                  </span>
+                  <span dir="ltr" className="text-end text-foreground">
+                    {money(yearTotals.tax, data.displayCurrency)}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1 px-5 py-3 md:hidden">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-sm font-semibold text-foreground">{tt('yearToDate')}</span>
+                    <span
+                      dir="ltr"
+                      className={cn(
+                        'text-sm font-semibold tabular-nums',
+                        yearTotals.net >= 0 ? 'text-gain' : 'text-loss',
+                      )}
+                    >
+                      {signed(yearTotals.net, data.displayCurrency)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
+                    <span>
+                      {t('paidCol')}{' '}
+                      <span className="font-semibold text-foreground">
+                        {money(yearTotals.tax, data.displayCurrency)}
+                      </span>
+                    </span>
+                    {data.totals.taxRefund > 0 && (
+                      <span>
+                        {t('shouldHavePaid')}{' '}
+                        <span className="font-semibold text-foreground">
+                          {money(data.totals.taxOwed, data.displayCurrency)}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
             </section>
           )}
         </>

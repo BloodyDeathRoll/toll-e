@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { db } from '@/src/db';
 import { portfolios } from '@/src/db/schema';
 import { computeTax } from '@/src/engine/tax';
@@ -19,10 +19,15 @@ export interface PerformancePortfolio {
   /** Native currency figures for the selected year (unrealized is "now"). */
   realized: number;
   unrealized: number;
-  taxDue: number;
+  /** Cash the broker withheld at source across the year. */
+  taxPaid: number;
+  /** What the year actually owes once the registered shield is applied. */
+  taxOwed: number;
+  /** taxPaid − taxOwed, back in next year's filing. */
+  taxRefund: number;
   shieldRemaining: number;
   /** Same figures in the display currency. */
-  converted: { realized: number; unrealized: number; taxDue: number };
+  converted: { realized: number; unrealized: number; taxPaid: number; taxOwed: number; taxRefund: number };
 }
 
 export interface PerformanceMonth {
@@ -39,7 +44,7 @@ export interface PerformancePayload {
   year: number;
   years: number[];
   /** Combined totals in the display currency. */
-  totals: { realized: number; unrealized: number; taxDue: number };
+  totals: { realized: number; unrealized: number; taxPaid: number; taxOwed: number; taxRefund: number };
   portfolios: PerformancePortfolio[];
   /** Combined month rows in the display currency. */
   months: PerformanceMonth[];
@@ -51,12 +56,19 @@ export async function getPerformance(
   userId: string,
   displayCurrency: string,
   year?: number,
+  market?: string,
 ): Promise<PerformancePayload | null> {
   const rows = await db
     .select()
     .from(portfolios)
-    .where(eq(portfolios.userId, userId))
+    .where(
+      market
+        ? and(eq(portfolios.userId, userId), eq(portfolios.market, market))
+        : eq(portfolios.userId, userId),
+    )
     .orderBy(asc(portfolios.sortOrder), asc(portfolios.createdAt));
+  // No portfolio in this market yet — the screen says so rather than falling
+  // back to another market's numbers.
   if (rows.length === 0) return null;
 
   const fx = await getFx('USDILS');
@@ -87,7 +99,12 @@ export async function getPerformance(
 
     const realized = ledger?.net ?? 0;
     const unrealized = positions.totals.totalGain;
-    const taxDue = ledger?.due ?? 0;
+    // Both sides of the cash story: what was withheld month by month, and what
+    // the year actually owes. They differ exactly by the shield and by any
+    // over-withholding from month ordering — that difference is the refund.
+    const taxPaid = ledger?.paid ?? 0;
+    const taxOwed = ledger?.owed ?? 0;
+    const taxRefund = ledger?.refundNextYear ?? 0;
 
     perPortfolio.push({
       id: p.id,
@@ -96,12 +113,16 @@ export async function getPerformance(
       currency: p.currency,
       realized: round2(realized),
       unrealized: round2(unrealized),
-      taxDue: round2(taxDue),
+      taxPaid: round2(taxPaid),
+      taxOwed: round2(taxOwed),
+      taxRefund: round2(taxRefund),
       shieldRemaining: tax.shieldRemaining,
       converted: {
         realized: round2(convert(realized, p.currency)),
         unrealized: round2(convert(unrealized, p.currency)),
-        taxDue: round2(convert(taxDue, p.currency)),
+        taxPaid: round2(convert(taxPaid, p.currency)),
+        taxOwed: round2(convert(taxOwed, p.currency)),
+        taxRefund: round2(convert(taxRefund, p.currency)),
       },
     });
 
@@ -110,7 +131,7 @@ export async function getPerformance(
       acc.gains += convert(m.gains, p.currency);
       acc.losses += convert(m.losses, p.currency);
       acc.net += convert(m.net, p.currency);
-      acc.tax += convert(m.tax ?? 0, p.currency);
+      acc.tax += convert(m.paid ?? 0, p.currency);
       monthAcc.set(m.month, acc);
     }
   }
@@ -133,7 +154,9 @@ export async function getPerformance(
     totals: {
       realized: round2(perPortfolio.reduce((s, p) => s + p.converted.realized, 0)),
       unrealized: round2(perPortfolio.reduce((s, p) => s + p.converted.unrealized, 0)),
-      taxDue: round2(perPortfolio.reduce((s, p) => s + p.converted.taxDue, 0)),
+      taxPaid: round2(perPortfolio.reduce((s, p) => s + p.converted.taxPaid, 0)),
+      taxOwed: round2(perPortfolio.reduce((s, p) => s + p.converted.taxOwed, 0)),
+      taxRefund: round2(perPortfolio.reduce((s, p) => s + p.converted.taxRefund, 0)),
     },
     portfolios: perPortfolio,
     months,

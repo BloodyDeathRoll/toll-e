@@ -45,7 +45,9 @@ export interface DemoMonthRow {
   gains: number | null;
   losses: number | null;
   net: number;
-  /** null ⇒ fully shielded by carried losses. */
+  /** Earlier-in-the-year losses absorbed by this month's gains. */
+  poolUsed: number;
+  /** Tax withheld at source at month end; null ⇒ nothing withheld. */
   tax: number | null;
 }
 
@@ -120,22 +122,25 @@ export const demo: Record<string, DemoMarketData> = {
     ],
     tax: {
       year: 2026,
+      // `due` is the year's true liability after the registered shield; the
+      // months carry what was actually withheld. Withheld − due = the refund.
       due: 2_932.5,
       heldInCash: 2_170,
-      short: 762.5,
+      short: 1_990, // against the 4,160 withheld
       realizedGains: 18_240,
       realizedLosses: 4_110,
       carriedLoss: 2_400,
       carriedFromYear: 2025,
-      taxable: 11_730,
+      taxable: 14_130, // gains − losses, before the shield
       ratePct: 25,
       filingDue: '2027-04-30',
       months: [
-        { month: 2, gains: 3_200, losses: null, net: 3_200, tax: 800 },
-        { month: 4, gains: null, losses: -1_600, net: -1_600, tax: null },
-        { month: 5, gains: 6_900, losses: null, net: 6_900, tax: 1_725 },
-        { month: 7, gains: 8_140, losses: null, net: 8_140, tax: 2_035 },
-        { month: 8, gains: null, losses: -2_510, net: -2_510, tax: null },
+        { month: 2, gains: 3_200, losses: null, net: 3_200, poolUsed: 0, tax: 800 },
+        { month: 4, gains: null, losses: -1_600, net: -1_600, poolUsed: 0, tax: null },
+        // April's 1,600 is absorbed here, so only 5,300 of the 6,900 is taxed.
+        { month: 5, gains: 6_900, losses: null, net: 6_900, poolUsed: 1_600, tax: 1_325 },
+        { month: 7, gains: 8_140, losses: null, net: 8_140, poolUsed: 0, tax: 2_035 },
+        { month: 8, gains: null, losses: -2_510, net: -2_510, poolUsed: 0, tax: null },
       ],
       sales: [
         { symbol: 'TEVA', shares: 400, date: '2026-08-01', amount: -2_510, tax: null },
@@ -173,23 +178,24 @@ export const demo: Record<string, DemoMarketData> = {
       year: 2026,
       due: 10_592,
       heldInCash: 7_838,
-      short: 2_754,
+      short: 4_437, // against the 12,275 withheld
       realizedGains: 61_400,
       realizedLosses: 12_300,
       carriedLoss: 6_732,
       carriedFromYear: 2025,
-      taxable: 42_368,
+      taxable: 49_100, // gains − losses, before the shield
       ratePct: 25,
       filingDue: '2027-04-30',
       months: [
-        { month: 1, gains: 12_400, losses: null, net: 12_400, tax: 3_100 },
-        { month: 3, gains: null, losses: -5_800, net: -5_800, tax: null },
-        { month: 5, gains: 21_600, losses: null, net: 21_600, tax: 5_400 },
-        { month: 6, gains: 27_400, losses: -6_500, net: 20_900, tax: 5_225 },
+        { month: 1, gains: 12_400, losses: null, net: 12_400, poolUsed: 0, tax: 3_100 },
+        { month: 3, gains: null, losses: -5_800, net: -5_800, poolUsed: 0, tax: null },
+        // March's 5,800 is absorbed here, so only 15,800 of the 21,600 is taxed.
+        { month: 5, gains: 21_600, losses: null, net: 21_600, poolUsed: 5_800, tax: 3_950 },
+        { month: 6, gains: 27_400, losses: -6_500, net: 20_900, poolUsed: 0, tax: 5_225 },
       ],
       sales: [
         { symbol: 'TEVA', nameHe: 'טבע', shares: 900, date: '2026-06-12', amount: -6_500, tax: null },
-        { symbol: 'ESLT', nameHe: 'אלביט מערכות', shares: 20, date: '2026-05-22', amount: 21_600, tax: 5_400 },
+        { symbol: 'ESLT', nameHe: 'אלביט מערכות', shares: 20, date: '2026-05-22', amount: 21_600, tax: 3_950 },
       ],
     },
   },
