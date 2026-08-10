@@ -13,7 +13,7 @@ import {
   Star,
   Trash2,
 } from 'lucide-react';
-import { Link } from '@/src/i18n/navigation';
+import { Link, useRouter } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
 import { ChangePill } from '@/components/quote-bits';
@@ -30,16 +30,19 @@ type Mode =
   | { kind: 'edit'; listId: string }
   | { kind: 'create' };
 
-export function WatchlistsScreen() {
+export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {}) {
   const t = useTranslations('lists');
   const { marketId } = useMarket();
   const market = getMarket(marketId);
   const nl = market.numberLocale;
   const { state, createList, patchList, deleteList } = useWatchlists();
+  const router = useRouter();
+  // /watchlists/new is how the tab bar's plus asks for the create screen.
+  const wantsNew = initialMode === 'create';
 
   const real = state.status === 'data' ? state.lists : null;
   const [mode, setMode] = useState<Mode>({ kind: 'browse' });
-  const [openList, setOpenList] = useState<string | undefined>(undefined);
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -53,11 +56,18 @@ export function WatchlistsScreen() {
 
   // Demo showcase for signed-out visitors; real lists otherwise. "Holdings"
   // is filled in from transactions but is an ordinary container otherwise.
-  const lists: Array<{ id: string; name: string; symbols: string[]; demo?: boolean }> = real
+  const lists: Array<{
+    id: string;
+    name: string;
+    symbols: string[];
+    demo?: boolean;
+    managed?: boolean;
+  }> = real
     ? real.map((l) => ({
         id: l.id,
         name: l.name === HOLDINGS_LIST ? t('holdings') : l.name,
         symbols: l.symbols,
+        managed: l.name === HOLDINGS_LIST,
       }))
     : demoWatchlists.map((w, i) => ({
         id: `demo-${i}`,
@@ -65,9 +75,16 @@ export function WatchlistsScreen() {
         symbols: w.items.map((q) => q.symbol),
         demo: true,
       }));
-  const expandedId = openList ?? lists[0]?.id;
-  const expanded = lists.find((l) => l.id === expandedId);
-  const { quotes } = useQuotes(expanded?.symbols ?? [], 60_000);
+  // Every list opens and closes on its own; opening one leaves the rest be.
+  const openLists = lists.filter((l) => !collapsed.has(l.id));
+  const { quotes } = useQuotes(openLists.flatMap((l) => l.symbols), 60_000);
+  const toggleOpen = (id: string) =>
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   const editingList = mode.kind === 'edit' ? real?.find((l) => l.id === mode.listId) : undefined;
   if (mode.kind === 'edit' && editingList) {
@@ -85,16 +102,20 @@ export function WatchlistsScreen() {
     );
   }
 
-  if (mode.kind === 'create') {
+  if (mode.kind === 'create' || wantsNew) {
     return (
       <CreateList
         marketId={marketId}
-        onBack={() => setMode({ kind: 'browse' })}
+        onBack={() => {
+          setMode({ kind: 'browse' });
+          if (wantsNew) router.replace('/watchlists');
+        }}
         onSave={async (listName, symbols) => {
           const created = await createList(listName);
           if (created && symbols.length) await patchList(created.id, { symbols });
           setMode({ kind: 'browse' });
-          if (created) setOpenList(created.id);
+          if (wantsNew) router.replace('/watchlists');
+          if (created) setCollapsed(new Set());
         }}
       />
     );
@@ -108,7 +129,7 @@ export function WatchlistsScreen() {
             <button
               type="button"
               aria-label={t('newList')}
-              onClick={() => setMode({ kind: 'create' })}
+              onClick={() => router.push('/watchlists/new')}
               className="flex size-[43px] items-center justify-center rounded-full bg-primary text-primary-foreground"
             >
               <Plus className="size-6" aria-hidden />
@@ -124,7 +145,7 @@ export function WatchlistsScreen() {
           <span className="text-xl font-bold tracking-tight text-foreground">{t('editList')}</span>
           <button
             type="button"
-            onClick={() => setMode({ kind: 'create' })}
+            onClick={() => router.push('/watchlists/new')}
             className="flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
           >
             <Plus className="size-4" aria-hidden />
@@ -139,7 +160,7 @@ export function WatchlistsScreen() {
           <p className="text-base text-foreground">{t('noListsFound')}</p>
           <button
             type="button"
-            onClick={() => setMode({ kind: 'create' })}
+            onClick={() => router.push('/watchlists/new')}
             className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground"
           >
             {t('emptyCta')}
@@ -149,19 +170,19 @@ export function WatchlistsScreen() {
 
       <div className="flex flex-col gap-3.5 px-4 pb-6">
         {lists.map((l) => {
-          const open = l.id === expandedId;
+          const open = !collapsed.has(l.id);
           return (
             <section key={l.id} className="rounded-xl bg-card px-4 py-1">
               <div className="flex items-center gap-3 py-3">
                 <button
                   type="button"
-                  onClick={() => setOpenList(open ? '' : l.id)}
+                  onClick={() => toggleOpen(l.id)}
                   aria-expanded={open}
                   className="flex flex-1 items-center justify-between text-start"
                 >
                   <span className="text-base text-muted-foreground">{l.name}</span>
                 </button>
-                {!l.demo && (
+                {!l.demo && !l.managed && (
                   <div className="relative" ref={menuFor === l.id ? menuRef : undefined}>
                     <button
                       type="button"
@@ -200,7 +221,7 @@ export function WatchlistsScreen() {
                 )}
                 <button
                   type="button"
-                  onClick={() => setOpenList(open ? '' : l.id)}
+                  onClick={() => toggleOpen(l.id)}
                   aria-label={l.name}
                   aria-expanded={open}
                 >
@@ -242,7 +263,7 @@ export function WatchlistsScreen() {
                         <button
                           type="button"
                           aria-label={t('removeFromList')}
-                          disabled={Boolean(l.demo)}
+                          disabled={Boolean(l.demo || l.managed)}
                           onClick={() =>
                             patchList(l.id, { symbols: l.symbols.filter((x) => x !== s) })
                           }

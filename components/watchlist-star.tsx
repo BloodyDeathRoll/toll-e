@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Check, Star } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { useWatchlists, type WatchlistData } from '@/components/use-watchlists';
+import { WatchlistSheet } from '@/components/watchlist-sheet';
 import { demoWatchlists } from '@/src/demo/data';
 import {
   DropdownMenu,
@@ -60,23 +62,41 @@ export function useSymbolWatchlist(symbol: string): SymbolWatchlist {
   return { signedOut, lists, inAny, isIn, toggleIn, toggleDefault, goSignIn: () => router.push('/sign-in') };
 }
 
-/** Mobile header star — one tap toggles the default list. */
-export function WatchlistStar({ wl, className }: { wl: SymbolWatchlist; className?: string }) {
+/**
+ * Mobile header star — opens the "include in watchlists" sheet rather than
+ * guessing a list (Figma "Stock click star").
+ */
+export function WatchlistStar({
+  wl,
+  symbol,
+  className,
+}: {
+  wl: SymbolWatchlist;
+  symbol: string;
+  className?: string;
+}) {
   const t = useTranslations('stock');
+  const [open, setOpen] = useState(false);
+
   return (
-    <button
-      type="button"
-      aria-label={t('watchlistBtn')}
-      aria-pressed={wl.inAny}
-      onClick={() => (wl.signedOut ? wl.goSignIn() : wl.toggleDefault())}
-      disabled={!wl.signedOut && !wl.lists}
-    >
-      <Star
-        className={cn('size-4', wl.inAny ? 'text-primary' : 'text-foreground', className)}
-        fill={wl.inAny ? 'currentColor' : 'none'}
-        aria-hidden
-      />
-    </button>
+    <>
+      <button
+        type="button"
+        aria-label={t('watchlistBtn')}
+        aria-pressed={wl.inAny}
+        onClick={() => (wl.signedOut ? wl.goSignIn() : setOpen(true))}
+        disabled={!wl.signedOut && !wl.lists}
+      >
+        <Star
+          className={cn('size-4', wl.inAny ? 'text-primary' : 'text-foreground', className)}
+          fill={wl.inAny ? 'currentColor' : 'none'}
+          aria-hidden
+        />
+      </button>
+      {open && wl.lists && (
+        <WatchlistSheet symbol={symbol} lists={wl.lists} onClose={() => setOpen(false)} />
+      )}
+    </>
   );
 }
 

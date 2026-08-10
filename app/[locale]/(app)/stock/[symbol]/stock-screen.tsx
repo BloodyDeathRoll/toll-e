@@ -333,7 +333,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
             inputClassName="h-[43px] rounded-[20px] border-none bg-well ps-11 text-base font-medium"
             iconClassName="start-4 size-4"
           />
-          <WatchlistStar wl={wl} className="size-6" />
+          <WatchlistStar wl={wl} symbol={symbol} className="size-6" />
           <button
             type="button"
             aria-label={t('share')}

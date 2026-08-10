@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Plus } from 'lucide-react';
+import { ChevronDown, MoreHorizontal, Plus } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
@@ -50,6 +50,16 @@ export function HomeScreen() {
   const currencyLabel = locale === 'he' ? 'ש״ח' : market.currency;
   const [range, setRange] = useState<(typeof ranges)[number]>('1D');
   const [mobileRange, setMobileRange] = useState<RangeOption>('1D');
+  const [holdingsOpen, setHoldingsOpen] = useState(true);
+  const [holdingsMenu, setHoldingsMenu] = useState(false);
+  const holdingsMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (!holdingsMenuRef.current?.contains(e.target as Node)) setHoldingsMenu(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, []);
   // Stocks toggled OFF the performance chart (default: all overlaid).
   const [hiddenOverlays, setHiddenOverlays] = useState<Set<string>>(new Set());
   const toggleOverlay = (symbol: string) =>
@@ -258,10 +268,44 @@ export function HomeScreen() {
         )}
         {!loading && !empty && (
           <section className="px-6 pb-6">
-            <h2 className="pb-2.5 text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-              {t('home.holdings')}
-            </h2>
-            {(rows ?? data.holdings).map((h) => {
+            {/* Holdings is a watchlist too, so it carries the same controls —
+                but it is filled in from transactions, so both are inert. */}
+            <div className="flex items-center justify-between gap-3 pb-2.5">
+              <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+                {t('home.holdings')}
+              </h2>
+              <span className="flex items-center gap-3">
+                <div className="relative" ref={holdingsMenuRef}>
+                  <button
+                    type="button"
+                    aria-label={t('lists.listMenu')}
+                    onClick={() => setHoldingsMenu((v) => !v)}
+                  >
+                    <MoreHorizontal className="size-5 text-muted-foreground" aria-hidden />
+                  </button>
+                  {holdingsMenu && (
+                    <div className="absolute end-0 top-full z-50 mt-1 w-56 rounded-[20px] bg-well p-6 shadow-lg">
+                      <p className="text-sm text-muted-foreground">{t('lists.managedNote')}</p>
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  aria-label={t('home.holdings')}
+                  aria-expanded={holdingsOpen}
+                  onClick={() => setHoldingsOpen((v) => !v)}
+                >
+                  <ChevronDown
+                    className={cn(
+                      'size-4 text-muted-foreground transition-transform',
+                      holdingsOpen && 'rotate-180',
+                    )}
+                    aria-hidden
+                  />
+                </button>
+              </span>
+            </div>
+            {holdingsOpen && (rows ?? data.holdings).map((h) => {
               const quote = holdingQuotes[h.symbol];
               const hSeries = holdingCharts[h.symbol];
               const dayPct = quote?.changePct ?? h.dayChangePct;

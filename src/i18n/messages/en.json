@@ -319,7 +319,10 @@
     "suggestedHint": "Search for tickers using the top right plus icon",
     "sectionTitle": "Watchlists",
     "holdings": "Holdings",
-    "emptyList": "No tickers in this list yet."
+    "emptyList": "No tickers in this list yet.",
+    "includeIn": "Include in watchlists:",
+    "close": "Close",
+    "managedNote": "Filled in from your transactions"
   },
   "portfolio": {
     "title": "Holdings",

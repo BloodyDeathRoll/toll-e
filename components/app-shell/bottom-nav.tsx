@@ -25,6 +25,13 @@ export function BottomNav() {
 
   // The signed-out screen is a bare sign-in wall: no app chrome.
   if (isPending || !session) return null;
+  // Creating a watchlist is a flow with its own Save button; the bar would
+  // only compete with it.
+  if (pathname.startsWith('/watchlists/new')) return null;
+
+  // On Watchlists the centre button makes a list rather than a transaction,
+  // matching the plus in that screen's header.
+  const newHref = pathname.startsWith('/watchlists') ? '/watchlists/new' : '/transactions/new';
 
   const renderTab = ({
     href,
@@ -65,7 +72,7 @@ export function BottomNav() {
       </ul>
       {/* Sits on the bar and breaks its top edge by 12px, label-less. */}
       <Link
-        href="/transactions/new"
+        href={newHref}
         aria-label={t('new')}
         className="absolute -top-3 start-1/2 flex size-14 -translate-x-1/2 items-center justify-center rounded-full bg-primary rtl:translate-x-1/2"
       >
