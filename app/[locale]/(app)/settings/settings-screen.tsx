@@ -112,7 +112,11 @@ export function SettingsScreen() {
               { value: 'he', label: 'עברית' },
             ],
             locale,
-            (l) => router.replace(pathname, { locale: l as 'en' | 'he' }),
+            // Hard navigation — a client locale transition remounts the
+            // [locale] layout and trips React's script-tag error (see
+            // app-header.tsx).
+            // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- hard reload is the point
+            (l) => window.location.assign(`/${l}${pathname === '/' ? '' : pathname}`),
           ),
         )}
         {row(

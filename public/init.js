@@ -1,0 +1,25 @@
+// Pre-hydration init, loaded via next/script beforeInteractive (layout.tsx).
+// 1. Theme: system preference unless the user chose one; applied before paint
+//    so the SSR light default never flashes wrong. Same for number privacy.
+// 2. Install: Chrome's install offer can fire before the bundle parses and is
+//    only usable later if preventDefault() runs synchronously — stash it for
+//    lib/install.ts. The service worker registration (with the manifest) is
+//    what makes Chrome consider the app installable at all.
+try {
+  var t = localStorage.getItem('toll-e.theme');
+  if (t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches))
+    document.documentElement.classList.add('dark');
+  if (localStorage.getItem('toll-e.privacy') === 'on')
+    document.documentElement.dataset.privacy = 'on';
+} catch {}
+window.__TOLLE_BIP = null;
+addEventListener('beforeinstallprompt', function (e) {
+  e.preventDefault();
+  window.__TOLLE_BIP = e;
+  dispatchEvent(new Event('toll-e:installable'));
+});
+if ('serviceWorker' in navigator) {
+  addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').catch(function () {});
+  });
+}

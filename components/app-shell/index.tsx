@@ -10,7 +10,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <MarketProvider>
       <TopNav />
-      <div className="flex flex-1 flex-col pb-[72px] md:pb-0">{children}</div>
+      <div className="flex flex-1 flex-col pb-[104px] md:pb-0">{children}</div>
       <BottomNav />
     </MarketProvider>
   );

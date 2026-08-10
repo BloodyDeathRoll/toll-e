@@ -61,7 +61,7 @@ export function useSymbolWatchlist(symbol: string): SymbolWatchlist {
 }
 
 /** Mobile header star — one tap toggles the default list. */
-export function WatchlistStar({ wl }: { wl: SymbolWatchlist }) {
+export function WatchlistStar({ wl, className }: { wl: SymbolWatchlist; className?: string }) {
   const t = useTranslations('stock');
   return (
     <button
@@ -72,7 +72,7 @@ export function WatchlistStar({ wl }: { wl: SymbolWatchlist }) {
       disabled={!wl.signedOut && !wl.lists}
     >
       <Star
-        className={cn('size-4', wl.inAny ? 'text-brand' : 'text-muted-foreground')}
+        className={cn('size-4', wl.inAny ? 'text-primary' : 'text-foreground', className)}
         fill={wl.inAny ? 'currentColor' : 'none'}
         aria-hidden
       />

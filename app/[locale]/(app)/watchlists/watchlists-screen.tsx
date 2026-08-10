@@ -1,349 +1,467 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft, Check, GripHorizontal, Plus } from 'lucide-react';
-import { useRouter } from '@/src/i18n/navigation';
-import { useQuotes, useSearch } from '@/components/use-market-data';
-import { useWatchlists } from '@/components/use-watchlists';
+import { useTranslations } from 'next-intl';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  ArrowLeft,
+  Check,
+  ChevronDown,
+  GripVertical,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Star,
+  Trash2,
+} from 'lucide-react';
+import { Link } from '@/src/i18n/navigation';
+import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
+import { ChangePill } from '@/components/quote-bits';
+import { useQuotes, useSearch } from '@/components/use-market-data';
+import { useWatchlists, type WatchlistData } from '@/components/use-watchlists';
 import { demoWatchlists } from '@/src/demo/data';
 import { getMarket, displaySymbol } from '@/src/markets/registry';
+import { fmtNum } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
-interface Row {
-  symbol: string;
-  name: string;
-}
+type Mode =
+  | { kind: 'browse' }
+  | { kind: 'edit'; listId: string }
+  | { kind: 'create' };
 
 export function WatchlistsScreen() {
   const t = useTranslations('lists');
-  const locale = useLocale();
-  const router = useRouter();
   const { marketId } = useMarket();
   const market = getMarket(marketId);
-  const { state, createList, patchList } = useWatchlists();
+  const nl = market.numberLocale;
+  const { state, createList, patchList, deleteList } = useWatchlists();
 
   const real = state.status === 'data' ? state.lists : null;
-  const [listIdx, setListIdx] = useState(0);
-  const [name, setName] = useState<string | null>(null);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [addQuery, setAddQuery] = useState('');
-  const [dragIdx, setDragIdx] = useState<number | null>(null);
-  const [saved, setSaved] = useState(false);
-  const addRef = useRef<HTMLInputElement>(null);
+  const [mode, setMode] = useState<Mode>({ kind: 'browse' });
+  const [openList, setOpenList] = useState<string | undefined>(undefined);
+  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const activeReal = real?.[Math.min(listIdx, Math.max(0, (real?.length ?? 1) - 1))];
-  const activeDemo = demoWatchlists[Math.min(listIdx, demoWatchlists.length - 1)];
-
-  const symbols = activeReal?.symbols ?? [];
-  const { quotes } = useQuotes(symbols, 60_000);
-  const addResults = useSearch(addQuery, marketId).slice(0, 6);
-
-  const rows: Row[] = activeReal
-    ? symbols.map((s) => ({ symbol: s, name: quotes[s]?.name ?? s }))
-    : activeDemo.items.map((q) => ({
-        symbol: q.symbol,
-        name: locale === 'he' && q.nameHe ? q.nameHe : q.name,
-      }));
-
-  const displayName = name ?? activeReal?.name ?? activeDemo.name;
-
-  // Reset per-list edit state when switching lists or when data arrives.
-  const activeKey = activeReal?.id ?? String(listIdx);
-  const prevKey = useRef(activeKey);
   useEffect(() => {
-    if (prevKey.current !== activeKey) {
-      prevKey.current = activeKey;
-       
-      setName(null);
-      setSelected(new Set());
-    }
-  }, [activeKey]);
+    const onDown = (e: MouseEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenuFor(null);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, []);
 
-  const toggle = (symbol: string) => {
-    const next = new Set(selected);
-    if (next.has(symbol)) next.delete(symbol);
-    else next.add(symbol);
-    setSelected(next);
-  };
+  // Demo showcase for signed-out visitors; real lists otherwise.
+  const lists: Array<{ id: string; name: string; symbols: string[]; demo?: boolean }> = real
+    ? real.map((l) => ({ id: l.id, name: l.name, symbols: l.symbols }))
+    : demoWatchlists.map((w, i) => ({
+        id: `demo-${i}`,
+        name: w.name,
+        symbols: w.items.map((q) => q.symbol),
+        demo: true,
+      }));
+  const expandedId = openList ?? lists[0]?.id;
+  const expanded = lists.find((l) => l.id === expandedId);
+  const { quotes } = useQuotes(expanded?.symbols ?? [], 60_000);
 
-  const saveName = async () => {
-    if (activeReal && name && name !== activeReal.name) {
-      await patchList(activeReal.id, { name });
-      setName(null);
-    }
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
-  };
-
-  const addSymbol = async (symbol: string) => {
-    setAddQuery('');
-    if (!activeReal || activeReal.symbols.includes(symbol)) return;
-    await patchList(activeReal.id, { symbols: [...activeReal.symbols, symbol] });
-  };
-
-  const removeSelected = async () => {
-    if (!activeReal || selected.size === 0) return;
-    await patchList(activeReal.id, {
-      symbols: activeReal.symbols.filter((s) => !selected.has(s)),
-    });
-    setSelected(new Set());
-  };
-
-  const reorder = async (from: number, to: number) => {
-    if (!activeReal || from === to) return;
-    const next = [...activeReal.symbols];
-    const [moved] = next.splice(from, 1);
-    next.splice(to, 0, moved);
-    await patchList(activeReal.id, { symbols: next });
-  };
-
-  const moveSelected = async (targetId: string) => {
-    const target = real?.find((l) => l.id === targetId);
-    if (!activeReal || !target || selected.size === 0) return;
-    const moved = activeReal.symbols.filter((s) => selected.has(s));
-    await patchList(activeReal.id, {
-      symbols: activeReal.symbols.filter((s) => !selected.has(s)),
-    });
-    await patchList(targetId, {
-      symbols: [...target.symbols, ...moved.filter((s) => !target.symbols.includes(s))],
-    });
-    setSelected(new Set());
-  };
-
-  const newList = async () => {
-    const created = await createList(t('newList'));
-    if (created && real) setListIdx(real.length); // it appends
-  };
-
-  const chips = real ? real.map((l) => l.name) : demoWatchlists.map((w) => w.name);
-
-  // Signed in, zero lists: prompt for the first list instead of demo data.
-  if (real && real.length === 0) {
+  const editingList = mode.kind === 'edit' ? real?.find((l) => l.id === mode.listId) : undefined;
+  if (mode.kind === 'edit' && editingList) {
     return (
-      <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3.5 p-4 md:py-7">
-        <div className="flex items-center gap-3 pt-1">
-          <button type="button" onClick={() => router.back()} aria-label={t('editList')} className="md:hidden">
-            <ArrowLeft className="size-[18px] text-foreground rtl:-scale-x-100" aria-hidden />
-          </button>
-          <h1 className="text-xl font-semibold text-foreground">{t('editList')}</h1>
-        </div>
-        <section className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6">
-          <h2 className="text-base font-semibold text-foreground">{t('emptyTitle')}</h2>
-          <p className="text-sm text-muted-foreground">{t('emptyBody')}</p>
-          <button
-            type="button"
-            onClick={newList}
-            className="rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-primary-foreground"
-          >
-            {t('emptyCta')}
-          </button>
-        </section>
-      </main>
+      <EditList
+        list={editingList}
+        marketId={marketId}
+        onBack={() => setMode({ kind: 'browse' })}
+        onPatch={patchList}
+        onDelete={async (id) => {
+          await deleteList(id);
+          setMode({ kind: 'browse' });
+        }}
+      />
+    );
+  }
+
+  if (mode.kind === 'create') {
+    return (
+      <CreateList
+        marketId={marketId}
+        onBack={() => setMode({ kind: 'browse' })}
+        onSave={async (listName, symbols) => {
+          const created = await createList(listName);
+          if (created && symbols.length) await patchList(created.id, { symbols });
+          setMode({ kind: 'browse' });
+          if (created) setOpenList(created.id);
+        }}
+      />
     );
   }
 
   return (
-    <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3.5 p-4 md:py-7">
-      <div className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-3">
-          <button type="button" onClick={() => router.back()} aria-label={t('editList')} className="md:hidden">
-            <ArrowLeft className="size-[18px] text-foreground rtl:-scale-x-100" aria-hidden />
-          </button>
-          <h1 className="text-xl font-semibold text-foreground">{t('editList')}</h1>
-        </div>
-        <button
-          type="button"
-          onClick={saveName}
-          disabled={!activeReal}
-          className="text-[15px] font-semibold text-brand disabled:opacity-40"
-        >
-          {saved ? '✓' : t('save')}
-        </button>
-      </div>
-
-      {/* List chips */}
-      <div className="flex gap-2 overflow-x-auto">
-        {chips.map((chip, i) => (
-          <button
-            key={`${chip}-${i}`}
-            type="button"
-            onClick={() => setListIdx(i)}
-            className={cn(
-              'rounded-full px-3.5 py-1.5 text-[13px] whitespace-nowrap',
-              i === listIdx
-                ? 'bg-primary font-semibold text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground',
-            )}
-          >
-            {chip}
-          </button>
-        ))}
-        <button
-          type="button"
-          onClick={newList}
-          disabled={!real}
-          aria-label={t('newList')}
-          className="rounded-full bg-secondary px-3 py-1.5 text-[13px] text-muted-foreground disabled:opacity-40"
-        >
-          ＋
-        </button>
-      </div>
-
-      <label className="flex flex-col gap-1.5">
-        <span className="text-[13px] font-medium text-subtle">{t('listName')}</span>
-        <input
-          value={displayName}
-          onChange={(e) => setName(e.target.value)}
-          disabled={!activeReal}
-          className="rounded-lg border border-border bg-well px-3.5 py-3 text-base text-foreground outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20 disabled:opacity-70"
-        />
-      </label>
-
-      <div className="flex items-center justify-between text-[13px]">
-        <span className="text-muted-foreground">
-          {t('currency')}{' '}
-          <span className="font-medium text-foreground">
-            {activeReal ? market.currency : activeDemo.currency}
-          </span>
-        </span>
-        <span className="text-muted-foreground">
-          {t('sort')} <span className="font-medium text-foreground">{t('sortCustom')}</span>
-        </span>
-      </div>
-
-      {/* Items — drag rows to reorder (sortOrder rewrite on drop) */}
-      <section className="overflow-hidden rounded-2xl border border-border bg-card">
-        {rows.map((q, i) => {
-          const isSel = selected.has(q.symbol);
-          return (
-            <div
-              key={q.symbol}
-              draggable={Boolean(activeReal)}
-              onDragStart={() => setDragIdx(i)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => {
-                if (dragIdx !== null) reorder(dragIdx, i);
-                setDragIdx(null);
-              }}
-              className={cn(
-                'flex w-full items-center gap-3 px-4 py-[13px]',
-                i > 0 && 'border-t border-border',
-                isSel && 'bg-accent',
-                dragIdx === i && 'opacity-50',
-              )}
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
+      <AppHeader
+        action={
+          real ? (
+            <button
+              type="button"
+              aria-label={t('newList')}
+              onClick={() => setMode({ kind: 'create' })}
+              className="flex size-[43px] items-center justify-center rounded-full bg-primary text-primary-foreground"
             >
-              <button
-                type="button"
-                onClick={() => toggle(q.symbol)}
-                aria-pressed={isSel}
-                className={cn(
-                  'flex size-[18px] items-center justify-center rounded-[5px]',
-                  isSel ? 'bg-primary text-primary-foreground' : 'border-[1.5px] border-border',
-                )}
-              >
-                {isSel && <Check className="size-3" aria-hidden />}
-              </button>
-              <span className="flex flex-1 flex-col gap-0.5">
-                <span className="text-[15px] font-semibold text-foreground">
-                  {displaySymbol(q.symbol, market)}
-                </span>
-                <span className="text-xs text-muted-foreground">{q.name}</span>
-              </span>
-              <GripHorizontal
-                className={cn('size-4 cursor-grab', isSel ? 'text-subtle' : 'text-faint')}
-                aria-hidden
-              />
-            </div>
-          );
-        })}
+              <Plus className="size-6" aria-hidden />
+            </button>
+          ) : undefined
+        }
+      />
+      <h1 className="sr-only">{t('editList')}</h1>
 
-        {/* Add ticker */}
-        {activeReal && (
-          <div className={cn('relative px-4 py-2.5', rows.length > 0 && 'border-t border-border')}>
-            <input
-              ref={addRef}
-              value={addQuery}
-              placeholder={t('addTicker')}
-              onChange={(e) => setAddQuery(e.target.value)}
-              className="w-full bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground"
-            />
-            {addQuery && addResults.length > 0 && (
-              <ul className="absolute inset-x-4 bottom-full z-50 mb-1 overflow-hidden rounded-xl border border-border bg-popover shadow-[0_12px_32px_rgba(0,0,0,0.55)]">
-                {addResults.map((r, i) => (
-                  <li key={r.symbol}>
+      {/* Signed in, zero lists: design empty state. */}
+      {real && real.length === 0 && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-5 p-6 pb-24">
+          <p className="text-base text-foreground">{t('noListsFound')}</p>
+          <button
+            type="button"
+            onClick={() => setMode({ kind: 'create' })}
+            className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground"
+          >
+            {t('emptyCta')}
+          </button>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-3.5 px-4 pb-6">
+        {lists.map((l) => {
+          const open = l.id === expandedId;
+          return (
+            <section key={l.id} className="rounded-xl bg-card px-4 py-1">
+              <div className="flex items-center gap-3 py-3">
+                <button
+                  type="button"
+                  onClick={() => setOpenList(open ? '' : l.id)}
+                  aria-expanded={open}
+                  className="flex flex-1 items-center justify-between text-start"
+                >
+                  <span className="text-base text-muted-foreground">{l.name}</span>
+                </button>
+                {!l.demo && (
+                  <div className="relative" ref={menuFor === l.id ? menuRef : undefined}>
                     <button
                       type="button"
-                      onClick={() => addSymbol(r.symbol)}
-                      className={cn(
-                        'flex w-full items-center gap-2 px-3 py-2 text-start hover:bg-accent',
-                        i > 0 && 'border-t border-border',
-                      )}
+                      aria-label={t('listMenu')}
+                      onClick={() => setMenuFor(menuFor === l.id ? null : l.id)}
                     >
-                      <span className="text-[13px] font-semibold text-foreground">{r.symbol}</span>
-                      <span className="flex-1 truncate text-xs text-muted-foreground">{r.name}</span>
+                      <MoreHorizontal className="size-5 text-muted-foreground" aria-hidden />
                     </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </section>
-
-      <div className="flex items-center justify-between px-1">
-        <button
-          type="button"
-          onClick={removeSelected}
-          disabled={selected.size === 0 || !activeReal}
-          className="text-sm font-medium text-loss disabled:opacity-40"
-        >
-          {t('removeSelected', { count: selected.size })}
-        </button>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            disabled={selected.size === 0 || !activeReal || (real?.length ?? 0) < 2}
-            className="text-sm font-medium text-brand outline-none disabled:font-normal disabled:text-muted-foreground disabled:opacity-60"
-          >
-            {t('moveToList')}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[200px] rounded-xl p-0">
-            {real
-              ?.filter((l) => l.id !== activeReal?.id)
-              .map((l, i) => (
-                <DropdownMenuItem
-                  key={l.id}
-                  onSelect={() => moveSelected(l.id)}
-                  className={cn('rounded-none px-4 py-2.5', i > 0 && 'border-t border-border')}
+                    {menuFor === l.id && (
+                      <div className="absolute end-0 top-full z-50 mt-1 flex w-56 flex-col gap-4 rounded-[20px] bg-well p-6 shadow-lg">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMenuFor(null);
+                            setMode({ kind: 'edit', listId: l.id });
+                          }}
+                          className="flex items-center gap-3 text-base text-foreground"
+                        >
+                          <Pencil className="size-4" aria-hidden />
+                          {t('edit')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMenuFor(null);
+                            void deleteList(l.id);
+                          }}
+                          className="flex items-center gap-3 text-base text-foreground"
+                        >
+                          <Trash2 className="size-4" aria-hidden />
+                          {t('deleteList')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setOpenList(open ? '' : l.id)}
+                  aria-label={l.name}
+                  aria-expanded={open}
                 >
-                  <span className="truncate text-sm text-foreground">{l.name}</span>
-                </DropdownMenuItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                  <ChevronDown
+                    className={cn('size-4 text-muted-foreground transition-transform', open && 'rotate-180')}
+                    aria-hidden
+                  />
+                </button>
+              </div>
+              {open &&
+                l.symbols.map((s) => {
+                  const q = quotes[s];
+                  const demoQuote = l.demo
+                    ? demoWatchlists.flatMap((w) => w.items).find((it) => it.symbol === s)
+                    : undefined;
+                  const price = q?.price ?? demoQuote?.price;
+                  const pct = q?.changePct ?? demoQuote?.changePct ?? 0;
+                  return (
+                    <div key={s} className="flex items-center justify-between gap-4 border-t border-border py-3">
+                      <Link href={`/stock/${s}`} className="flex min-w-0 flex-col">
+                        <span className="text-base font-bold text-foreground">
+                          {displaySymbol(s, market)}
+                        </span>
+                        <span className="truncate text-xs text-foreground">
+                          {q?.name ?? demoQuote?.name ?? s}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{t('equity')}</span>
+                      </Link>
+                      <span className="flex shrink-0 items-center gap-4">
+                        <span className="flex flex-col items-end gap-0.5">
+                          {price !== undefined && (
+                            <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
+                              {market.currencySymbol}
+                              {fmtNum(price, nl)}
+                            </span>
+                          )}
+                          <ChangePill pct={pct} numberLocale={nl} variant="soft" />
+                        </span>
+                        <button
+                          type="button"
+                          aria-label={t('removeFromList')}
+                          disabled={Boolean(l.demo)}
+                          onClick={() =>
+                            patchList(l.id, { symbols: l.symbols.filter((x) => x !== s) })
+                          }
+                        >
+                          <Star className="size-5 fill-primary text-primary" aria-hidden />
+                        </button>
+                      </span>
+                    </div>
+                  );
+                })}
+            </section>
+          );
+        })}
       </div>
 
       {state.status === 'signed-out' && (
-        <p className="px-1 text-xs text-muted-foreground">{t('demoNote')}</p>
+        <p className="px-6 pb-6 text-xs text-muted-foreground">{t('demoNote')}</p>
+      )}
+    </main>
+  );
+}
+
+/** Edit watchlist (design frame): rename, drag-reorder, per-row + list delete. */
+function EditList({
+  list,
+  marketId,
+  onBack,
+  onPatch,
+  onDelete,
+}: {
+  list: WatchlistData;
+  marketId: string;
+  onBack: () => void;
+  onPatch: (id: string, patch: { name?: string; symbols?: string[] }) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}) {
+  const t = useTranslations('lists');
+  const market = getMarket(marketId);
+  const { quotes } = useQuotes(list.symbols, 60_000);
+  const [name, setName] = useState(list.name);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+
+  const reorder = async (from: number, to: number) => {
+    if (from === to) return;
+    const next = [...list.symbols];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    await onPatch(list.id, { symbols: next });
+  };
+
+  const saveName = () => {
+    if (name && name !== list.name) void onPatch(list.id, { name });
+  };
+
+  return (
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
+      <div className="flex items-center gap-4 p-6">
+        <button
+          type="button"
+          onClick={() => {
+            saveName();
+            onBack();
+          }}
+          aria-label={t('back')}
+        >
+          <ArrowLeft className="size-6 text-foreground rtl:-scale-x-100" aria-hidden />
+        </button>
+        <h1 className="text-base font-semibold text-foreground">{t('editWatchlist')}</h1>
+      </div>
+
+      <section className="mx-4 rounded-xl bg-card px-4 py-1">
+        <div className="flex items-center gap-3 border-b border-border py-3">
+          <Pencil className="size-4 text-muted-foreground" aria-hidden />
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={saveName}
+            aria-label={t('listName')}
+            className="min-w-0 flex-1 bg-transparent text-base text-foreground outline-none"
+          />
+          <button type="button" aria-label={t('deleteList')} onClick={() => void onDelete(list.id)}>
+            <Trash2 className="size-5 text-muted-foreground" aria-hidden />
+          </button>
+        </div>
+        {list.symbols.map((s, i) => (
+          <div
+            key={s}
+            draggable
+            onDragStart={() => setDragIdx(i)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => {
+              if (dragIdx !== null) void reorder(dragIdx, i);
+              setDragIdx(null);
+            }}
+            className={cn(
+              'flex items-center gap-3 py-3',
+              i > 0 && 'border-t border-border',
+              dragIdx === i && 'opacity-50',
+            )}
+          >
+            <GripVertical className="size-4 cursor-grab text-faint" aria-hidden />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-base font-bold text-foreground">{displaySymbol(s, market)}</span>
+              <span className="truncate text-xs text-foreground">{quotes[s]?.name ?? s}</span>
+              <span className="text-xs text-muted-foreground">{t('equity')}</span>
+            </span>
+            <button
+              type="button"
+              aria-label={t('removeFromList')}
+              onClick={() => void onPatch(list.id, { symbols: list.symbols.filter((x) => x !== s) })}
+            >
+              <Trash2 className="size-5 text-muted-foreground" aria-hidden />
+            </button>
+          </div>
+        ))}
+      </section>
+    </main>
+  );
+}
+
+/** Create watchlist (design frame): name, ticker search, Save FAB. */
+function CreateList({
+  marketId,
+  onBack,
+  onSave,
+}: {
+  marketId: string;
+  onBack: () => void;
+  onSave: (name: string, symbols: string[]) => Promise<void>;
+}) {
+  const t = useTranslations('lists');
+  const market = getMarket(marketId);
+  const [name, setName] = useState('');
+  const [symbols, setSymbols] = useState<string[]>([]);
+  const [query, setQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const results = useSearch(query, marketId).slice(0, 6);
+
+  return (
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
+      <div className="flex items-center gap-4 p-6">
+        <button type="button" onClick={onBack} aria-label={t('back')}>
+          <ArrowLeft className="size-6 text-foreground rtl:-scale-x-100" aria-hidden />
+        </button>
+        <h1 className="flex-1 text-base font-semibold text-foreground">{t('createWatchlist')}</h1>
+        <button
+          type="button"
+          aria-label={t('addTicker')}
+          onClick={() => setSearchOpen((v) => !v)}
+          className="text-foreground"
+        >
+          <Plus className="size-6 rounded-full border border-foreground p-0.5" aria-hidden />
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-2 px-6">
+        <label className="text-xs text-muted-foreground" htmlFor="wl-name">
+          {t('listName')}
+        </label>
+        <input
+          id="wl-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="rounded-[20px] bg-well px-4 py-3 text-base text-foreground outline-none"
+        />
+      </div>
+
+      {searchOpen && (
+        <div className="relative flex flex-col gap-2 px-6 pt-4">
+          <input
+            autoFocus
+            value={query}
+            placeholder={t('addTicker')}
+            onChange={(e) => setQuery(e.target.value)}
+            className="rounded-[20px] bg-well px-4 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground"
+          />
+          {query && results.length > 0 && (
+            <ul className="overflow-hidden rounded-xl border border-border bg-popover">
+              {results.map((r, i) => (
+                <li key={r.symbol}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!symbols.includes(r.symbol)) setSymbols([...symbols, r.symbol]);
+                      setQuery('');
+                    }}
+                    className={cn(
+                      'flex w-full items-center gap-2 px-4 py-2.5 text-start hover:bg-accent',
+                      i > 0 && 'border-t border-border',
+                    )}
+                  >
+                    <span className="text-[13px] font-semibold text-foreground">{r.symbol}</span>
+                    <span className="flex-1 truncate text-xs text-muted-foreground">{r.name}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
-      {/* FAB — jump to the add-ticker field */}
-      <button
-        type="button"
-        onClick={() => addRef.current?.focus()}
-        disabled={!activeReal}
-        aria-label={t('addTicker')}
-        className="fixed bottom-[92px] end-4 z-30 flex size-[52px] items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_6px_20px_rgba(240,185,11,0.4)] disabled:opacity-50 md:absolute md:bottom-8"
-      >
-        <Plus className="size-6" aria-hidden />
-      </button>
+      <div className="flex flex-col px-6 pt-6">
+        {symbols.length === 0 ? (
+          <>
+            <p className="text-base text-muted-foreground">{t('suggestedTitle')}</p>
+            <p className="text-base text-foreground">{t('suggestedHint')}</p>
+          </>
+        ) : (
+          symbols.map((s, i) => (
+            <div key={s} className={cn('flex items-center justify-between py-3', i > 0 && 'border-t border-border')}>
+              <span className="text-base font-bold text-foreground">{displaySymbol(s, market)}</span>
+              <button
+                type="button"
+                aria-label={t('removeFromList')}
+                onClick={() => setSymbols(symbols.filter((x) => x !== s))}
+              >
+                <Trash2 className="size-5 text-muted-foreground" aria-hidden />
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Save FAB */}
+      <div className="fixed inset-x-0 bottom-[110px] flex flex-col items-center gap-1 md:absolute">
+        <button
+          type="button"
+          disabled={!name.trim() || busy}
+          onClick={async () => {
+            setBusy(true);
+            await onSave(name.trim(), symbols);
+          }}
+          aria-label={t('save')}
+          className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50"
+        >
+          <Check className="size-6" aria-hidden />
+        </button>
+        <span className="text-xs text-foreground">{t('save')}</span>
+      </div>
     </main>
   );
 }

@@ -4,49 +4,54 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Light palette — from the "Portfolio · light mode" design screen. */
+/* Light palette — Figma "#Design" frame variables (screens page). */
 :root {
-  --background: #f5f7fa;
-  --foreground: #1b2129;
-  --card: #ffffff;
-  --card-foreground: #1b2129;
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #fafafa;
+  --card-foreground: #000000;
   --popover: #ffffff;
-  --popover-foreground: #1b2129;
-  --primary: #f0b90b;
-  --primary-foreground: #14171a;
-  --secondary: #e8ecf2;
-  --secondary-foreground: #5c6670;
-  --muted: #e8ecf2;
-  --muted-foreground: #5c6670;
-  --accent: #e8ecf2;
-  --accent-foreground: #1b2129;
-  --destructive: #d63a4e;
-  --border: #e3e8ef;
-  --input: #e3e8ef;
-  --ring: #f0b90b;
-  --chart-1: #f0b90b;
+  --popover-foreground: #000000;
+  --primary: #faab00; /* Brand/Yellow */
+  --primary-foreground: #ffffff; /* text/inverse */
+  --secondary: #eff0f4;
+  --secondary-foreground: rgba(30, 30, 30, 0.6);
+  --muted: #eff0f4;
+  --muted-foreground: rgba(30, 30, 30, 0.6);
+  --accent: #eff0f4;
+  --accent-foreground: #000000;
+  --destructive: #ff6666;
+  --border: #eff0f4; /* base/Grey */
+  --input: #eff0f4;
+  --ring: #faab00;
+  --chart-1: #faab00;
   --chart-2: #8a939e;
   --chart-3: #5c6670;
-  --chart-4: #1b2129;
-  --chart-5: #e27500;
+  --chart-4: #1e1e1e;
+  --chart-5: #df9101;
   --radius: 0.5rem;
   --sidebar: #ffffff;
-  --sidebar-foreground: #1b2129;
-  --sidebar-primary: #f0b90b;
-  --sidebar-primary-foreground: #14171a;
-  --sidebar-accent: #e8ecf2;
-  --sidebar-accent-foreground: #1b2129;
-  --sidebar-border: #e3e8ef;
-  --sidebar-ring: #f0b90b;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #faab00;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eff0f4;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #eff0f4;
+  --sidebar-ring: #faab00;
   /* Design extras */
-  --well: #eef1f6; /* inset surfaces: table headers, card footers, inputs */
-  --brand: #e27500; /* links & active nav — orange in light, yellow in dark */
-  --subtle: #3d4650; /* secondary text */
-  --faint: #8a939e; /* tertiary text */
-  --gain: #0f8a45;
+  --well: #eff0f4; /* surface/muted: search pills, inputs, inset surfaces */
+  --brand: #df9101; /* Brand/OJ — links & active nav labels in light */
+  --subtle: rgba(30, 30, 30, 0.72); /* secondary text, slightly stronger */
+  --faint: rgba(30, 30, 30, 0.4); /* tertiary text */
+  --gain: #179a72; /* Brand/Green */
   --gain-foreground: #ffffff;
-  --loss: #d63a4e;
+  --loss: #ff6666; /* text/error */
   --loss-foreground: #ffffff;
+  /* Filled change-pill surfaces (green/red badges). */
+  --gain-surface: #179a72;
+  --loss-surface: #ff6666;
+  /* After-hours crescent. */
+  --moon: #faab00;
   /* Categorical series (chart overlays) — dataviz-validated fixed order;
      never cycled, never reused for gain/loss/status. */
   --series-1: #2a78d6;
@@ -56,47 +61,50 @@
   --series-5: #e87ba4;
 }
 
-/* Dark palette (default) — cool-neutral near-black from the design. */
+/* Dark palette — Figma "#DesignDark" frame variables. */
 .dark {
-  --background: #0b0b0b;
-  --foreground: #f1f3f5;
-  --card: #03060d;
-  --card-foreground: #f1f3f5;
-  --popover: #03060d;
-  --popover-foreground: #f1f3f5;
-  --primary: #f0b90b;
-  --primary-foreground: #14171a;
-  --secondary: #191a1a;
-  --secondary-foreground: #f1f3f5;
-  --muted: #0b0b0b;
-  --muted-foreground: #8a939e;
-  --accent: #0b0b0b;
-  --accent-foreground: #f1f3f5;
-  --destructive: #ff4757;
-  --border: #191a1a;
-  --input: #191a1a;
-  --ring: #f0b90b;
-  --chart-1: #f0b90b;
+  --background: #1b1b1b;
+  --foreground: #ffffff;
+  --card: #272727;
+  --card-foreground: #ffffff;
+  --popover: #272727;
+  --popover-foreground: #ffffff;
+  --primary: #faab00;
+  --primary-foreground: #ffffff;
+  --secondary: #383838; /* surface/placeholder */
+  --secondary-foreground: rgba(255, 255, 255, 0.6);
+  --muted: #383838;
+  --muted-foreground: rgba(255, 255, 255, 0.6);
+  --accent: #383838;
+  --accent-foreground: #ffffff;
+  --destructive: #ff6666;
+  --border: #2e2e2e; /* border/default */
+  --input: #2e2e2e;
+  --ring: #faab00;
+  --chart-1: #faab00;
   --chart-2: #8a939e;
   --chart-3: #6b747e;
-  --chart-4: #f1f3f5;
-  --chart-5: #ffd34d;
-  --sidebar: #03060d;
-  --sidebar-foreground: #f1f3f5;
-  --sidebar-primary: #f0b90b;
-  --sidebar-primary-foreground: #14171a;
-  --sidebar-accent: #0b0b0b;
-  --sidebar-accent-foreground: #f1f3f5;
-  --sidebar-border: #191a1a;
-  --sidebar-ring: #f0b90b;
-  --well: #010309;
-  --brand: #f0b90b;
-  --subtle: #c4cbd3;
-  --faint: #6b747e;
-  --gain: #1ac567;
-  --gain-foreground: #14171a;
-  --loss: #ff4757;
+  --chart-4: #ffffff;
+  --chart-5: #f0b90b;
+  --sidebar: #272727;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #faab00;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #383838;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2e2e2e;
+  --sidebar-ring: #faab00;
+  --well: #000000; /* surface/muted in dark: search pills, inputs */
+  --brand: #f0b90b; /* accent/warning — links & active nav in dark */
+  --subtle: rgba(255, 255, 255, 0.72);
+  --faint: rgba(255, 255, 255, 0.4);
+  --gain: #179a72;
+  --gain-foreground: #ffffff;
+  --loss: #ff6666;
   --loss-foreground: #ffffff;
+  --gain-surface: #179a72;
+  --loss-surface: #9a1717; /* deep red pill on dark */
+  --moon: #9a9a9a;
   --series-1: #3987e5;
   --series-2: #d95926;
   --series-3: #199e70;
@@ -158,6 +166,9 @@
   --color-gain-foreground: var(--gain-foreground);
   --color-loss: var(--loss);
   --color-loss-foreground: var(--loss-foreground);
+  --color-gain-surface: var(--gain-surface);
+  --color-loss-surface: var(--loss-surface);
+  --color-moon: var(--moon);
 }
 
 @layer base {

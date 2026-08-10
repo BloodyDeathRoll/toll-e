@@ -16,7 +16,8 @@
     "back": "Back",
     "performance": "Performance",
     "transactions": "Transactions",
-    "account": "Account"
+    "account": "Account",
+    "new": "New"
   },
   "market": {
     "menuTitle": "Market",
@@ -88,14 +89,16 @@
     "emptyCta": "Add your first transaction",
     "noSalesYet": "Appears after your first sale — sells create the tax picture.",
     "watchlistNone": "No watchlist yet — create one to follow tickers here.",
-    "watchlistCreate": "Create watchlist"
+    "watchlistCreate": "Create watchlist",
+    "sharesCount": "{shares} shares"
   },
   "markets": {
     "leadingIndexes": "Leading indexes",
     "mostActive": "Most active",
     "gainers": "Gainers",
     "losers": "Losers",
-    "fx": "USD/ILS {rate}"
+    "fx": "USD/ILS {rate}",
+    "volume": "Volume"
   },
   "stock": {
     "summary": "Summary",
@@ -170,7 +173,13 @@
     "watchlistBtn": "Watchlist",
     "saveToList": "Save to list",
     "setAlert": "Set alert",
-    "addTransaction": "Add transaction"
+    "addTransaction": "Add transaction",
+    "share": "Share",
+    "atClose": "At close: {time}",
+    "wk52Range": "52 Weeks Range",
+    "prevClose": "Previous Close",
+    "avgVol": "Avg Volume",
+    "earningsDate": "Earnings Date"
   },
   "tx": {
     "title": "Add transaction",
@@ -196,7 +205,9 @@
     "taxDueAt": "Tax due at {rate}%",
     "carryNote": "Carried loss drops to {amount} after this sale. Estimate — confirm with your accountant.",
     "submitSell": "Add sell · {tax} tax",
-    "submitBuy": "Add buy"
+    "submitBuy": "Add buy",
+    "total": "Total",
+    "save": "Save"
   },
   "taxPage": {
     "title": "Tax",
@@ -248,7 +259,17 @@
     "emptyTitle": "No tax events yet",
     "emptyBody": "Tax is computed from sales. Once you record a sell, the yearly ledger, monthly breakdown, and loss shield show up here.",
     "emptyCta": "Record a sale",
-    "salesIn": "Sales in {year}"
+    "salesIn": "Sales in {year}",
+    "tabs": {
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "transactionsDetails": "Transactions Details",
+    "calcTax": "Calc. Tax",
+    "totalYearly": "Total Yearly",
+    "taxDueBy": "Tax Due {date}",
+    "taxableShort": "Taxable",
+    "detailedView": "Detailed view"
   },
   "journal": {
     "title": "Transactions",
@@ -259,7 +280,14 @@
     "empty": "No transactions yet.",
     "addFirst": "Add your first transaction",
     "signIn": "Sign in to track your portfolio.",
-    "signInCta": "Sign in"
+    "signInCta": "Sign in",
+    "sortBy": "Sort by",
+    "sort": {
+      "date": "Date",
+      "name": "Name",
+      "amount": "Amount",
+      "action": "Action"
+    }
   },
   "lists": {
     "editList": "Edit list",
@@ -275,7 +303,18 @@
     "demoNote": "Sample lists — sign in to build your own.",
     "emptyTitle": "No watchlists yet",
     "emptyBody": "Create your first watchlist to follow the tickers you care about.",
-    "emptyCta": "Create your first watchlist"
+    "emptyCta": "Create new watchlist",
+    "noListsFound": "No lists found.",
+    "equity": "Equity",
+    "listMenu": "List options",
+    "edit": "Edit",
+    "deleteList": "Delete watchlist",
+    "removeFromList": "Remove from list",
+    "back": "Back",
+    "editWatchlist": "Edit watchlist",
+    "createWatchlist": "Create watchlist",
+    "suggestedTitle": "Add suggested tickers",
+    "suggestedHint": "Search for tickers using the top right plus icon"
   },
   "portfolio": {
     "title": "Holdings",
@@ -357,5 +396,15 @@
     "later": "Not now",
     "gotIt": "Got it",
     "close": "Close"
+  },
+  "menu": {
+    "open": "Open menu",
+    "close": "Close menu",
+    "taxView": "Tax View",
+    "performance": "Performance",
+    "markets": "Markets",
+    "privacy": "Privacy",
+    "privacyOn": "On",
+    "terms": "Terms of Use"
   }
 }

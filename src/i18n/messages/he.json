@@ -16,7 +16,8 @@
     "back": "חזרה",
     "performance": "ביצועים",
     "transactions": "עסקאות",
-    "account": "חשבון"
+    "account": "חשבון",
+    "new": "חדש"
   },
   "market": {
     "menuTitle": "שוק",
@@ -88,14 +89,16 @@
     "emptyCta": "הוספת עסקה ראשונה",
     "noSalesYet": "יופיע אחרי המכירה הראשונה — מכירות יוצרות את תמונת המס.",
     "watchlistNone": "אין עדיין רשימת מעקב — צרו אחת כדי לעקוב אחרי ניירות כאן.",
-    "watchlistCreate": "יצירת רשימת מעקב"
+    "watchlistCreate": "יצירת רשימת מעקב",
+    "sharesCount": "{shares} יחידות"
   },
   "markets": {
     "leadingIndexes": "מדדים מובילים",
     "mostActive": "הנסחרות ביותר",
     "gainers": "עולות",
     "losers": "יורדות",
-    "fx": "דולר/שקל {rate}"
+    "fx": "דולר/שקל {rate}",
+    "volume": "מחזור"
   },
   "stock": {
     "summary": "סקירה",
@@ -170,7 +173,13 @@
     "watchlistBtn": "רשימת מעקב",
     "saveToList": "שמירה לרשימה",
     "setAlert": "התראה",
-    "addTransaction": "הוספת עסקה"
+    "addTransaction": "הוספת עסקה",
+    "share": "שיתוף",
+    "atClose": "בסגירה: {time}",
+    "wk52Range": "טווח 52 שבועות",
+    "prevClose": "סגירה קודמת",
+    "avgVol": "מחזור ממוצע",
+    "earningsDate": "תאריך דוחות"
   },
   "tx": {
     "title": "הוספת עסקה",
@@ -196,7 +205,9 @@
     "taxDueAt": "מס לתשלום ב-{rate}%",
     "carryNote": "ההפסד המועבר יירד ל-{amount} אחרי מכירה זו. הערכה בלבד — יש לאשר מול רואה החשבון.",
     "submitSell": "הוספת מכירה · מס {tax}",
-    "submitBuy": "הוספת קנייה"
+    "submitBuy": "הוספת קנייה",
+    "total": "סה״כ",
+    "save": "שמירה"
   },
   "taxPage": {
     "title": "מס",
@@ -248,7 +259,17 @@
     "emptyTitle": "אין אירועי מס עדיין",
     "emptyBody": "המס מחושב ממכירות. אחרי שתתעדו מכירה, יופיעו כאן הדוח השנתי, הפירוט החודשי ומגן ההפסדים.",
     "emptyCta": "תיעוד מכירה",
-    "salesIn": "מכירות ב־{year}"
+    "salesIn": "מכירות ב־{year}",
+    "tabs": {
+      "monthly": "חודשי",
+      "yearly": "שנתי"
+    },
+    "transactionsDetails": "פירוט עסקאות",
+    "calcTax": "מס מחושב",
+    "totalYearly": "סה״כ שנתי",
+    "taxDueBy": "מס לתשלום עד {date}",
+    "taxableShort": "חייב במס",
+    "detailedView": "תצוגה מפורטת"
   },
   "journal": {
     "title": "עסקאות",
@@ -259,7 +280,14 @@
     "empty": "אין עסקאות עדיין.",
     "addFirst": "הוסיפו את העסקה הראשונה",
     "signIn": "התחברו כדי לעקוב אחר התיק שלכם.",
-    "signInCta": "התחברות"
+    "signInCta": "התחברות",
+    "sortBy": "מיון לפי",
+    "sort": {
+      "date": "תאריך",
+      "name": "שם",
+      "amount": "סכום",
+      "action": "פעולה"
+    }
   },
   "lists": {
     "editList": "עריכת רשימה",
@@ -275,7 +303,18 @@
     "demoNote": "רשימות לדוגמה — התחברו כדי לבנות משלכם.",
     "emptyTitle": "אין עדיין רשימות מעקב",
     "emptyBody": "צרו רשימת מעקב ראשונה כדי לעקוב אחרי הניירות שמעניינים אתכם.",
-    "emptyCta": "יצירת רשימת מעקב ראשונה"
+    "emptyCta": "יצירת רשימת מעקב חדשה",
+    "noListsFound": "לא נמצאו רשימות.",
+    "equity": "מניה",
+    "listMenu": "אפשרויות רשימה",
+    "edit": "עריכה",
+    "deleteList": "מחיקת רשימת מעקב",
+    "removeFromList": "הסרה מהרשימה",
+    "back": "חזרה",
+    "editWatchlist": "עריכת רשימת מעקב",
+    "createWatchlist": "יצירת רשימת מעקב",
+    "suggestedTitle": "הוסיפו ניירות מוצעים",
+    "suggestedHint": "חפשו ניירות בעזרת כפתור הפלוס למעלה"
   },
   "portfolio": {
     "title": "החזקות",
@@ -357,5 +396,15 @@
     "later": "לא עכשיו",
     "gotIt": "הבנתי",
     "close": "סגירה"
+  },
+  "menu": {
+    "open": "פתיחת תפריט",
+    "close": "סגירת תפריט",
+    "taxView": "מסך מס",
+    "performance": "ביצועים",
+    "markets": "שווקים",
+    "privacy": "פרטיות",
+    "privacyOn": "פועל",
+    "terms": "תנאי שימוש"
   }
 }

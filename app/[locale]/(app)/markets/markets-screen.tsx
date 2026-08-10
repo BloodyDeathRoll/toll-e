@@ -2,23 +2,26 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Link } from '@/src/i18n/navigation';
+import { ArrowLeft } from 'lucide-react';
+import { Link, useRouter } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
 import { MarketMenu } from '@/components/app-shell/market-menu';
 import { SessionStatus } from '@/components/session-indicator';
 import { StaleBadge } from '@/components/stale-badge';
-import { Sparkline } from '@/components/charts';
-import { useFx, useIndexQuotes, useQuotes } from '@/components/use-market-data';
+import { Sparkline, twoToneSpark } from '@/components/charts';
+import { ChangePill, AfterHours } from '@/components/quote-bits';
+import { UnderlineTabs } from '@/components/underline-tabs';
+import { useCharts, useFx, useIndexQuotes, useQuotes } from '@/components/use-market-data';
 import { getMarket } from '@/src/markets/registry';
 import { demo, demoFx } from '@/src/demo/data';
-import { fmtNum, fmtPct } from '@/lib/format';
-import { cn } from '@/lib/utils';
+import { fmtNum } from '@/lib/format';
 
 const quoteTabs = ['mostActive', 'gainers', 'losers'] as const;
 
 export function MarketsScreen() {
   const t = useTranslations();
   const locale = useLocale();
+  const router = useRouter();
   const { marketId } = useMarket();
   const market = getMarket(marketId);
   const data = demo[marketId];
@@ -28,12 +31,14 @@ export function MarketsScreen() {
   const { data: fx } = useFx('USDILS');
   const name = (x: { name: string; nameHe?: string }) =>
     locale === 'he' && x.nameHe ? x.nameHe : x.name;
+  const compact = new Intl.NumberFormat(nl, { notation: 'compact', maximumFractionDigits: 1 });
 
   // Live quotes over the static mover universe — demo numbers only as a
   // fallback so a Yahoo outage degrades instead of blanking the list.
-  const { quotes: liveQuotes, stale: quotesStale } = useQuotes(
-    data.mostActive.map((q) => q.symbol),
-  );
+  const moverSymbols = data.mostActive.map((q) => q.symbol);
+  const { quotes: liveQuotes, stale: quotesStale } = useQuotes(moverSymbols);
+  const moverCharts = useCharts(moverSymbols, '1d');
+  const indexCharts = useCharts(data.indexes.map((ix) => ix.symbol), '1d');
   const mostActive = data.mostActive.map((q) => {
     const live = liveQuotes[q.symbol];
     return { ...q, price: live?.price ?? q.price, changePct: live?.changePct ?? q.changePct };
@@ -44,41 +49,55 @@ export function MarketsScreen() {
     losers: [...mostActive].filter((q) => q.changePct < 0).sort((a, b) => a.changePct - b.changePct),
   }[tab];
 
+  const spark = (symbol: string, fallback: number[] | undefined, up: boolean) => {
+    const closes = (symbol in indexCharts ? indexCharts : moverCharts)[symbol]?.points.map((p) => p.close) ?? [];
+    if (closes.length > 1) {
+      const s = twoToneSpark(closes.slice(-40), 20);
+      return <Sparkline points={s.points} baseline={s.baseline} up={up} width={91} height={20} />;
+    }
+    if (fallback?.length) return <Sparkline points={fallback} up={up} width={91} height={20} />;
+    return <span className="w-[91px]" aria-hidden />;
+  };
+
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3.5 p-4 md:py-7">
-      <div className="flex items-center justify-between pt-1 md:hidden">
-        <h1 className="text-[22px] font-bold tracking-tight text-foreground">{t('nav.markets')}</h1>
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
+      {/* Header: back + title (design), market switch kept for US/TASE */}
+      <div className="flex items-center gap-4 p-6">
+        <button type="button" onClick={() => router.back()} aria-label={t('nav.back')} className="md:hidden">
+          <ArrowLeft className="size-6 text-foreground rtl:-scale-x-100" aria-hidden />
+        </button>
+        <h1 className="flex-1 text-base font-medium text-foreground">{t('nav.markets')}</h1>
+        <StaleBadge show={indexesStale || quotesStale} />
         <MarketMenu />
       </div>
 
       {/* Leading indexes */}
-      <section className="overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="flex items-center gap-2 px-4 pt-3.5 pb-2.5">
-          <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-            {t('markets.leadingIndexes')}
-          </h2>
-          <StaleBadge show={indexesStale} />
-        </div>
-        {data.indexes.map((ix) => {
+      <section className="flex flex-col gap-2.5 px-6 pb-6">
+        <h2 className="text-xs uppercase tracking-[-0.005em] text-muted-foreground">
+          {t('markets.leadingIndexes')}
+        </h2>
+        {data.indexes.map((ix, i) => {
           const live = indexQuotes[ix.symbol];
           const value = live?.price ?? ix.value;
           const pct = live?.changePct ?? ix.changePct;
           return (
-            <div key={ix.symbol} className="flex items-center justify-between border-t border-border px-4 py-3">
-              <span className="flex flex-col gap-0.5">
-                <span className="text-[15px] font-semibold text-foreground">{name(ix)}</span>
-                <span className="text-xs text-muted-foreground">
-                  {locale === 'he' && ix.longNameHe ? ix.longNameHe : (ix.longName ?? ix.name)}
-                </span>
-              </span>
-              <span className="flex items-center gap-3">
-                <span className="flex flex-col items-end gap-0.5 tabular-nums">
-                  <span dir="ltr" className="text-[15px] text-foreground">{fmtNum(value, nl)}</span>
-                  <span dir="ltr" className={cn('text-xs', pct >= 0 ? 'text-gain' : 'text-loss')}>
-                    {fmtPct(pct, nl)}
+            <div
+              key={ix.symbol}
+              className={
+                i < data.indexes.length - 1
+                  ? 'flex items-center justify-between border-b border-border pb-2.5'
+                  : 'flex items-center justify-between pb-2.5'
+              }
+            >
+              <span className="text-base font-bold text-foreground">{name(ix)}</span>
+              <span className="flex items-center gap-6">
+                {spark(ix.symbol, ix.spark, pct >= 0)}
+                <span className="flex flex-col items-end gap-0.5">
+                  <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
+                    {fmtNum(value, nl)}
                   </span>
+                  <ChangePill pct={pct} numberLocale={nl} />
                 </span>
-                {ix.spark && <Sparkline points={ix.spark} up={pct >= 0} />}
               </span>
             </div>
           );
@@ -86,50 +105,53 @@ export function MarketsScreen() {
       </section>
 
       {/* Most active / gainers / losers */}
-      <section className="overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="flex gap-[18px] px-4 pt-3 pb-2.5">
-          {quoteTabs.map((key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setTab(key)}
-              className={cn(
-                'pb-1 text-[13px]',
-                tab === key
-                  ? 'border-b-2 border-brand font-semibold text-foreground'
-                  : 'text-muted-foreground',
-              )}
+      <section className="flex flex-col gap-2.5 px-6 pb-6">
+        <UnderlineTabs
+          tabs={quoteTabs}
+          value={tab}
+          onChange={setTab}
+          label={(k) => t(`markets.${k}`)}
+          className="pb-2.5"
+        />
+        {quotes.map((q) => {
+          const live = liveQuotes[q.symbol];
+          return (
+            <Link
+              key={q.symbol}
+              href={`/stock/${q.symbol}`}
+              className="flex items-center justify-between border-b border-border pb-2.5"
             >
-              {t(`markets.${key}`)}
-            </button>
-          ))}
-          <StaleBadge show={quotesStale} />
-        </div>
-        {quotes.map((q) => (
-          <Link
-            key={q.symbol}
-            href={`/stock/${q.symbol}`}
-            className="flex items-center justify-between border-t border-border px-4 py-[11px] hover:bg-accent"
-          >
-            <span className="flex flex-col gap-0.5">
-              <span className="text-[15px] font-semibold text-foreground">{name(q)}</span>
-              <span className="text-xs text-muted-foreground">{q.symbol}</span>
-            </span>
-            <span className="flex flex-col items-end gap-0.5 tabular-nums">
-              <span dir="ltr" className="text-[15px] text-foreground">
-                {market.currencySymbol}
-                {fmtNum(q.price, nl)}
+              <span className="flex min-w-0 flex-col gap-2">
+                <span className="flex flex-col">
+                  <span className="text-base font-bold text-foreground">{q.symbol}</span>
+                  <span className="truncate text-xs text-foreground">{name(q)}</span>
+                </span>
+                {live?.volume !== undefined && (
+                  <span className="flex items-center gap-1 text-xs">
+                    <span className="text-muted-foreground">{t('markets.volume')}</span>
+                    <span dir="ltr" className="font-bold text-foreground tabular-nums">
+                      {compact.format(live.volume)}
+                    </span>
+                  </span>
+                )}
               </span>
-              <span dir="ltr" className={cn('text-xs', q.changePct >= 0 ? 'text-gain' : 'text-loss')}>
-                {fmtPct(q.changePct, nl)}
+              <span className="flex shrink-0 items-center gap-6">
+                {spark(q.symbol, undefined, q.changePct >= 0)}
+                <span className="flex flex-col items-end gap-0.5">
+                  <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
+                    {fmtNum(q.price, nl)}
+                  </span>
+                  <ChangePill pct={q.changePct} numberLocale={nl} />
+                  <AfterHours quote={live} numberLocale={nl} />
+                </span>
               </span>
-            </span>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </section>
 
       {/* FX + session status */}
-      <section className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+      <section className="flex items-center justify-between px-6 pb-6">
         <span className="text-[13px] text-subtle">
           {t('markets.fx', { rate: fmtNum(fx?.rate ?? demoFx.rate, nl, 3) })}
         </span>

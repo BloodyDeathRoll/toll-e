@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Check, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
 import { useQuotes, useSearch } from '@/components/use-market-data';
@@ -205,190 +205,231 @@ export function TxScreen() {
     }
   };
 
-  const numField = (
+  const fieldShell = (label: string, children: React.ReactNode) => (
+    <div className="flex flex-col gap-2 px-6 py-4">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      {children}
+    </div>
+  );
+
+  const stepper = (
     label: string,
     value: number,
     onChange: (n: number) => void,
-    hint?: string,
-  ) => (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-[13px] font-medium text-subtle">{label}</span>
-      <input
-        dir="ltr"
-        type="number"
-        inputMode="decimal"
-        min={0}
-        step="any"
-        value={Number.isNaN(value) ? '' : value}
-        onChange={(e) => onChange(e.target.valueAsNumber)}
-        className="rounded-lg border border-border bg-well px-3.5 py-3 text-base text-foreground tabular-nums outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
-      />
-      {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
-    </label>
-  );
+    step: number,
+  ) =>
+    fieldShell(
+      label,
+      <div className="flex items-center gap-4 rounded-[20px] bg-well px-4 py-3">
+        <input
+          dir="ltr"
+          type="number"
+          inputMode="decimal"
+          min={0}
+          step="any"
+          value={Number.isNaN(value) ? '' : value}
+          onChange={(e) => onChange(e.target.valueAsNumber)}
+          aria-label={label}
+          className="min-w-0 flex-1 bg-transparent text-base font-medium text-foreground tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        />
+        <span className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label={`${label} +`}
+            onClick={() => onChange(Number(((value || 0) + step).toFixed(4)))}
+          >
+            <ChevronUp className="size-4 text-foreground" aria-hidden />
+          </button>
+          <button
+            type="button"
+            aria-label={`${label} -`}
+            onClick={() => onChange(Math.max(0, Number(((value || 0) - step).toFixed(4))))}
+          >
+            <ChevronDown className="size-4 text-foreground" aria-hidden />
+          </button>
+        </span>
+      </div>,
+    );
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col p-4 md:py-7">
-      <div className="flex items-center gap-3 pt-1 pb-4">
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col pb-6">
+      <div className="flex items-center gap-4 p-6">
         <button type="button" onClick={() => router.back()} aria-label={t('title')}>
-          <ArrowLeft className="size-[18px] text-foreground rtl:-scale-x-100" aria-hidden />
+          <ArrowLeft className="size-6 text-foreground rtl:-scale-x-100" aria-hidden />
         </button>
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-base font-medium text-foreground">
           {editTxId ? t('editTitle') : t('title')}
         </h1>
       </div>
 
-      <div className="flex flex-col gap-3.5">
-        <section className="flex flex-col rounded-2xl border border-border bg-card px-4 py-1">
-          <div className="flex items-center justify-between gap-4 py-3.5">
-            <span className="text-sm text-muted-foreground">{t('ticker')}</span>
-            <div ref={pickerRef} className="relative flex-1 max-w-[240px]">
-              <input
-                dir="ltr"
-                value={pickerOpen ? symbolQuery : symbol}
-                placeholder={t('tickerPlaceholder')}
-                disabled={Boolean(editTxId)}
-                onFocus={() => {
-                  setPickerOpen(true);
-                  setSymbolQuery('');
-                }}
-                onChange={(e) => setSymbolQuery(e.target.value)}
-                className="w-full rounded-lg border border-border bg-well px-3.5 py-3 text-end text-base font-semibold text-foreground outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
-              />
-              {pickerOpen && results.length > 0 && (
-                <ul className="absolute inset-x-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-border bg-popover shadow-[0_12px_32px_rgba(0,0,0,0.55)]">
-                  {results.map((r, i) => (
-                    <li key={r.symbol}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSymbol(r.symbol);
-                          setPickerOpen(false);
-                        }}
-                        className={cn(
-                          'flex w-full items-center gap-2 px-3 py-2 text-start hover:bg-accent',
-                          i > 0 && 'border-t border-border',
-                        )}
-                      >
-                        <span className="text-[13px] font-semibold text-foreground">{r.symbol}</span>
-                        <span className="flex-1 truncate text-xs text-muted-foreground">{r.name}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center justify-between border-t border-border py-3.5">
-            <span className="text-sm text-muted-foreground">{t('type')}</span>
-            <div className="flex gap-1 rounded-full bg-background p-[3px]">
-              {(['buy', 'sell'] as const).map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => setType(k)}
-                  className={cn(
-                    'rounded-full px-3.5 py-1 text-[13px]',
-                    type === k
-                      ? 'bg-primary font-semibold text-primary-foreground'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {t(k)}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-center justify-between border-t border-border py-3.5">
-            <span className="text-sm text-muted-foreground">{t('date')}</span>
+      {/* Ticker */}
+      {fieldShell(
+        t('ticker'),
+        <div ref={pickerRef} className="relative">
+          <div className="flex items-center gap-4 rounded-[20px] bg-well px-4 py-3">
+            <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
             <input
               dir="ltr"
-              type="date"
-              value={tradeDate}
-              max={today}
-              onChange={(e) => setTradeDate(e.target.value)}
-              className="rounded-lg border border-border bg-well px-3.5 py-2.5 text-base text-foreground outline-none [color-scheme:dark] focus-visible:border-primary"
+              value={pickerOpen ? symbolQuery : symbol}
+              placeholder={t('tickerPlaceholder')}
+              disabled={Boolean(editTxId)}
+              onFocus={() => {
+                setPickerOpen(true);
+                setSymbolQuery('');
+              }}
+              onChange={(e) => setSymbolQuery(e.target.value)}
+              className="min-w-0 flex-1 bg-transparent text-base font-medium text-foreground outline-none placeholder:text-muted-foreground"
             />
           </div>
-        </section>
+          {pickerOpen && results.length > 0 && (
+            <ul className="absolute inset-x-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-border bg-popover shadow-lg">
+              {results.map((r, i) => (
+                <li key={r.symbol}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSymbol(r.symbol);
+                      setPickerOpen(false);
+                    }}
+                    className={cn(
+                      'flex w-full items-center gap-2 px-4 py-2.5 text-start hover:bg-accent',
+                      i > 0 && 'border-t border-border',
+                    )}
+                  >
+                    <span className="text-[13px] font-semibold text-foreground">{r.symbol}</span>
+                    <span className="flex-1 truncate text-xs text-muted-foreground">{r.name}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>,
+      )}
 
-        {numField(
-          t('shares'),
-          shares,
-          (n) => setShares(n),
-          position ? t('youHold', { shares: fmtNum(position.shares, nl, 0) }) : undefined,
-        )}
-        {numField(t('pricePerShare'), price, onPriceEdit)}
-
-        {type === 'sell' && gain !== undefined && costBasis !== undefined && due !== undefined && (
-          <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-                {t('taxEvent')}
-              </h2>
-              <span className="rounded-full bg-background px-2.5 py-1 text-[11px] font-semibold text-subtle">
-                {t('averageCost')}
-              </span>
-            </div>
-            <div className="flex flex-col gap-3 text-[13px] tabular-nums">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {t('proceeds', { qty: fmtNum(shares, nl, 0), price: fmtNum(price, nl) })}
-                </span>
-                <span dir="ltr" className="text-foreground">{fmtNum(proceeds, nl)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  {t('costBasis', { qty: fmtNum(shares, nl, 0), price: fmtNum(avgCost ?? 0, nl) })}
-                </span>
-                <span dir="ltr" className="text-foreground">{fmtNum(-costBasis, nl)}</span>
-              </div>
-              <div className="h-px bg-border" />
-              <div className="flex justify-between font-semibold">
-                <span className="text-foreground">{t('realizedGain')}</span>
-                <span dir="ltr" className={cn(gain >= 0 ? 'text-gain' : 'text-loss')}>
-                  {fmtSigned(gain, nl)}
-                </span>
-              </div>
-              {offset > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    {serverPreview ? t('offsetByShield') : t('offsetByCarried', { year: tax.carriedFromYear })}
-                  </span>
-                  <span dir="ltr" className="text-foreground">{fmtNum(-offset, nl)}</span>
-                </div>
+      {/* Type: full-width segmented pill */}
+      {fieldShell(
+        t('type'),
+        <div className="flex rounded-[20px] bg-well">
+          {(['buy', 'sell'] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setType(k)}
+              className={cn(
+                'flex-1 rounded-[20px] px-[18px] py-3 text-base',
+                type === k ? 'bg-primary font-bold text-primary-foreground' : 'text-foreground',
               )}
-              <div className="flex justify-between font-semibold">
-                <span className="text-foreground">{t('taxDueAt', { rate: ratePct })}</span>
-                <span dir="ltr" className="text-[15px] text-foreground">
-                  {sym}
-                  {fmtNum(due, nl)}
-                </span>
-              </div>
-            </div>
-            <p className="rounded-lg bg-well p-3.5 text-xs leading-relaxed text-muted-foreground">
-              {t('carryNote', { amount: `${sym}${fmtNum(shieldAfter, nl)}` })}
-            </p>
-          </section>
-        )}
+            >
+              {t(k)}
+            </button>
+          ))}
+        </div>,
+      )}
 
-        {error && <p className="text-[13px] text-loss">{error}</p>}
+      {/* Date */}
+      {fieldShell(
+        t('date'),
+        <div className="flex items-center gap-4 rounded-[20px] bg-well px-4 py-3">
+          <CalendarDays className="size-4 shrink-0 text-foreground" aria-hidden />
+          <input
+            dir="ltr"
+            type="date"
+            value={tradeDate}
+            max={today}
+            onChange={(e) => setTradeDate(e.target.value)}
+            aria-label={t('date')}
+            className="min-w-0 flex-1 bg-transparent text-base font-medium text-foreground outline-none"
+          />
+        </div>,
+      )}
+
+      {stepper(t('shares'), shares, (n) => setShares(n), 1)}
+      {position && (
+        <p className="px-6 text-xs text-muted-foreground">
+          {t('youHold', { shares: fmtNum(position.shares, nl, 0) })}
+        </p>
+      )}
+      {stepper(t('pricePerShare'), price, onPriceEdit, 0.1)}
+
+      {/* Total */}
+      <div className="mx-6 flex items-center justify-between border-t border-border py-6">
+        <span className="text-base font-medium text-foreground">{t('total')}</span>
+        <span dir="ltr" className="private text-base font-bold text-foreground tabular-nums">
+          {sym}
+          {fmtNum((shares || 0) * (price || 0), nl)}
+        </span>
       </div>
 
-      <div className="sticky bottom-[72px] mt-auto pt-4 md:bottom-0">
+      {/* Sell-time tax preview */}
+      {type === 'sell' && gain !== undefined && costBasis !== undefined && due !== undefined && (
+        <section className="mx-6 flex flex-col gap-4 rounded-xl bg-card p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs uppercase text-muted-foreground">{t('taxEvent')}</h2>
+            <span className="rounded-full bg-background px-2.5 py-1 text-[11px] font-semibold text-subtle">
+              {t('averageCost')}
+            </span>
+          </div>
+          <div className="flex flex-col gap-3 text-[13px] tabular-nums">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">
+                {t('proceeds', { qty: fmtNum(shares, nl, 0), price: fmtNum(price, nl) })}
+              </span>
+              <span dir="ltr" className="text-foreground">{fmtNum(proceeds, nl)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">
+                {t('costBasis', { qty: fmtNum(shares, nl, 0), price: fmtNum(avgCost ?? 0, nl) })}
+              </span>
+              <span dir="ltr" className="text-foreground">{fmtNum(-costBasis, nl)}</span>
+            </div>
+            <div className="h-px bg-border" />
+            <div className="flex justify-between font-semibold">
+              <span className="text-foreground">{t('realizedGain')}</span>
+              <span dir="ltr" className={cn(gain >= 0 ? 'text-gain' : 'text-loss')}>
+                {fmtSigned(gain, nl)}
+              </span>
+            </div>
+            {offset > 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {serverPreview ? t('offsetByShield') : t('offsetByCarried', { year: tax.carriedFromYear })}
+                </span>
+                <span dir="ltr" className="text-foreground">{fmtNum(-offset, nl)}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-semibold">
+              <span className="text-foreground">{t('taxDueAt', { rate: ratePct })}</span>
+              <span dir="ltr" className="text-[15px] text-foreground">
+                {sym}
+                {fmtNum(due, nl)}
+              </span>
+            </div>
+          </div>
+          <p className="rounded-lg bg-well p-3.5 text-xs leading-relaxed text-muted-foreground">
+            {t('carryNote', { amount: `${sym}${fmtNum(shieldAfter, nl)}` })}
+          </p>
+        </section>
+      )}
+
+      {error && <p className="px-6 pt-3 text-[13px] text-loss">{error}</p>}
+
+      {/* Save */}
+      <div className="mt-auto flex flex-col items-center gap-1 pt-6">
         <button
           type="button"
           onClick={submit}
           disabled={busy || !symbol || !(shares > 0)}
-          className="flex h-12 w-full items-center justify-center rounded-lg bg-primary text-base font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50"
+          aria-label={t('save')}
+          className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50"
         >
+          <Check className="size-6" aria-hidden />
+        </button>
+        <span className="text-xs text-foreground">
           {type === 'sell' && due !== undefined
             ? t('submitSell', { tax: `${sym}${fmtNum(due, nl)}` })
-            : type === 'sell'
-              ? t('sell')
-              : t('submitBuy')}
-        </button>
-        <p className="pt-2 text-center text-xs text-muted-foreground">
+            : t('save')}
+        </span>
+        <p className="text-center text-xs text-muted-foreground">
           {fmtDate(tradeDate, locale)} · {symbol || '—'}
         </p>
       </div>

@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft, Menu, Search } from 'lucide-react';
+import { ArrowLeft, Menu, Share2 } from 'lucide-react';
 import { useSymbolWatchlist, WatchlistMenuButton, WatchlistStar } from '@/components/watchlist-star';
 import { Link, useRouter } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
+import { SearchBox } from '@/components/app-shell/search-box';
 import { MoreLink } from '@/components/more-link';
-import { SessionBadge, SessionStatus } from '@/components/session-indicator';
+import { SessionBadge } from '@/components/session-indicator';
 import { LineChart, Sparkline } from '@/components/charts';
+import { ChangePill, AfterHours } from '@/components/quote-bits';
+import { UnderlineTabs } from '@/components/underline-tabs';
 import { PriceChart } from '@/components/price-chart';
 import {
   useAnalysis,
@@ -26,16 +29,18 @@ import { cn } from '@/lib/utils';
 
 const tabs = ['summary', 'news', 'analysis', 'financials'] as const;
 type Tab = (typeof tabs)[number];
-const mobileRanges = ['1D', '1M', '6M', 'YTD', '1Y', '5Y', 'Max'] as const;
+const mobileRanges = ['1D', '1W', '1M', '1Y', 'YTD', 'All'] as const;
 const desktopRanges = ['1D', '5D', '1M', '6M', 'YTD', '1Y', '5Y'] as const;
 const rangeMap: Record<string, ChartRange> = {
   '1D': '1d',
+  '1W': '5d',
   '5D': '5d',
   '1M': '1mo',
   '6M': '6mo',
   YTD: 'ytd',
   '1Y': '1y',
   '5Y': '5y',
+  All: 'max',
   Max: 'max',
 };
 
@@ -308,52 +313,88 @@ export function StockScreen({ symbol }: { symbol: string }) {
 
   return (
     <main className="flex flex-1 flex-col">
-      {/* ---------- Mobile ---------- */}
+      {/* ---------- Mobile (Figma Stock summary frame) ---------- */}
       <div className="flex flex-col md:hidden">
-        <div className="flex items-center gap-3 px-4 pt-2 pb-2.5">
+        <div className="flex items-center gap-4 p-6 pb-4">
           <button type="button" onClick={() => router.back()} aria-label={t('summary')}>
-            <ArrowLeft className="size-[18px] text-foreground rtl:-scale-x-100" aria-hidden />
+            <ArrowLeft className="size-6 text-foreground rtl:-scale-x-100" aria-hidden />
           </button>
-          <div className="flex flex-1 items-baseline gap-2" dir="ltr">
-            <span className="text-[17px] font-bold text-foreground">{stock.symbol}</span>
-            <span className="text-[15px] text-foreground tabular-nums">{fmtNum(price, nl)}</span>
-            <span className={cn('text-[13px] tabular-nums', up ? 'text-gain' : 'text-loss')}>
-              {fmtSigned(change, nl)} ({fmtPct(changePct, nl)})
-            </span>
-          </div>
-          <WatchlistStar wl={wl} />
-          <Search className="size-4 text-muted-foreground" aria-hidden />
+          <SearchBox
+            className="min-w-0 flex-1"
+            inputClassName="h-[43px] rounded-[20px] border-none bg-well ps-11 text-base font-medium"
+            iconClassName="start-4 size-4"
+          />
+          <WatchlistStar wl={wl} className="size-6" />
+          <button
+            type="button"
+            aria-label={t('share')}
+            onClick={() => {
+              if (navigator.share) void navigator.share({ url: window.location.href, title: stock.symbol });
+            }}
+          >
+            <Share2 className="size-6 text-foreground" aria-hidden />
+          </button>
         </div>
-        <SessionStatus marketId={marketId} className="px-4 pb-2.5" />
-        {tabRow}
+        <UnderlineTabs tabs={tabs} value={tab} onChange={setTab} label={(k) => t(k)} grow className="mx-6" />
 
-        <div className="flex flex-col gap-3.5 p-4 pb-[104px]">
+        <div className="flex flex-col pb-[104px]">
           {tab === 'summary' && (
             <>
-              <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card px-3 pt-4 pb-3">
-                {series && series.points.length > 0 ? (
-                  <PriceChart
-                    points={series.points}
-                    up={up}
-                    height={150}
-                    intraday={series.interval.endsWith('m')}
-                    timezone={series.timezone}
-                    fullDay={range === '1D'}
-                  />
-                ) : (
-                  <LineChart points={stock.chart} up={up} height={150} viewH={250} gridlines={[233]} />
+              {/* Title + price block */}
+              <section className="flex flex-col gap-4 border-b border-border px-6 py-6">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-2xl font-bold tracking-tight text-foreground">{stock.symbol}</span>
+                  <span className="text-base text-foreground">{headline.name}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="flex items-center gap-0.5" dir="ltr">
+                    <span className="text-xl font-medium text-foreground tabular-nums">{fmtNum(price, nl)}</span>
+                    <ChangePill pct={changePct} numberLocale={nl} className="ms-0.5" />
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {live?.asOf
+                      ? t('atClose', { time: new Date(live.asOf).toLocaleString(locale, { hour: '2-digit', minute: '2-digit' }) })
+                      : `${headline.exchange} · ${live?.currency ?? market.currency}`}
+                  </span>
+                </div>
+                {live?.extended && (
+                  <div className="flex flex-col gap-1">
+                    <span className="flex items-center gap-0.5" dir="ltr">
+                      <span className="text-xl font-medium text-foreground tabular-nums">
+                        {fmtNum(live.extended.price, nl)}
+                      </span>
+                      <ChangePill pct={live.extended.changePct} numberLocale={nl} className="ms-0.5" />
+                    </span>
+                    <AfterHours quote={live} numberLocale={nl} />
+                  </div>
                 )}
-                <div dir="ltr" className="flex justify-between px-1">
+              </section>
+
+              {/* Chart + ranges */}
+              <section className="flex flex-col gap-2.5 pt-4">
+                <div className="px-2">
+                  {series && series.points.length > 0 ? (
+                    <PriceChart
+                      points={series.points}
+                      up={up}
+                      height={182}
+                      intraday={series.interval.endsWith('m')}
+                      timezone={series.timezone}
+                      fullDay={range === '1D'}
+                    />
+                  ) : (
+                    <LineChart points={stock.chart} up={up} height={182} viewH={250} gridlines={[233]} />
+                  )}
+                </div>
+                <div dir="ltr" className="flex gap-3 px-6">
                   {mobileRanges.map((r) => (
                     <button
                       key={r}
                       type="button"
                       onClick={() => setRange(r)}
                       className={cn(
-                        'rounded-full px-2.5 py-0.5 text-[13px]',
-                        r === range
-                          ? 'bg-secondary font-semibold text-foreground'
-                          : 'text-muted-foreground',
+                        'flex-1 rounded-[20px] px-1 py-2.5 text-sm font-bold',
+                        r === range ? 'bg-primary text-primary-foreground' : 'text-foreground/40',
                       )}
                     >
                       {r}
@@ -361,16 +402,86 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   ))}
                 </div>
               </section>
-              {positionCard}
-              <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
-                <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-                  {t('keyStats')}
-                </h2>
-                <div className="grid grid-cols-2 gap-3 text-[13px] tabular-nums">
-                  <Row label={t('open')} value={fmtNum(stats.open, nl)} />
-                  <Row label={t('mktCap')} value={stats.marketCap} />
-                  <Row label={t('dayRange')} value={`${fmtNum(stats.dayLow, nl, 1)}–${fmtNum(stats.dayHigh, nl, 1)}`} />
-                  <Row label={t('pe')} value={fmtNum(stats.pe, nl, 1)} />
+
+              {/* Your position */}
+              {holding && (
+                <section className="flex flex-col gap-6 border-b border-border p-6">
+                  <h2 className="text-xs uppercase text-muted-foreground">{t('yourPosition')}</h2>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{t('daysGain')}</span>
+                    <span dir="ltr" className={cn('private text-base font-bold tabular-nums', daysGain >= 0 ? 'text-gain' : 'text-loss')}>
+                      {fmtSigned(daysGain, nl)} ({fmtPct(changePct, nl)})
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{t('totalGain')}</span>
+                    <span dir="ltr" className={cn('private text-base font-bold tabular-nums', holding.totalGain >= 0 ? 'text-gain' : 'text-loss')}>
+                      {fmtSigned(holding.totalGain, nl)} ({fmtPct(holding.totalGainPct ?? 0, nl)})
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between tabular-nums">
+                    <span className="flex flex-col gap-2">
+                      <span className="text-xs text-muted-foreground">{t('shares')}</span>
+                      <span className="private text-base font-medium text-foreground">{fmtNum(holding.shares, nl, 0)}</span>
+                    </span>
+                    <span className="flex flex-col gap-2">
+                      <span className="text-xs text-muted-foreground">{t('avgCost')}</span>
+                      <span dir="ltr" className="private text-base font-medium text-foreground">{fmtNum(holding.avgCost, nl)}</span>
+                    </span>
+                    <span className="flex flex-col items-end gap-2">
+                      <span className="text-xs text-muted-foreground">{t('marketValue')}</span>
+                      <span dir="ltr" className="private text-base font-medium text-foreground">{fmtNum(holding.marketValue, nl)}</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{t('taxIfSoldAll')}</span>
+                    <span dir="ltr" className="private text-base font-medium text-foreground tabular-nums">
+                      {sym}
+                      {fmtNum(holding.taxIfSold, nl)}
+                    </span>
+                  </div>
+                </section>
+              )}
+
+              {/* Key statistics */}
+              <section className="flex flex-col gap-6 p-6">
+                <h2 className="text-xs uppercase text-muted-foreground">{t('keyStats')}</h2>
+                <RangeSlider
+                  low={stats.dayLow}
+                  high={stats.dayHigh}
+                  value={price}
+                  label={t('dayRange')}
+                  nl={nl}
+                />
+                <RangeSlider
+                  low={stats.wk52Low}
+                  high={stats.wk52High}
+                  value={price}
+                  label={t('wk52Range')}
+                  nl={nl}
+                />
+                <div className="flex items-center justify-between tabular-nums">
+                  <StatCell label={t('prevClose')} value={live?.previousClose !== undefined ? fmtNum(live.previousClose, nl) : '—'} />
+                  <StatCell label={t('open')} value={fmtNum(stats.open, nl)} end />
+                </div>
+                <div className="flex items-center justify-between tabular-nums">
+                  <StatCell label={t('vol')} value={stats.volume} />
+                  <StatCell
+                    label={t('avgVol')}
+                    value={live?.avgVolume !== undefined ? fmtCompact(live.avgVolume, nl) : '—'}
+                    end
+                  />
+                </div>
+                <div className="flex items-center justify-between tabular-nums">
+                  <StatCell label={t('pe')} value={fmtNum(stats.pe, nl, 1)} />
+                  <StatCell label={t('mktCap')} value={stats.marketCap} end />
+                </div>
+                <div className="flex items-center justify-between tabular-nums">
+                  <StatCell label={t('beta')} value={fmtNum(stats.beta, nl)} />
+                  <StatCell label={t('divYield')} value={`${fmtNum(stats.divYieldPct, nl)}%`} end />
+                </div>
+                <div className="flex items-center justify-between tabular-nums">
+                  <StatCell label={t('earningsDate')} value={fmtDate(eventDate, locale)} />
                 </div>
               </section>
             </>
@@ -556,6 +667,48 @@ export function StockScreen({ symbol }: { symbol: string }) {
         </div>
       </div>
     </main>
+  );
+}
+
+/** Key-statistics range: hairline with a marker at the current value. */
+function RangeSlider({
+  low,
+  high,
+  value,
+  label,
+  nl,
+}: {
+  low: number;
+  high: number;
+  value: number;
+  label: string;
+  nl: string;
+}) {
+  const pct = high > low ? Math.min(100, Math.max(0, ((value - low) / (high - low)) * 100)) : 50;
+  return (
+    <div className="flex flex-col gap-2">
+      <div dir="ltr" className="flex items-center justify-between text-xs font-medium tabular-nums">
+        <span className="text-foreground">{fmtNum(low, nl)}</span>
+        <span className="text-muted-foreground">{label}</span>
+        <span className="text-foreground">{fmtNum(high, nl)}</span>
+      </div>
+      <div dir="ltr" className="relative h-4">
+        <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-foreground/30" />
+        <span
+          className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary"
+          style={{ left: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function StatCell({ label, value, end }: { label: string; value: string; end?: boolean }) {
+  return (
+    <span className={cn('flex flex-col gap-2', end && 'items-end')}>
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span dir="ltr" className="text-base font-medium text-foreground">{value}</span>
+    </span>
   );
 }
 

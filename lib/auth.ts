@@ -22,6 +22,12 @@ const originCandidates = [
   process.env.VERCEL_BRANCH_URL && `https://${process.env.VERCEL_BRANCH_URL}`,
 ].filter((v): v is string => Boolean(v));
 
+// Extra dev origins (e.g. the LAN IP a phone browses to): comma-separated,
+// honored only off-Vercel so a stray var can't widen production.
+const extraTrustedOrigins = process.env.VERCEL
+  ? []
+  : (process.env.BETTER_AUTH_TRUSTED_ORIGINS ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+
 // Google is the only way in. Password auth exists solely so the headless
 // smoke suite can sign in (real OAuth can't run in CI) — it needs an explicit
 // opt-in AND a non-production environment, so a stray env var can never open
@@ -31,7 +37,7 @@ const testAuthEnabled =
 
 export const auth = betterAuth({
   baseURL: originCandidates[0],
-  trustedOrigins: originCandidates,
+  trustedOrigins: [...originCandidates, ...extraTrustedOrigins],
   database: drizzleAdapter(db, { provider: 'pg' }),
   emailAndPassword: {
     enabled: testAuthEnabled,

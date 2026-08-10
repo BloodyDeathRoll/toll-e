@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { cn } from '@/lib/utils';
 
 // Hand-rolled SVG marks matching the design frames. Replaced by
@@ -8,23 +9,65 @@ interface SparklineProps {
   /** y-coordinates, lower = higher price (SVG space). */
   points: number[];
   up: boolean;
+  /**
+   * Baseline y-coordinate (usually the period-open price). When set, the line
+   * renders two-tone per the design: gain-colored above, loss-colored below.
+   */
+  baseline?: number;
   width?: number;
   height?: number;
   className?: string;
 }
 
-export function Sparkline({ points, up, width = 64, height = 24, className }: SparklineProps) {
+export function Sparkline({ points, up, baseline, width = 64, height = 24, className }: SparklineProps) {
+  const id = useId();
   const step = width / (points.length - 1);
   const pts = points.map((y, i) => `${(i * step).toFixed(1)},${y}`).join(' ');
+
+  if (baseline === undefined) {
+    return (
+      <svg
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        aria-hidden
+        className={cn('shrink-0', up ? 'text-gain' : 'text-loss', className)}
+      >
+        <polyline points={pts} fill="none" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+
   return (
     <svg
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
       aria-hidden
-      className={cn('shrink-0', up ? 'text-gain' : 'text-loss', className)}
+      className={cn('shrink-0', className)}
     >
-      <polyline points={pts} fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <defs>
+        <clipPath id={`${id}-above`}>
+          <rect x="0" y={-height} width={width} height={baseline + height} />
+        </clipPath>
+        <clipPath id={`${id}-below`}>
+          <rect x="0" y={baseline} width={width} height={height * 2} />
+        </clipPath>
+      </defs>
+      <polyline
+        points={pts}
+        fill="none"
+        strokeWidth="1.5"
+        className="stroke-gain"
+        clipPath={`url(#${id}-above)`}
+      />
+      <polyline
+        points={pts}
+        fill="none"
+        strokeWidth="1.5"
+        className="stroke-loss"
+        clipPath={`url(#${id}-below)`}
+      />
     </svg>
   );
 }
@@ -37,6 +80,15 @@ export function sparkFromCloses(closes: number[], height = 24): number[] {
   const span = max - min || 1;
   const pad = 2;
   return closes.map((c) => height - pad - ((c - min) / span) * (height - pad * 2));
+}
+
+/**
+ * Two-tone sparkline inputs from a close series: y-points plus the baseline
+ * (first close) y-coordinate, both in the same padded viewBox space.
+ */
+export function twoToneSpark(closes: number[], height = 24): { points: number[]; baseline: number } {
+  const points = sparkFromCloses(closes, height);
+  return { points, baseline: points[0] ?? height / 2 };
 }
 
 interface LineChartProps {

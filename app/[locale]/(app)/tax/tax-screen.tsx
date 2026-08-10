@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Shield } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
+import { AppHeader } from '@/components/app-shell/app-header';
+import { UnderlineTabs } from '@/components/underline-tabs';
 import { useMarket } from '@/components/app-shell/market-context';
 import { MoreLink } from '@/components/more-link';
 import { ReserveBar } from '@/components/reserve-bar';
@@ -13,6 +15,8 @@ import { getMarket, displaySymbol } from '@/src/markets/registry';
 import { demo } from '@/src/demo/data';
 import { fmtDate, fmtMonth, fmtNum, fmtSigned } from '@/lib/format';
 import { cn } from '@/lib/utils';
+
+const mobileTabs = ['monthly', 'yearly'] as const;
 
 interface MonthRow {
   month: number;
@@ -63,6 +67,10 @@ export function TaxScreen() {
   const { state } = useTax(marketId);
   const [pickedYear, setPickedYear] = useState<number | null>(null);
   const [openSale, setOpenSale] = useState<string | null>(null);
+  const [mobileTab, setMobileTab] = useState<(typeof mobileTabs)[number]>('monthly');
+  // undefined = "latest open" default; null = all collapsed.
+  const [openMonth, setOpenMonthRaw] = useState<number | null | undefined>(undefined);
+  const [openYearState, setOpenYearRaw] = useState<number | null | undefined>(undefined);
 
   const real = state.status === 'data' ? state.data : null;
   const demoTax = demo[marketId].tax;
@@ -99,6 +107,31 @@ export function TaxScreen() {
       </main>
     );
   }
+
+  // Yearly accordion rows (mobile): every ledger year, newest first.
+  const yearRows = real
+    ? [...real.years]
+        .sort((a, b) => b.year - a.year)
+        .map((y) => ({
+          year: y.year,
+          due: y.due,
+          shieldOut: y.shieldOut,
+          gains: y.realizedGains,
+          losses: y.realizedLosses,
+          taxable: y.taxable,
+          ratePct: y.ratePct,
+        }))
+    : [
+        {
+          year: demoTax.year,
+          due: demoTax.due,
+          shieldOut: 0,
+          gains: demoTax.realizedGains,
+          losses: demoTax.realizedLosses,
+          taxable: demoTax.taxable,
+          ratePct: demoTax.ratePct,
+        },
+      ];
 
   let view: TaxView;
   if (real) {
@@ -264,87 +297,168 @@ export function TaxScreen() {
     </>
   );
 
+  // Mobile month accordions: newest first, with cumulative due through each
+  // month (the year picture "as of" that month).
+  const cumByMonth = new Map<number, number>();
+  let runningDue = 0;
+  for (const m of [...view.months].sort((a, b) => a.month - b.month)) {
+    runningDue += m.tax ?? 0;
+    cumByMonth.set(m.month, runningDue);
+  }
+  const monthRows = [...view.months]
+    .sort((a, b) => b.month - a.month)
+    .map((m) => ({ ...m, cumDue: cumByMonth.get(m.month) ?? 0 }));
+  const openMonthEff = openMonth === undefined ? (monthRows[0]?.month ?? null) : openMonth;
+  const openYearEff = openYearState === undefined ? (yearRows[0]?.year ?? null) : openYearState;
+
   return (
     <main className="flex flex-1 flex-col">
-      {/* ---------- Mobile (design 2a: reserve first) ---------- */}
-      <div className="flex flex-col gap-3.5 p-4 md:hidden">
-        <div className="flex items-center justify-between pt-1">
-          <h1 className="text-[22px] font-bold tracking-tight text-foreground">{t('title')}</h1>
-          {yearToggle}
-        </div>
+      {/* ---------- Mobile (Figma Taxes frames: Monthly/Yearly accordions) ---------- */}
+      <div className="flex flex-col md:hidden">
+        <AppHeader />
+        <h1 className="sr-only">{t('title')}</h1>
+        <UnderlineTabs
+          tabs={mobileTabs}
+          value={mobileTab}
+          onChange={setMobileTab}
+          label={(k) => t(`tabs.${k}`)}
+          grow
+        />
 
-        <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card px-4 pt-5 pb-4">
-          <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-            {t('setAsideNow')}
-          </h2>
-          <p dir="ltr" className="private self-start text-[44px] font-semibold tracking-tighter text-foreground tabular-nums">
-            {sym}
-            {fmtNum(view.due, nl)}
-          </p>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {t('setAsideNote', { year: view.year })}
-          </p>
-          {view.cash && (
-            <>
-              <ReserveBar held={view.cash.held} due={view.due} />
-              <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
-                <span>{t('heldInCash', { amount: `${sym}${fmtNum(view.cash.held, nl)}` })}</span>
-                <span>{t('short', { amount: `${sym}${fmtNum(view.cash.short, nl)}` })}</span>
-              </div>
-            </>
-          )}
-        </section>
-
-        <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card px-4 py-3.5">
-          <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-            {t('howCalculated')}
-          </h2>
-          {howCalculated}
-        </section>
-
-        <section className="overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="flex justify-between px-4 pt-3.5 pb-2">
-            <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-              {t('byMonth')}
-            </h2>
-            <span className="text-xs text-faint">{t('netTax')}</span>
-          </div>
-          {view.months.map((m) => (
-            <div
-              key={m.month}
-              className="flex items-center justify-between border-t border-border px-4 py-2.5 tabular-nums"
-            >
-              <span className="text-sm text-foreground">{fmtMonth(m.month, locale, 'short')}</span>
-              <span className="private flex gap-4">
-                <span dir="ltr" className={cn('text-sm', m.net >= 0 ? 'text-gain' : 'text-loss')}>
-                  {fmtSigned(m.net, nl)}
-                </span>
-                <span
-                  className={cn(
-                    'min-w-[76px] text-end text-sm',
-                    m.tax === null ? 'text-muted-foreground' : 'text-foreground',
+        {mobileTab === 'monthly' && (
+          <section className="flex flex-col px-6 pt-6">
+            {monthRows.map((m) => {
+              const open = openMonthEff === m.month;
+              const label = `${fmtMonth(m.month, locale, 'short')} ${view.year}`;
+              return (
+                <div key={m.month} className="border-b border-border py-4">
+                  <button
+                    type="button"
+                    onClick={() => setOpenMonthRaw(open ? null : m.month)}
+                    aria-expanded={open}
+                    className="flex w-full flex-col gap-1 text-start"
+                  >
+                    <span className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">{label}</span>
+                      <ChevronDown
+                        className={cn('size-4 text-muted-foreground transition-transform', open && 'rotate-180')}
+                        aria-hidden
+                      />
+                    </span>
+                    {!open && (
+                      <span dir="ltr" className="private self-start text-xl font-bold text-foreground tabular-nums">
+                        {sym}
+                        {fmtNum(m.cumDue, nl)}
+                      </span>
+                    )}
+                  </button>
+                  {open && (
+                    <div className="flex flex-col gap-2 pt-1">
+                      <p dir="ltr" className="private self-start text-[28px] font-bold tracking-tight text-foreground tabular-nums">
+                        {sym}
+                        {fmtNum(m.cumDue, nl)}
+                      </p>
+                      <div className="flex flex-col gap-[7px] text-sm tabular-nums">
+                        <Row label={t('realizedGains')} value={fmtNum(m.gains ?? 0, nl)} />
+                        <Row label={t('realizedLosses')} value={fmtNum(-(m.losses ?? 0), nl)} />
+                        <div className="h-px bg-border" />
+                        <Row label={t('taxable')} value={fmtNum(m.net, nl)} bold />
+                        <div className="flex justify-end">
+                          <MoreLink href="/transactions">{t('transactionsDetails')}</MoreLink>
+                        </div>
+                        <Row label={t('rate')} value={`${view.ratePct}%`} />
+                        <Row
+                          label={t('calcTax')}
+                          value={m.tax === null ? t('shielded') : fmtNum(m.tax, nl)}
+                        />
+                        {view.carriedApplied > 0 && (
+                          <Row label={t('carriedIn')} value={fmtNum(-view.carriedApplied, nl)} />
+                        )}
+                        <div className="h-px bg-border" />
+                        <Row label={t('due')} value={fmtNum(m.cumDue, nl)} bold big />
+                      </div>
+                    </div>
                   )}
-                >
-                  {m.tax === null ? t('shielded') : <span dir="ltr">{fmtNum(m.tax, nl)}</span>}
-                </span>
-              </span>
-            </div>
-          ))}
-          <div className="flex justify-end border-t border-border bg-well px-4 py-2.5">
-            <MoreLink href="/tax">{t('exportYearReport', { year: view.year })}</MoreLink>
-          </div>
-        </section>
+                </div>
+              );
+            })}
+          </section>
+        )}
 
-        {/* Sales history for the picked year */}
-        {view.sales.length > 0 && (
-          <section className="overflow-hidden rounded-2xl border border-border bg-card">
-            <h2 className="px-4 pt-3.5 pb-2 text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-              {t('salesIn', { year: view.year })}
-            </h2>
-            {salesList}
-            <div className="flex justify-end border-t border-border bg-well px-4 py-2.5">
-              <MoreLink href="/transactions">{t('allSales')}</MoreLink>
-            </div>
+        {mobileTab === 'yearly' && (
+          <section className="flex flex-col px-6 pt-6">
+            {yearRows.map((y) => {
+              const open = openYearEff === y.year;
+              return (
+                <div key={y.year} className="border-b border-border py-4">
+                  <button
+                    type="button"
+                    onClick={() => setOpenYearRaw(open ? null : y.year)}
+                    aria-expanded={open}
+                    className="flex w-full flex-col gap-1 text-start"
+                  >
+                    <span className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">{y.year}</span>
+                      <ChevronDown
+                        className={cn('size-4 text-muted-foreground transition-transform', open && 'rotate-180')}
+                        aria-hidden
+                      />
+                    </span>
+                    {!open && (
+                      <span dir="ltr" className="private self-start text-xl font-bold text-foreground tabular-nums">
+                        {sym}
+                        {fmtNum(y.due, nl)}
+                      </span>
+                    )}
+                  </button>
+                  {open && (
+                    <div className="flex flex-col gap-3 pt-2">
+                      {y.due > 0 ? (
+                        <>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-xs text-muted-foreground">{t('totalYearly')}</span>
+                            <span dir="ltr" className="private self-start text-[28px] font-bold tracking-tight text-foreground tabular-nums">
+                              {sym}
+                              {fmtNum(y.due, nl)}
+                            </span>
+                          </div>
+                          <div className="flex items-end justify-between">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-xs text-muted-foreground">
+                                {t('taxDueBy', { date: fmtDate(`${y.year + 1}-04-30`, locale) })}
+                              </span>
+                              <span dir="ltr" className="private text-xl font-bold text-loss tabular-nums">
+                                {sym}
+                                {fmtNum(y.due, nl)}
+                              </span>
+                            </div>
+                            <div className="flex flex-col items-end gap-0.5 text-end">
+                              <span className="text-xs text-muted-foreground">{t('taxableShort')}</span>
+                              <span dir="ltr" className="private text-xl font-bold text-foreground tabular-nums">
+                                {sym}
+                                {fmtNum(y.taxable, nl)}
+                              </span>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs text-muted-foreground">{t('lossShield')}</span>
+                          <span className="flex items-center gap-2">
+                            <Shield className="size-5 text-gain" aria-hidden />
+                            <span dir="ltr" className="private text-[28px] font-bold tracking-tight text-foreground tabular-nums">
+                              {sym}
+                              {fmtNum(y.shieldOut, nl)}
+                            </span>
+                          </span>
+                        </div>
+                      )}
+                      <MoreLink href="/transactions">{t('detailedView')}</MoreLink>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </section>
         )}
       </div>

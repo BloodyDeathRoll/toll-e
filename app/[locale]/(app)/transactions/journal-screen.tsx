@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft, Trash2 } from 'lucide-react';
-import { Link, useRouter } from '@/src/i18n/navigation';
+import { Check, ChevronDown, Trash2 } from 'lucide-react';
+import { Link } from '@/src/i18n/navigation';
+import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMarket } from '@/src/markets/registry';
@@ -25,15 +26,28 @@ type State =
   | { status: 'empty' }
   | { status: 'data'; portfolioId: string; txs: TxRow[] };
 
+const sortKeys = ['date', 'name', 'amount', 'action'] as const;
+type SortKey = (typeof sortKeys)[number];
+
+const sorters: Record<SortKey, (a: TxRow, b: TxRow) => number> = {
+  date: (a, b) => b.tradeDate.localeCompare(a.tradeDate),
+  name: (a, b) => a.symbol.localeCompare(b.symbol) || b.tradeDate.localeCompare(a.tradeDate),
+  amount: (a, b) =>
+    Number(b.shares) * Number(b.pricePerShare) - Number(a.shares) * Number(a.pricePerShare),
+  action: (a, b) => a.type.localeCompare(b.type) || b.tradeDate.localeCompare(a.tradeDate),
+};
+
 export function JournalScreen() {
   const t = useTranslations('journal');
   const locale = useLocale();
-  const router = useRouter();
   const { marketId } = useMarket();
   const market = getMarket(marketId);
   const nl = market.numberLocale;
   const [state, setState] = useState<State>({ status: 'loading' });
   const [error, setError] = useState<string | null>(null);
+  const [sort, setSort] = useState<SortKey>('date');
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     try {
@@ -54,11 +68,7 @@ export function JournalScreen() {
         setState({ status: 'empty' });
         return;
       }
-      setState({
-        status: 'data',
-        portfolioId: portfolio.id,
-        txs: [...transactions].reverse(), // newest first
-      });
+      setState({ status: 'data', portfolioId: portfolio.id, txs: transactions });
     } catch {
       setState((s) => (s.status === 'loading' ? { status: 'empty' } : s));
     }
@@ -69,6 +79,14 @@ export function JournalScreen() {
     setState({ status: 'loading' });
     load();
   }, [load]);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (!sortRef.current?.contains(e.target as Node)) setSortOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, []);
 
   const remove = async (txId: string) => {
     if (state.status !== 'data') return;
@@ -83,27 +101,61 @@ export function JournalScreen() {
     load();
   };
 
-  return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3.5 p-4 md:py-7">
-      <div className="flex items-center gap-3 pt-1">
-        <button type="button" onClick={() => router.back()} aria-label={t('title')} className="md:hidden">
-          <ArrowLeft className="size-[18px] text-foreground rtl:-scale-x-100" aria-hidden />
-        </button>
-        <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
-      </div>
+  const sorted = state.status === 'data' ? [...state.txs].sort(sorters[sort]) : [];
 
-      {error && <p className="text-[13px] text-loss">{error}</p>}
+  return (
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
+      <AppHeader />
+      <h1 className="sr-only">{t('title')}</h1>
+
+      {/* Sort by */}
+      {state.status === 'data' && (
+        <div className="flex items-center justify-end gap-2 px-6 pb-2">
+          <span className="text-sm text-muted-foreground">{t('sortBy')}</span>
+          <div ref={sortRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setSortOpen((v) => !v)}
+              aria-expanded={sortOpen}
+              className="flex items-center gap-1 rounded-full bg-well px-3 py-2 text-sm font-medium text-foreground"
+            >
+              {t(`sort.${sort}`)}
+              <ChevronDown className="size-4" aria-hidden />
+            </button>
+            {sortOpen && (
+              <div className="absolute end-0 top-full z-50 mt-1.5 flex w-40 flex-col gap-4 rounded-[20px] bg-well p-6 shadow-lg">
+                {sortKeys.map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => {
+                      setSort(k);
+                      setSortOpen(false);
+                    }}
+                    className="flex items-center justify-between text-base text-foreground"
+                  >
+                    {t(`sort.${k}`)}
+                    {k === sort && <Check className="size-4" aria-hidden />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {error && <p className="px-6 pb-2 text-[13px] text-loss">{error}</p>}
 
       {state.status === 'loading' && (
-        <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
+        <section className="flex flex-col gap-3 px-6">
+          <Skeleton className="h-14 w-full" />
+          <Skeleton className="h-14 w-full" />
+          <Skeleton className="h-14 w-full" />
         </section>
       )}
 
       {state.status === 'signed-out' && (
-        <section className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6">
+        <section className="mx-6 flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">{t('signIn')}</p>
           <Link
             href="/sign-in"
@@ -115,7 +167,7 @@ export function JournalScreen() {
       )}
 
       {state.status === 'empty' && (
-        <section className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6">
+        <section className="mx-6 flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">{t('empty')}</p>
           <Link
             href="/transactions/new"
@@ -127,37 +179,37 @@ export function JournalScreen() {
       )}
 
       {state.status === 'data' && (
-        <section className="overflow-hidden rounded-2xl border border-border bg-card">
-          {state.txs.map((tx, i) => {
+        <section className="flex flex-col px-6">
+          {sorted.map((tx) => {
             const shares = Number(tx.shares);
             const price = Number(tx.pricePerShare);
             return (
               <div
                 key={tx.id}
-                className={cn('flex items-center gap-3 px-4 py-3', i > 0 && 'border-t border-border')}
+                className="flex items-center gap-4 border-b border-border py-[18px]"
               >
                 <span
                   className={cn(
-                    'rounded-full px-2.5 py-1 text-[11px] font-semibold',
-                    tx.type === 'BUY' ? 'bg-gain/15 text-gain' : 'bg-primary/15 text-brand',
+                    'w-16 rounded-full py-1 text-center text-sm font-semibold',
+                    tx.type === 'BUY' ? 'bg-gain/10 text-gain' : 'bg-primary/10 text-primary',
                   )}
                 >
                   {t(tx.type === 'BUY' ? 'buy' : 'sell')}
                 </span>
                 <Link
                   href={`/transactions/new?edit=${tx.id}&portfolio=${state.portfolioId}`}
-                  className="flex flex-1 flex-col gap-0.5"
+                  className="flex flex-1 flex-col"
                 >
-                  <span className="text-[15px] font-semibold text-foreground">{tx.symbol}</span>
+                  <span className="text-base font-bold text-foreground">{tx.symbol}</span>
                   <span className="text-xs text-muted-foreground">{fmtDate(tx.tradeDate, locale)}</span>
                 </Link>
-                <span className="private flex flex-col items-end gap-0.5 tabular-nums">
-                  <span dir="ltr" className="text-[15px] text-foreground">
+                <span className="private flex flex-col items-end tabular-nums">
+                  <span dir="ltr" className="text-base font-bold text-foreground">
                     {market.currencySymbol}
                     {fmtNum(shares * price, nl)}
                   </span>
                   <span dir="ltr" className="text-xs text-muted-foreground">
-                    {fmtNum(shares, nl, 0)} × {fmtNum(price, nl)}
+                    {fmtNum(shares, nl, 0)} X {fmtNum(price, nl)}
                   </span>
                 </span>
                 <button

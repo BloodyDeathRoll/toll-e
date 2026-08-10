@@ -10,7 +10,15 @@ import { displaySymbol, getMarket } from '@/src/markets/registry';
 import { cn } from '@/lib/utils';
 
 /** Navbar typeahead: /api/market/search with active-market priority. */
-export function SearchBox({ className }: { className?: string }) {
+export function SearchBox({
+  className,
+  inputClassName,
+  iconClassName,
+}: {
+  className?: string;
+  inputClassName?: string;
+  iconClassName?: string;
+}) {
   const t = useTranslations('nav');
   const router = useRouter();
   const { marketId } = useMarket();
@@ -37,7 +45,10 @@ export function SearchBox({ className }: { className?: string }) {
   return (
     <div ref={boxRef} className={cn('relative', className)}>
       <Search
-        className="pointer-events-none absolute start-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+        className={cn(
+          'pointer-events-none absolute start-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground',
+          iconClassName,
+        )}
         aria-hidden
       />
       <input
@@ -53,7 +64,10 @@ export function SearchBox({ className }: { className?: string }) {
           if (e.key === 'Enter' && results[0]) go(results[0].symbol);
           if (e.key === 'Escape') setOpen(false);
         }}
-        className="h-10 w-full rounded-lg border border-border bg-well ps-9 pe-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
+        className={cn(
+          'h-10 w-full rounded-lg border border-border bg-well ps-9 pe-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20',
+          inputClassName,
+        )}
       />
       {open && results.length > 0 && (
         <ul className="absolute inset-x-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-border bg-popover shadow-[0_12px_32px_rgba(0,0,0,0.55)]">
