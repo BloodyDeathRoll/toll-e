@@ -47,9 +47,10 @@
   --gain-foreground: #ffffff;
   --loss: #ff6666; /* text/error */
   --loss-foreground: #ffffff;
-  /* Filled change-pill surfaces (green/red badges). */
+  /* Filled change-pill surfaces (green/red badges) — identical in both
+     themes: the deep red reads as "loss" without the salmon tint. */
   --gain-surface: #179a72;
-  --loss-surface: #ff6666;
+  --loss-surface: #9a1717;
   /* After-hours crescent. */
   --moon: #faab00;
   /* Categorical series (chart overlays) — dataviz-validated fixed order;
@@ -103,7 +104,7 @@
   --loss: #ff6666;
   --loss-foreground: #ffffff;
   --gain-surface: #179a72;
-  --loss-surface: #9a1717; /* deep red pill on dark */
+  --loss-surface: #9a1717;
   --moon: #9a9a9a;
   --series-1: #3987e5;
   --series-2: #d95926;

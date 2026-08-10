@@ -148,3 +148,29 @@ export function getSessionState(cal: TradingCalendar, now: Date): SessionState {
   // Closed — reuse the regular-session countdown to the next opening bell.
   return { phase: 'closed', minutesToChange: getMarketState(cal, now).minutesToChange };
 }
+
+/**
+ * Absolute bounds of the extended trading session (pre-open → post-close,
+ * falling back to the regular open/close) for the exchange-local day that
+ * contains `at`. Returns null when the exchange is shut that day.
+ *
+ * Intraday charts plot against this window rather than the data's own extent,
+ * so a session in progress fills only the part of the axis it has actually
+ * traded — the Yahoo shape, instead of stretching two hours across a day.
+ */
+export function sessionWindow(
+  cal: TradingCalendar,
+  at: Date,
+): { start: number; end: number } | null {
+  const local = toExchangeLocal(cal, at);
+  if (cal.holidays.includes(local.isoDate)) return null;
+  const hours = scheduleFor(cal, local.isoDate).hours[local.weekday];
+  if (!hours) return null;
+
+  // Absolute ms of exchange-local midnight: step back from `at` by its
+  // wall-clock minutes, which sidesteps DST arithmetic on the date itself.
+  const midnight = at.getTime() - local.minuteOfDay * 60_000;
+  const startMin = hours.preOpen ?? hours.open;
+  const endMin = hours.postClose ?? hours.close;
+  return { start: midnight + startMin * 60_000, end: midnight + endMin * 60_000 };
+}

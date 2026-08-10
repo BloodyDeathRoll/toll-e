@@ -8,7 +8,7 @@ import { useMarket } from '@/components/app-shell/market-context';
 import { MarketMenu } from '@/components/app-shell/market-menu';
 import { SessionStatus } from '@/components/session-indicator';
 import { StaleBadge } from '@/components/stale-badge';
-import { Sparkline, twoToneSpark } from '@/components/charts';
+import { Sparkline, sessionFill, twoToneSpark } from '@/components/charts';
 import { ChangePill, AfterHours } from '@/components/quote-bits';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { useCharts, useFx, useIndexQuotes, useQuotes } from '@/components/use-market-data';
@@ -50,10 +50,14 @@ export function MarketsScreen() {
   }[tab];
 
   const spark = (symbol: string, fallback: number[] | undefined, up: boolean) => {
-    const closes = (symbol in indexCharts ? indexCharts : moverCharts)[symbol]?.points.map((p) => p.close) ?? [];
+    const series = (symbol in indexCharts ? indexCharts : moverCharts)[symbol];
+    const closes = series?.points.map((p) => p.close) ?? [];
     if (closes.length > 1) {
       const s = twoToneSpark(closes.slice(-40), 20);
-      return <Sparkline points={s.points} baseline={s.baseline} up={up} width={91} height={20} />;
+      const fill = sessionFill(series?.points.slice(-40), market.calendar);
+      return (
+        <Sparkline points={s.points} baseline={s.baseline} up={up} fill={fill} width={91} height={20} />
+      );
     }
     if (fallback?.length) return <Sparkline points={fallback} up={up} width={91} height={20} />;
     return <span className="w-[91px]" aria-hidden />;

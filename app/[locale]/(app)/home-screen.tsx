@@ -17,7 +17,7 @@ import { GoogleButton } from '@/components/google-button';
 import { Logo } from '@/components/logo';
 import { ReserveBar } from '@/components/reserve-bar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Sparkline, twoToneSpark } from '@/components/charts';
+import { Sparkline, sessionFill, twoToneSpark } from '@/components/charts';
 import { WatchlistCard } from '@/components/watchlist-card';
 import type { ChartRange } from '@/src/market-data/types';
 import { useCharts, useIndexQuotes, useQuotes } from '@/components/use-market-data';
@@ -207,8 +207,10 @@ export function HomeScreen() {
             const live = indexQuotes[ix.symbol];
             const value = live?.price ?? ix.value;
             const pct = live?.changePct ?? ix.changePct;
-            const closes = indexCharts[ix.symbol]?.points.map((pt) => pt.close) ?? [];
+            const ixSeries = indexCharts[ix.symbol];
+            const closes = ixSeries?.points.map((pt) => pt.close) ?? [];
             const spark = closes.length > 1 ? twoToneSpark(closes.slice(-40), 20) : null;
+            const ixFill = sessionFill(ixSeries?.points.slice(-40), market.calendar);
             return (
               <div
                 key={ix.symbol}
@@ -216,7 +218,7 @@ export function HomeScreen() {
               >
                 <span className="text-sm font-medium text-foreground">{name(ix)}</span>
                 {spark ? (
-                  <Sparkline points={spark.points} baseline={spark.baseline} up={pct >= 0} width={90} height={20} />
+                  <Sparkline points={spark.points} baseline={spark.baseline} up={pct >= 0} fill={ixFill} width={90} height={20} />
                 ) : (
                   <Sparkline points={ix.spark ?? []} up={pct >= 0} width={90} height={20} />
                 )}
@@ -250,8 +252,10 @@ export function HomeScreen() {
             </h2>
             {(rows ?? data.holdings).map((h) => {
               const quote = holdingQuotes[h.symbol];
-              const closes = holdingCharts[h.symbol]?.points.map((pt) => pt.close) ?? [];
+              const hSeries = holdingCharts[h.symbol];
+              const closes = hSeries?.points.map((pt) => pt.close) ?? [];
               const spark = closes.length > 1 ? twoToneSpark(closes.slice(-40), 20) : null;
+              const hFill = sessionFill(hSeries?.points.slice(-40), market.calendar);
               const dayPct = quote?.changePct ?? h.dayChangePct;
               return (
                 <Link
@@ -269,7 +273,16 @@ export function HomeScreen() {
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-6">
-                    {spark && <Sparkline points={spark.points} baseline={spark.baseline} up={dayPct >= 0} width={91} height={20} />}
+                    {spark && (
+                      <Sparkline
+                        points={spark.points}
+                        baseline={spark.baseline}
+                        up={dayPct >= 0}
+                        fill={hFill}
+                        width={91}
+                        height={20}
+                      />
+                    )}
                     <span className="private flex flex-col items-end gap-0.5">
                       <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
                         {fmtNum(quote?.price ?? h.price, nl)}

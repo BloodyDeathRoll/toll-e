@@ -365,6 +365,8 @@ export function StockScreen({ symbol }: { symbol: string }) {
                       intraday={series.interval.endsWith('m')}
                       timezone={series.timezone}
                       fullDay={range === '1D'}
+                      previousClose={live?.previousClose ?? series.previousClose}
+                      marketId={marketId}
                     />
                   ) : (
                     <LineChart points={stock.chart} up={up} height={182} viewH={250} gridlines={[233]} />
@@ -602,6 +604,8 @@ export function StockScreen({ symbol }: { symbol: string }) {
                       intraday={series.interval.endsWith('m')}
                       timezone={series.timezone}
                       fullDay={range === '1D'}
+                      previousClose={live?.previousClose ?? series.previousClose}
+                      marketId={marketId}
                     />
                   ) : (
                     <LineChart points={stock.chart} up={up} height={250} viewH={250} gridlines={[40, 120, 200]} />

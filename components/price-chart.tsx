@@ -1,34 +1,20 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import {
-  AreaSeries,
-  ColorType,
-  createChart,
-  type AreaData,
-  type UTCTimestamp,
-  type WhitespaceData,
-} from 'lightweight-charts';
+import { useId } from 'react';
+import { sessionWindow } from '@/src/markets/calendar';
+import { getMarket } from '@/src/markets/registry';
 import type { ChartPoint } from '@/src/market-data/types';
+import { cn } from '@/lib/utils';
 
-// TradingView lightweight-charts v5 area chart (toll-e-plan.md §4).
-// An LTR island: time axes and prices never mirror under RTL.
+// Hand-rolled SVG price chart. It replaced lightweight-charts, which silently
+// stopped painting the series and the time axis below ~400px wide (its pane
+// canvases kept a stale 300x150 buffer), leaving the chart blank on phones.
+// The graph is a stretched viewBox; every label is HTML so text never skews.
+// An LTR island: time axes and prices never mirror.
 
-/** Minutes to add to UTC so tick labels read as the exchange's wall clock. */
-function tzOffsetMs(timezone: string, at: number): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).formatToParts(new Date(at));
-  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
-  const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour') % 24, get('minute'));
-  return Math.round((asUtc - at) / 60_000) * 60_000;
-}
+const PAD_Y = 8;
+const AXIS_W = 54;
+const TIME_H = 18;
 
 export function PriceChart({
   points,
@@ -37,6 +23,9 @@ export function PriceChart({
   intraday,
   timezone,
   fullDay = false,
+  previousClose,
+  marketId,
+  className,
 }: {
   points: ChartPoint[];
   up: boolean;
@@ -45,92 +34,148 @@ export function PriceChart({
   /** Exchange tz — intraday tick labels shift to its wall clock. */
   timezone?: string;
   /**
-   * Yahoo-style 1D axis: the scale spans the whole exchange-local day
-   * (00:00–23:59), so a live session only fills part of the chart.
+   * Yahoo-style 1D axis: the scale spans the exchange's whole extended
+   * session, so a live session only fills the part of the day it has traded
+   * instead of stretching two hours across the full width.
    */
   fullDay?: boolean;
+  /** Dashed reference line for an intraday day. */
+  previousClose?: number;
+  /** Supplies the trading calendar behind `fullDay`. */
+  marketId?: string;
+  className?: string;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const id = useId();
+  if (points.length === 0) return <div style={{ height }} className={className} aria-hidden />;
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || points.length === 0) return;
+  const VB = 1000; // viewBox width; the graph stretches to the container
+  const plotH = height - TIME_H;
+  const innerH = plotH - PAD_Y * 2;
 
-    const css = getComputedStyle(document.documentElement);
-    const line = css.getPropertyValue(up ? '--gain' : '--loss').trim();
-    const border = css.getPropertyValue('--border').trim();
-    const text = css.getPropertyValue('--muted-foreground').trim();
+  // x-domain: the whole session when asked (partial day ⇒ partial chart),
+  // otherwise the data's own extent.
+  const firstT = points[0].t;
+  const lastT = points[points.length - 1].t;
+  const session =
+    fullDay && intraday && marketId
+      ? sessionWindow(getMarket(marketId).calendar, new Date(lastT))
+      : null;
+  const xFrom = session ? Math.min(session.start, firstT) : firstT;
+  const xTo = session ? Math.max(session.end, lastT) : lastT;
+  const xSpan = xTo - xFrom || 1;
+  const x = (t: number) => ((t - xFrom) / xSpan) * VB;
 
-    // Display times in exchange-local wall clock (lightweight-charts labels
-    // raw UTC), constant offset taken at the last point — fine within a day.
-    const offset = intraday && timezone ? tzOffsetMs(timezone, points[points.length - 1].t) : 0;
-    const toTime = (t: number) => ((t + offset) / 1000) as UTCTimestamp;
+  // y-domain: the series, widened to keep the previous-close line on screen.
+  const closes = points.map((p) => p.close);
+  const baseline = intraday ? previousClose : undefined;
+  const lo = Math.min(...closes, baseline ?? Infinity);
+  const hi = Math.max(...closes, baseline ?? -Infinity);
+  const pad = (hi - lo) * 0.08 || Math.max(Math.abs(hi) * 0.001, 0.01);
+  const yMin = lo - pad;
+  const yMax = hi + pad;
+  const y = (v: number) => PAD_Y + (1 - (v - yMin) / (yMax - yMin || 1)) * innerH;
 
-    const data: Array<AreaData<UTCTimestamp> | WhitespaceData<UTCTimestamp>> = points.map((p) => ({
-      time: toTime(p.t),
-      value: p.close,
-    }));
+  const line = points.map((p) => `${x(p.t).toFixed(1)},${y(p.close).toFixed(1)}`).join(' ');
+  const area = `${x(firstT).toFixed(1)},${plotH} ${line} ${x(lastT).toFixed(1)},${plotH}`;
 
-    let dayRange: { from: UTCTimestamp; to: UTCTimestamp } | null = null;
-    if (fullDay && intraday) {
-      // Whitespace points stretch the axis across the full local day; the
-      // plotted line ends at the last real trade (design: half-full when live).
-      const day = 24 * 60 * 60 * 1000;
-      // First gap, not last — the newest bar is often partial (e.g. 13:04),
-      // which would knock the whole whitespace grid off the :00/:05 marks.
-      const step = points.length > 1 ? points[1].t - points[0].t : 5 * 60_000;
-      const firstLocal = points[0].t + offset;
-      const lastLocal = points[points.length - 1].t + offset;
-      const dayStart = Math.floor(firstLocal / day) * day;
-      const dayEnd = dayStart + day;
-      const lead: WhitespaceData<UTCTimestamp>[] = [];
-      for (let t = dayStart; t < firstLocal; t += step) {
-        lead.push({ time: (t / 1000) as UTCTimestamp });
-      }
-      const trail: WhitespaceData<UTCTimestamp>[] = [];
-      for (let t = lastLocal + step; t < dayEnd; t += step) {
-        trail.push({ time: (t / 1000) as UTCTimestamp });
-      }
-      data.unshift(...lead);
-      data.push(...trail);
-      dayRange = { from: (dayStart / 1000) as UTCTimestamp, to: ((dayEnd - step) / 1000) as UTCTimestamp };
-    }
+  const priceTicks = Array.from({ length: 4 }, (_, i) => yMin + ((yMax - yMin) * (i + 0.5)) / 4);
+  const timeTicks = Array.from({ length: 4 }, (_, i) => xFrom + (xSpan * (i + 0.5)) / 4);
 
-    const chart = createChart(el, {
-      height,
-      autoSize: true,
-      layout: {
-        background: { type: ColorType.Solid, color: 'transparent' },
-        textColor: text,
-        attributionLogo: false,
-      },
-      grid: {
-        vertLines: { visible: false },
-        horzLines: { color: border },
-      },
-      rightPriceScale: { borderColor: border },
-      timeScale: { borderColor: border, timeVisible: intraday, secondsVisible: false },
-      crosshair: { horzLine: { labelBackgroundColor: line }, vertLine: { labelBackgroundColor: line } },
-    });
-    const series = chart.addSeries(AreaSeries, {
-      lineColor: line,
-      topColor: `${line}44`,
-      bottomColor: `${line}00`,
-      lineWidth: 2,
-      priceLineVisible: false,
-    });
-    series.setData(data);
-    // After first layout — autoSize hasn't measured yet during this effect.
-    const raf = requestAnimationFrame(() => {
-      if (dayRange) chart.timeScale().setVisibleRange(dayRange);
-      else chart.timeScale().fitContent();
-    });
+  const label = (t: number) =>
+    intraday
+      ? new Intl.DateTimeFormat('en-US', {
+          timeZone: timezone,
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        }).format(new Date(t))
+      : new Intl.DateTimeFormat('en-US', {
+          timeZone: timezone,
+          month: 'short',
+          day: 'numeric',
+        }).format(new Date(t));
 
-    return () => {
-      cancelAnimationFrame(raf);
-      chart.remove();
-    };
-  }, [points, up, height, intraday, timezone, fullDay]);
+  const decimals = yMax - yMin < 5 ? 2 : yMax < 1000 ? 1 : 0;
 
-  return <div ref={ref} dir="ltr" style={{ height }} />;
+  return (
+    <div dir="ltr" className={cn('relative', className)} style={{ height }}>
+      {/* Graph — horizontally stretched, vertically 1:1 */}
+      <svg
+        width="100%"
+        height={plotH}
+        viewBox={`0 0 ${VB} ${plotH}`}
+        preserveAspectRatio="none"
+        aria-hidden
+        className={cn('absolute inset-y-0 start-0 block', up ? 'text-gain' : 'text-loss')}
+        style={{ width: `calc(100% - ${AXIS_W}px)`, height: plotH }}
+      >
+        <defs>
+          <linearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="currentColor" stopOpacity="0.28" />
+            <stop offset="1" stopColor="currentColor" stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+
+        {priceTicks.map((v) => (
+          <line
+            key={v}
+            x1="0"
+            y1={y(v)}
+            x2={VB}
+            y2={y(v)}
+            className="stroke-border"
+            vectorEffect="non-scaling-stroke"
+          />
+        ))}
+
+        {baseline !== undefined && (
+          <line
+            x1="0"
+            y1={y(baseline)}
+            x2={VB}
+            y2={y(baseline)}
+            className="stroke-faint"
+            strokeDasharray="4 4"
+            vectorEffect="non-scaling-stroke"
+          />
+        )}
+
+        <polygon points={area} fill={`url(#${id}-fill)`} />
+        <polyline
+          points={line}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+
+      {/* Price gutter */}
+      <div className="absolute inset-y-0 end-0 text-[11px] text-muted-foreground tabular-nums" style={{ width: AXIS_W }}>
+        {priceTicks.map((v) => (
+          <span
+            key={v}
+            className="absolute end-0 -translate-y-1/2 ps-1"
+            style={{ top: y(v) }}
+          >
+            {v.toFixed(decimals)}
+          </span>
+        ))}
+      </div>
+
+      {/* Time axis */}
+      <div className="absolute inset-x-0 bottom-0 text-[11px] text-muted-foreground" style={{ height: TIME_H }}>
+        {timeTicks.map((t) => (
+          <span
+            key={t}
+            className="absolute -translate-x-1/2 whitespace-nowrap"
+            style={{ left: `calc(${(x(t) / VB) * 100}% - ${((x(t) / VB) * AXIS_W).toFixed(1)}px)` }}
+          >
+            {label(t)}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
