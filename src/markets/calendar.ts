@@ -169,7 +169,10 @@ export function sessionWindow(
 
   // Absolute ms of exchange-local midnight: step back from `at` by its
   // wall-clock minutes, which sidesteps DST arithmetic on the date itself.
-  const midnight = at.getTime() - local.minuteOfDay * 60_000;
+  // `at` is floored to the minute first — minuteOfDay is whole minutes, so
+  // leftover seconds would push every boundary late by up to 59s, and a bar
+  // stamped exactly at the opening bell would then look like pre-market.
+  const midnight = Math.floor(at.getTime() / 60_000) * 60_000 - local.minuteOfDay * 60_000;
   const startMin = hours.preOpen ?? hours.open;
   const endMin = hours.postClose ?? hours.close;
   return {

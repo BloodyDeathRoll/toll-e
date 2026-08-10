@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Link } from '@/src/i18n/navigation';
 import { MoreLink } from '@/components/more-link';
-import { Sparkline, sparkFromCloses } from '@/components/charts';
+import { SessionSparkline, Sparkline } from '@/components/charts';
 import { useChart, useQuotes } from '@/components/use-market-data';
 import { useWatchlists } from '@/components/use-watchlists';
 import { demoWatchlists } from '@/src/demo/data';
@@ -90,8 +90,7 @@ function LiveRow({
   numberLocale: string;
   marketId: string;
 }) {
-  const { data: series } = useChart(symbol, '5d');
-  const spark = series ? sparkFromCloses(series.points.map((p) => p.close).slice(-40)) : [];
+  const { data: series } = useChart(symbol, '1d');
   const up = (quote?.changePct ?? 0) >= 0;
 
   return (
@@ -103,8 +102,14 @@ function LiveRow({
         {displaySymbol(symbol, getMarket(marketId))}
       </span>
       <span className="flex items-center gap-3">
-        {spark.length > 1 ? (
-          <Sparkline points={spark} up={up} width={52} height={20} />
+        {series && series.points.length > 1 ? (
+          <SessionSparkline
+            points={series.points}
+            previousClose={quote?.previousClose ?? series.previousClose}
+            calendar={getMarket(marketId).calendar}
+            width={52}
+            height={20}
+          />
         ) : (
           <span className="w-[52px]" aria-hidden />
         )}

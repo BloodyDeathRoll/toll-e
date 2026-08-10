@@ -5,7 +5,7 @@ import { Check } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { MAX_OVERLAYS } from '@/components/performance-chart';
 import { MoreLink } from '@/components/more-link';
-import { Sparkline, sparkFromCloses } from '@/components/charts';
+import { SessionSparkline } from '@/components/charts';
 import { StaleBadge } from '@/components/stale-badge';
 import { useCharts, useQuotes } from '@/components/use-market-data';
 import { getMarket, displaySymbol } from '@/src/markets/registry';
@@ -168,13 +168,18 @@ export function HoldingsTable({
             const q = quotes[h.symbol];
             const price = q?.price ?? h.price;
             const chg = q?.changePct ?? h.dayChangePct ?? 0;
-            const closes = sparks[h.symbol]?.points.map((pt) => pt.close) ?? [];
-            const spark = sparkFromCloses(closes, 20);
+            const series = sparks[h.symbol];
             return (
               <>
                 <span className="flex justify-end">
-                  {spark.length > 1 ? (
-                    <Sparkline points={spark} up={chg >= 0} width={64} height={20} />
+                  {series && series.points.length > 1 ? (
+                    <SessionSparkline
+                      points={series.points}
+                      previousClose={q?.previousClose ?? series.previousClose}
+                      calendar={market.calendar}
+                      width={64}
+                      height={20}
+                    />
                   ) : (
                     <span className="w-16" aria-hidden />
                   )}
