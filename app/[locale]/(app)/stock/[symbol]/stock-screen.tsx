@@ -117,17 +117,17 @@ export function StockScreen({ symbol }: { symbol: string }) {
   const daysGain = holding ? holding.shares * change : 0;
 
   const rangePills = (list: readonly string[]) => (
-    <div dir="ltr" className="flex gap-0.5 rounded-lg border border-border bg-background p-[3px]">
+    <div dir="ltr" className="flex gap-1">
       {list.map((r) => (
         <button
           key={r}
           type="button"
           onClick={() => setRange(r)}
           className={cn(
-            'rounded-md px-2.5 py-1 text-xs',
+            'rounded-[20px] px-3 py-1.5 text-xs font-bold',
             r === range
-              ? 'bg-primary font-semibold text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground',
+              ? 'bg-primary text-primary-foreground'
+              : 'text-foreground/40 hover:text-foreground',
           )}
         >
           {r}
@@ -137,23 +137,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
   );
 
   const tabRow = (
-    <div className="flex gap-5 border-b border-border px-4 md:gap-[26px] md:px-7">
-      {tabs.map((key) => (
-        <button
-          key={key}
-          type="button"
-          onClick={() => setTab(key)}
-          className={cn(
-            'pb-2 text-sm md:pb-3',
-            tab === key
-              ? '-mb-px border-b-2 border-brand font-semibold text-foreground'
-              : 'text-muted-foreground',
-          )}
-        >
-          {t(key)}
-        </button>
-      ))}
-    </div>
+    <UnderlineTabs tabs={tabs} value={tab} onChange={setTab} label={(k) => t(k)} className="px-7" />
   );
 
   const positionCard = holding && (

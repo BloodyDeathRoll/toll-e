@@ -112,6 +112,21 @@ export function WatchlistsScreen() {
       />
       <h1 className="sr-only">{t('editList')}</h1>
 
+      {/* Desktop header: the mobile AppHeader (with its create button) is hidden ≥md. */}
+      {real && (
+        <div className="hidden items-center justify-between px-4 pt-7 pb-4 md:flex">
+          <span className="text-xl font-bold tracking-tight text-foreground">{t('editList')}</span>
+          <button
+            type="button"
+            onClick={() => setMode({ kind: 'create' })}
+            className="flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          >
+            <Plus className="size-4" aria-hidden />
+            {t('newList')}
+          </button>
+        </div>
+      )}
+
       {/* Signed in, zero lists: design empty state. */}
       {real && real.length === 0 && (
         <div className="flex flex-1 flex-col items-center justify-center gap-5 p-6 pb-24">

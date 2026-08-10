@@ -22,9 +22,9 @@
   "market": {
     "menuTitle": "Market",
     "US": "USD · United States",
-    "USlang": "English",
+    "USlang": "NYSE · Nasdaq",
     "IL": "ILS · Israel",
-    "ILlang": "עברית · switches to Hebrew",
+    "ILlang": "Tel Aviv Stock Exchange",
     "EU": "EUR · Europe",
     "comingSoon": "Coming soon",
     "addMarket": "Add a market",

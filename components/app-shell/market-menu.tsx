@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { Check, ChevronDown, Plus } from 'lucide-react';
-import { usePathname, useRouter } from '@/src/i18n/navigation';
 import { useMarket } from './market-context';
 import { getMarket } from '@/src/markets/registry';
 import {
@@ -14,27 +13,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
-// Market is a dropdown, not a two-tab — built to add currencies. Picking a
-// market also switches the app language: ILS ⇒ Hebrew RTL, USD ⇒ English.
-const marketLocale: Record<string, 'en' | 'he'> = { US: 'en', IL: 'he' };
-
+// Market is a dropdown, not a two-tab — built to add markets. Language and
+// display currency live in the header's flag picker; this only switches the
+// active market.
 export function MarketMenu() {
   const t = useTranslations('market');
   const { marketId, setMarketId } = useMarket();
-  const market = getMarket(marketId);
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const pick = (id: string) => {
-    setMarketId(id);
-    router.replace(pathname, { locale: marketLocale[id] ?? 'en' });
-  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 outline-none data-[state=open]:border-primary data-[state=open]:ring-[3px] data-[state=open]:ring-primary/20">
-        <span dir="ltr" className="text-[13px] font-semibold text-foreground">
-          {market.currencySymbol} {market.currency}
+        <span className="text-[13px] font-semibold text-foreground">
+          {t(`stripName.${marketId as 'US' | 'IL'}`)}
         </span>
         <ChevronDown className="size-3 text-muted-foreground" aria-hidden />
       </DropdownMenuTrigger>
@@ -48,7 +38,7 @@ export function MarketMenu() {
           return (
             <DropdownMenuItem
               key={id}
-              onSelect={() => pick(id)}
+              onSelect={() => setMarketId(id)}
               className={cn(
                 'gap-3 rounded-none border-t border-border px-4 py-2.5',
                 active && 'bg-accent',

@@ -298,33 +298,33 @@ export function HomeScreen() {
                 <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
                   {t('home.holdingsCurrency', { currency: currencyLabel })}
                 </h2>
-                <p dir="ltr" className="private self-start text-[38px] font-semibold tracking-tight text-foreground tabular-nums">
+                <p dir="ltr" className="private self-start text-[32px] font-bold tracking-tight text-foreground tabular-nums">
                   {sym}
                   {fmtNum(p.value, nl)}
                 </p>
-                <p className="private flex gap-4 text-sm tabular-nums">
-                  <span className={up ? 'text-gain' : 'text-loss'}>
+                <p className="private flex items-baseline gap-4 tabular-nums">
+                  <span className={cn('text-lg font-semibold', up ? 'text-gain' : 'text-loss')}>
                     <span dir="ltr">{fmtSigned(p.dayChange, nl)} ({fmtPct(p.dayChangePct, nl)})</span>{' '}
-                    {t('home.today')}
+                    <span className="text-xs font-normal text-muted-foreground">{t('home.today')}</span>
                   </span>
-                  <span className={p.allTimeChange >= 0 ? 'text-gain' : 'text-loss'}>
+                  <span className={cn('text-lg font-semibold', p.allTimeChange >= 0 ? 'text-gain' : 'text-loss')}>
                     <span dir="ltr">{fmtSigned(p.allTimeChange, nl)} ({fmtPct(p.allTimePct, nl)})</span>{' '}
-                    {t('home.allTimeWord')}
+                    <span className="text-xs font-normal text-muted-foreground">{t('home.allTimeWord')}</span>
                   </span>
                 </p>
               </div>
               <div className="flex items-center gap-2.5">
-                <div dir="ltr" className="flex gap-0.5 rounded-lg border border-border bg-background p-[3px]">
+                <div dir="ltr" className="flex gap-1">
                   {ranges.map((r) => (
                     <button
                       key={r}
                       type="button"
                       onClick={() => setRange(r)}
                       className={cn(
-                        'rounded-md px-2.5 py-1 text-xs',
+                        'rounded-[20px] px-3 py-1.5 text-xs font-bold',
                         r === range
-                          ? 'bg-primary font-semibold text-primary-foreground'
-                          : 'text-muted-foreground hover:text-foreground',
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-foreground/40 hover:text-foreground',
                       )}
                     >
                       {r}

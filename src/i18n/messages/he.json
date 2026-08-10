@@ -22,9 +22,9 @@
   "market": {
     "menuTitle": "שוק",
     "US": "USD · ארצות הברית",
-    "USlang": "English · מעבר לאנגלית",
+    "USlang": "NYSE · Nasdaq",
     "IL": "ILS · ישראל",
-    "ILlang": "עברית",
+    "ILlang": "הבורסה בתל אביב",
     "EU": "EUR · אירופה",
     "comingSoon": "בקרוב",
     "addMarket": "הוספת שוק",
