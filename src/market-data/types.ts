@@ -96,6 +96,8 @@ export interface NewsItem {
   /** Epoch ms. */
   publishedAt: number;
   thumbnail?: string;
+  /** Symbols Yahoo tagged the article with — rendered as chips with their change. */
+  relatedTickers?: string[];
 }
 
 export interface RecommendationPeriod {

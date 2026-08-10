@@ -188,6 +188,7 @@ export class YahooProvider implements MarketDataProvider {
         publishedAt: new Date(n.providerPublishTime).getTime(),
         // Smallest resolution suffices for a list thumbnail.
         thumbnail: n.thumbnail?.resolutions?.reduce((a, b) => (a.width <= b.width ? a : b))?.url,
+        relatedTickers: n.relatedTickers ? [...n.relatedTickers] : undefined,
       }));
   }
 

@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft, Menu, Share2 } from 'lucide-react';
+import { ArrowLeft, Share2 } from 'lucide-react';
 import { useSymbolWatchlist, WatchlistMenuButton, WatchlistStar } from '@/components/watchlist-star';
 import { Link, useRouter } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
 import { SearchBox } from '@/components/app-shell/search-box';
-import { MoreLink } from '@/components/more-link';
 import { SessionBadge } from '@/components/session-indicator';
-import { LineChart, Sparkline } from '@/components/charts';
+import { LineChart } from '@/components/charts';
 import { ChangePill, AfterHours } from '@/components/quote-bits';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { PriceChart } from '@/components/price-chart';
@@ -226,6 +225,13 @@ export function StockScreen({ symbol }: { symbol: string }) {
     </section>
   );
 
+  // Tickers Yahoo tagged across the visible articles, quoted so each chip can
+  // carry its own change (design: "NVDA +2.27%  GOOG -0.88%").
+  const newsTickers = [
+    ...new Set((news.data?.news ?? []).flatMap((n) => n.relatedTickers ?? [])),
+  ].slice(0, 20);
+  const { quotes: newsQuotes } = useQuotes(tab === 'news' ? newsTickers : []);
+
   const newsContent = !news.data ? (
     news.stale ? (
       <CardMsg>{t('loadFailed')}</CardMsg>
@@ -235,26 +241,45 @@ export function StockScreen({ symbol }: { symbol: string }) {
   ) : news.data.news.length === 0 ? (
     <CardMsg>{t('noNews')}</CardMsg>
   ) : (
-    <section className="flex flex-col divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+    <section className="flex flex-col px-6">
       {news.data.news.map((n) => (
         <a
           key={n.id}
           href={n.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-start gap-3.5 p-4 hover:bg-well"
+          className="flex items-start gap-4 border-b border-border py-4"
         >
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="line-clamp-2 text-sm font-medium leading-snug text-foreground">
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <span className="text-xs text-muted-foreground">
+              {n.publisher} * {relTime(n.publishedAt, locale)}
+            </span>
+            <span className="line-clamp-3 text-base font-bold leading-snug text-foreground">
               {n.title}
             </span>
-            <span className="text-xs text-muted-foreground">
-              {n.publisher} · {relTime(n.publishedAt, locale)}
-            </span>
+            {(n.relatedTickers?.length ?? 0) > 0 && (
+              <span className="flex flex-wrap gap-x-3 gap-y-1">
+                {n.relatedTickers!.slice(0, 4).map((s2) => {
+                  const q = newsQuotes[s2];
+                  return (
+                    <span
+                      key={s2}
+                      dir="ltr"
+                      className={cn(
+                        'text-xs font-semibold tabular-nums',
+                        (q?.changePct ?? 0) >= 0 ? 'text-gain' : 'text-loss',
+                      )}
+                    >
+                      {s2} {q ? fmtPct(q.changePct, nl) : ''}
+                    </span>
+                  );
+                })}
+              </span>
+            )}
           </div>
           {n.thumbnail && (
             // eslint-disable-next-line @next/next/no-img-element -- remote Yahoo CDN thumbs, no next/image domain config
-            <img src={n.thumbnail} alt="" className="size-14 shrink-0 rounded-lg object-cover" />
+            <img src={n.thumbnail} alt="" className="size-20 shrink-0 rounded-lg object-cover" />
           )}
         </a>
       ))}
@@ -478,27 +503,6 @@ export function StockScreen({ symbol }: { symbol: string }) {
               {epsCard}
               {financialsCard}
               {holdersCard}
-              <section className="overflow-hidden rounded-2xl border border-border bg-card">
-                <h2 className="px-4 pt-3.5 pb-2 text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-                  {t('historicalPrices')}
-                </h2>
-                <div dir="ltr" className="flex items-center gap-2.5 px-4 pb-2.5">
-                  <div className="min-w-0 flex-1">
-                    <Sparkline points={stock.wk52Spark} up width={240} height={72} className="w-full" />
-                  </div>
-                  <div className="flex h-[72px] flex-col justify-between text-[13px] text-foreground tabular-nums">
-                    <span>{fmtNum(stats.wk52High, nl)}</span>
-                    <span>{fmtNum(stats.wk52Low, nl)}</span>
-                  </div>
-                </div>
-                <div className="flex justify-between px-4 pb-3 text-xs text-muted-foreground">
-                  <span>{fmtDate('2025-08-04', locale)}</span>
-                  <span>{fmtDate('2026-08-04', locale)}</span>
-                </div>
-                <div className="flex justify-end border-t border-border bg-well px-4 py-2.5">
-                  <MoreLink href={`/stock/${stock.symbol}`}>{t('viewAll')}</MoreLink>
-                </div>
-              </section>
               <section className="flex flex-col gap-[7px] rounded-2xl border border-border bg-card p-5">
                 <h2 className="pb-1 text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
                   {t('corporateEvents')}
@@ -519,18 +523,6 @@ export function StockScreen({ symbol }: { symbol: string }) {
           {tab === 'analysis' && analysisContent}
         </div>
 
-        {/* Floating CTA above the tab bar */}
-        <div className="fixed inset-x-4 bottom-[88px] z-30 flex gap-2.5 md:hidden">
-          <Link
-            href={`/transactions/new?symbol=${stock.symbol}`}
-            className="flex h-[46px] flex-1 items-center justify-center rounded-lg bg-primary text-[15px] font-semibold text-primary-foreground"
-          >
-            {t('addTransaction')}
-          </Link>
-          <span className="flex size-[46px] items-center justify-center rounded-lg border border-border bg-card text-subtle">
-            <Menu className="size-4" aria-hidden />
-          </span>
-        </div>
       </div>
 
       {/* ---------- Desktop ---------- */}
@@ -680,10 +672,11 @@ function RangeSlider({
         <span className="text-muted-foreground">{label}</span>
         <span className="text-foreground">{fmtNum(high, nl)}</span>
       </div>
-      <div dir="ltr" className="relative h-4">
-        <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-foreground/30" />
+      {/* 4px rounded track, 20px marker — Figma key-statistics rows. */}
+      <div dir="ltr" className="relative h-5">
+        <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-border" />
         <span
-          className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary"
+          className="absolute top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary"
           style={{ left: `${pct}%` }}
         />
       </div>
@@ -799,71 +792,50 @@ function RevEarnBars({
   );
 }
 
+// Figma's trend palette, sampled from the Analysis frame. The Sell tint is
+// extrapolated: the design hid that bar (count 1), so it never rendered.
 const RECO_SEGMENTS = [
-  { key: 'strongSell', cls: 'bg-loss' },
-  { key: 'sell', cls: 'bg-loss/50' },
-  { key: 'hold', cls: 'bg-chart-2' },
-  { key: 'buy', cls: 'bg-gain/50' },
-  { key: 'strongBuy', cls: 'bg-gain' },
+  { key: 'strongBuy', fill: '#cceaf1' },
+  { key: 'buy', fill: '#f0f5e3' },
+  { key: 'hold', fill: '#f0b90b' },
+  { key: 'sell', fill: '#f4d59f' },
+  { key: 'strongSell', fill: '#ef9a6b' },
 ] as const;
 
 function RecommendationCard({ data }: { data: StockAnalysis }) {
   const t = useTranslations('stock');
-  const locale = useLocale();
-  const periods = [...data.recommendationTrend].sort(
+  // Newest period Yahoo reports (period '0m').
+  const latest = [...data.recommendationTrend].sort(
     (a, b) => parseInt(a.period) - parseInt(b.period),
-  );
-  const total = (p: (typeof periods)[number]) => p.strongBuy + p.buy + p.hold + p.sell + p.strongSell;
-  const maxTotal = Math.max(...periods.map(total), 1);
-  const latest = periods[periods.length - 1];
-  const H = 140;
-  const now = new Date();
+  )[data.recommendationTrend.length - 1];
+  const counts = RECO_SEGMENTS.map((seg) => ({ ...seg, n: latest[seg.key] }));
+  const max = Math.max(...counts.map((c) => c.n), 1);
+  const total = counts.reduce((sum, c) => sum + c.n, 0);
 
   return (
-    <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-          {t('recommendations')}
-        </h2>
-        {data.numberOfAnalysts !== undefined && (
-          <span className="text-xs text-muted-foreground">
-            {t('analystsCount', { count: data.numberOfAnalysts })}
+    <section className="flex flex-col gap-6 px-6 pt-6">
+      <h2 className="text-xs uppercase text-muted-foreground">{t('analysisSection')}</h2>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-muted-foreground">{t('recommendations')}</span>
+          <span className="text-muted-foreground">
+            {t('analystsCount', { count: data.numberOfAnalysts ?? total })}
           </span>
-        )}
-      </div>
-      <div className="flex items-end gap-6">
-        <div dir="ltr" className="flex flex-1 items-end justify-around gap-4">
-          {periods.map((p) => {
-            const label = new Date(now.getFullYear(), now.getMonth() + parseInt(p.period), 1)
-              .toLocaleDateString(locale, { month: 'short' });
-            return (
-              <div key={p.period} className="flex w-10 flex-col items-center gap-2">
-                <div
-                  className="flex w-full flex-col justify-end overflow-hidden rounded-[3px]"
-                  style={{ height: H }}
-                >
-                  {RECO_SEGMENTS.map((s) => (
-                    <div
-                      key={s.key}
-                      className={s.cls}
-                      style={{ height: (p[s.key] / maxTotal) * H }}
-                    />
-                  ))}
-                </div>
-                <span className="text-[11px] text-muted-foreground">{label}</span>
-              </div>
-            );
-          })}
         </div>
-        <div className="flex flex-col gap-1.5">
-          {[...RECO_SEGMENTS].reverse().map((s) => (
-            <span key={s.key} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span className={cn('size-[9px] rounded-[2px]', s.cls)} />
-              {t(s.key)}
-              <span className="ms-auto ps-3 text-foreground tabular-nums">{latest[s.key]}</span>
+        {counts.map((c) => (
+          <div key={c.key} className="flex items-center gap-4">
+            <span dir="ltr" className="relative h-1.5 flex-1 rounded-full bg-border">
+              <span
+                className="absolute inset-y-0 start-0 rounded-full"
+                style={{ width: `${Math.max((c.n / max) * 100, c.n > 0 ? 6 : 0)}%`, background: c.fill }}
+              />
             </span>
-          ))}
-        </div>
+            <span className="flex w-[104px] shrink-0 items-baseline justify-between text-xs">
+              <span className="text-muted-foreground">{t(c.key)}</span>
+              <span className="text-foreground tabular-nums">{c.n}</span>
+            </span>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -881,50 +853,40 @@ function TargetCard({
   const t = useTranslations('stock');
   const lo = Math.min(target.low, target.current ?? target.low);
   const hi = Math.max(target.high, target.current ?? target.high);
-  const pos = (v: number) => `${((v - lo) / (hi - lo || 1)) * 100}%`;
+  const pos = (v: number) => Math.min(Math.max(((v - lo) / (hi - lo || 1)) * 100, 0), 100);
+
+  const marker = (v: number, label: string, tone: string) => (
+    <span
+      className="absolute top-0 flex -translate-x-1/2 flex-col items-center gap-1"
+      style={{ left: `${pos(v)}%` }}
+    >
+      <span className={cn('size-5 rounded-full', tone)} />
+      <span className="whitespace-nowrap text-[11px] text-muted-foreground tabular-nums">
+        {label} {sym}
+        {fmtNum(v, nl, 0)}
+      </span>
+    </span>
+  );
 
   return (
-    <section className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-5">
-      <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-        {t('priceTarget')}
-      </h2>
-      <div dir="ltr" className="flex flex-col gap-3 px-1">
-        <div className="relative mt-2 h-1.5 rounded-full bg-well">
-          <div
-            className="absolute inset-y-0 rounded-full bg-border"
-            style={{ left: pos(target.low), right: `calc(100% - ${pos(target.high)})` }}
-          />
-          <span
-            className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary"
-            style={{ left: pos(target.mean) }}
-          />
-          {target.current !== undefined && (
-            <span
-              className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand bg-card"
-              style={{ left: pos(target.current) }}
-            />
-          )}
-        </div>
-        <div className="flex justify-between text-[13px] tabular-nums">
-          <span className="flex flex-col">
-            <span className="text-muted-foreground">{t('targetLow')}</span>
-            <span className="text-foreground">{sym}{fmtNum(target.low, nl)}</span>
+    <section className="flex flex-col gap-6 px-6 pt-6">
+      <h2 className="text-xs uppercase text-muted-foreground">{t('priceTarget')}</h2>
+      <div dir="ltr" className="flex flex-col gap-3">
+        <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
+          <span>
+            {t('targetLow')}: {sym}
+            {fmtNum(target.low, nl)}
           </span>
-          <span className="flex flex-col items-center">
-            <span className="text-muted-foreground">{t('targetAvg')}</span>
-            <span className="font-semibold text-foreground">{sym}{fmtNum(target.mean, nl)}</span>
-          </span>
-          <span className="flex flex-col items-end">
-            <span className="text-muted-foreground">{t('targetHigh')}</span>
-            <span className="text-foreground">{sym}{fmtNum(target.high, nl)}</span>
+          <span>
+            {t('targetHigh')}: {sym}
+            {fmtNum(target.high, nl)}
           </span>
         </div>
-        {target.current !== undefined && (
-          <span className="text-xs text-muted-foreground">
-            <span className="me-1.5 inline-block size-2.5 rounded-full border-2 border-brand align-middle" />
-            {t('targetCurrent')} {sym}{fmtNum(target.current, nl)}
-          </span>
-        )}
+        <div className="relative h-12">
+          <div className="absolute inset-x-0 top-2.5 h-1 -translate-y-1/2 rounded-full bg-border" />
+          {target.current !== undefined && marker(target.current, t('targetCurrent'), 'bg-chart-5')}
+          {marker(target.mean, t('targetAvg'), 'bg-primary')}
+        </div>
       </div>
     </section>
   );
@@ -933,31 +895,24 @@ function TargetCard({
 function UpgradesCard({ upgrades }: { upgrades: StockAnalysis['upgrades'] }) {
   const t = useTranslations('stock');
   const locale = useLocale();
-  const actionCls: Record<string, string> = { up: 'text-gain', down: 'text-loss' };
 
   return (
-    <section className="flex flex-col gap-1 rounded-2xl border border-border bg-card p-5">
-      <h2 className="pb-2 text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-        {t('upgradesTitle')}
-      </h2>
-      <div className="flex flex-col divide-y divide-border">
+    <section className="flex flex-col gap-6 px-6 py-6">
+      <h2 className="text-xs uppercase text-muted-foreground">{t('upgradesTitle')}</h2>
+      <div className="flex flex-col gap-4 rounded-xl bg-card p-6">
         {upgrades.slice(0, 8).map((u, i) => (
-          <div key={`${u.firm}-${u.date}-${i}`} className="flex items-center gap-3 py-2.5 text-[13px]">
-            <div className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate font-medium text-foreground">{u.firm}</span>
-              <span className="text-xs text-muted-foreground">
-                {/* bdi keeps the arrow order LTR while aligning with the locale's text start */}
-                <bdi dir="ltr">
-                  {u.fromGrade && u.fromGrade !== u.toGrade ? `${u.fromGrade} → ` : ''}
-                  {u.toGrade}
-                </bdi>
-              </span>
-            </div>
-            <span className={cn('text-xs font-medium', actionCls[u.action] ?? 'text-muted-foreground')}>
-              {t(`action_${u.action}` as Parameters<typeof t>[0])}
+          <div key={`${u.firm}-${u.date}-${i}`} className="flex items-center justify-between gap-4">
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-xs text-muted-foreground">{u.firm}</span>
+              <span className="text-xs font-bold text-foreground">{u.toGrade}</span>
             </span>
-            <span className="w-20 text-end text-xs text-muted-foreground tabular-nums">
-              {fmtDate(new Date(u.date).toISOString().slice(0, 10), locale)}
+            <span className="flex shrink-0 items-baseline gap-2 text-xs">
+              <span className="text-muted-foreground">
+                {t(`action_${u.action}` as Parameters<typeof t>[0])}
+              </span>
+              <span className="font-medium text-foreground tabular-nums">
+                {fmtDate(new Date(u.date).toISOString().slice(0, 10), locale)}
+              </span>
             </span>
           </div>
         ))}

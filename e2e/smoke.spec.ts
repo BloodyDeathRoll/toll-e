@@ -85,7 +85,7 @@ test.describe('stock page tabs', () => {
 
   test('analysis tab shows recommendations or its empty state', async ({ page }) => {
     await page.goto('/en/stock/NVDA?tab=analysis');
-    const content = seen(page, /Analyst recommendations|No analyst coverage|Couldn't load data/);
+    const content = seen(page, /Recommendation Trends|No analyst coverage|Couldn't load data/);
     await expect(content).toBeVisible({ timeout: 15_000 });
   });
 
