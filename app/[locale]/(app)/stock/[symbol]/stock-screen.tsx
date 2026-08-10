@@ -359,7 +359,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   <span className="text-base text-foreground">{headline.name}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="flex items-center gap-0.5" dir="ltr">
+                  <span className="flex items-center gap-0.5 self-start" dir="ltr">
                     <span className="text-xl font-medium text-foreground tabular-nums">{fmtNum(price, nl)}</span>
                     <ChangePill pct={changePct} numberLocale={nl} className="ms-0.5" />
                   </span>
@@ -371,7 +371,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                 </div>
                 {live?.extended && (
                   <div className="flex flex-col gap-1">
-                    <span className="flex items-center gap-0.5" dir="ltr">
+                    <span className="flex items-center gap-0.5 self-start" dir="ltr">
                       <span className="text-xl font-medium text-foreground tabular-nums">
                         {fmtNum(live.extended.price, nl)}
                       </span>
@@ -421,15 +421,18 @@ export function StockScreen({ symbol }: { symbol: string }) {
               {holding && (
                 <section className="flex flex-col gap-6 border-b border-border p-6">
                   <h2 className="text-xs uppercase text-muted-foreground">{t('yourPosition')}</h2>
-                  <div className="flex items-center justify-between">
+                  {/* Label above value, both on the start edge: a two-column
+                      row strands the figure against the far margin, which in
+                      Hebrew puts it a screen-width away from its own label. */}
+                  <div className="flex flex-col gap-1">
                     <span className="text-xs text-muted-foreground">{t('daysGain')}</span>
-                    <span dir="ltr" className={cn('private text-base font-bold tabular-nums', daysGain >= 0 ? 'text-gain' : 'text-loss')}>
+                    <span dir="ltr" className={cn('private self-start text-base font-bold tabular-nums', daysGain >= 0 ? 'text-gain' : 'text-loss')}>
                       {fmtSigned(daysGain, nl)} ({fmtPct(changePct, nl)})
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-1">
                     <span className="text-xs text-muted-foreground">{t('totalGain')}</span>
-                    <span dir="ltr" className={cn('private text-base font-bold tabular-nums', holding.totalGain >= 0 ? 'text-gain' : 'text-loss')}>
+                    <span dir="ltr" className={cn('private self-start text-base font-bold tabular-nums', holding.totalGain >= 0 ? 'text-gain' : 'text-loss')}>
                       {fmtSigned(holding.totalGain, nl)} ({fmtPct(holding.totalGainPct ?? 0, nl)})
                     </span>
                   </div>
@@ -501,7 +504,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
             </>
           )}
           {tab === 'financials' && (
-            <>
+            <div className="flex flex-col gap-4">
               {!financials.data && !financials.stale && <CardSkeleton rows={5} />}
               {epsCard}
               {financialsCard}
@@ -520,10 +523,10 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   {t('daysOut', { days: daysOut })} · <span className="text-brand">{t('setReminder')}</span>
                 </span>
               </section>
-            </>
+            </div>
           )}
-          {tab === 'news' && newsContent}
-          {tab === 'analysis' && analysisContent}
+          {tab === 'news' && <div className="flex flex-col gap-4">{newsContent}</div>}
+          {tab === 'analysis' && <div className="flex flex-col gap-4">{analysisContent}</div>}
         </div>
 
       </div>
@@ -1035,8 +1038,15 @@ function HoldersCard({ holders, nl }: { holders: StockFinancials['holders']; nl:
             >
               <span className="min-w-0 truncate pe-3 text-foreground">{h.organization}</span>
               <span className="flex shrink-0 gap-6 tabular-nums">
-                <span className="w-16 text-end text-foreground" dir="ltr">{fmtNum(h.pctHeld, nl)}%</span>
-                <span className="w-20 text-end text-muted-foreground" dir="ltr">{fmtCompact(h.value, nl)}</span>
+                {/* dir on an inline child only: on the column itself it would
+                    flip text-end back to the left in Hebrew, away from its
+                    own header. */}
+                <span className="w-16 text-end text-foreground">
+                  <span dir="ltr">{fmtNum(h.pctHeld, nl)}%</span>
+                </span>
+                <span className="w-20 text-end text-muted-foreground">
+                  <span dir="ltr">{fmtCompact(h.value, nl)}</span>
+                </span>
               </span>
             </div>
           ))}

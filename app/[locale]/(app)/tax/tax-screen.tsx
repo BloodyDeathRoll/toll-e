@@ -345,17 +345,9 @@ export function TaxScreen() {
     </>
   );
 
-  // Mobile month accordions: newest first, with tax withheld cumulatively
-  // through each month (the year picture "as of" that month).
-  const cumByMonth = new Map<number, number>();
-  let runningPaid = 0;
-  for (const m of [...view.months].sort((a, b) => a.month - b.month)) {
-    runningPaid += m.paid ?? 0;
-    cumByMonth.set(m.month, runningPaid);
-  }
-  const monthRows = [...view.months]
-    .sort((a, b) => b.month - a.month)
-    .map((m) => ({ ...m, cumPaid: cumByMonth.get(m.month) ?? 0 }));
+  // Mobile month accordions: newest first. Each one reports its own month and
+  // nothing else — the year-to-date picture lives on the Yearly tab.
+  const monthRows = [...view.months].sort((a, b) => b.month - a.month);
   const openMonthEff = openMonth === undefined ? (monthRows[0]?.month ?? null) : openMonth;
   const openYearEff = openYearState === undefined ? (yearRows[0]?.year ?? null) : openYearState;
 
@@ -396,7 +388,7 @@ export function TaxScreen() {
                     {!open && (
                       <span dir="ltr" className="private self-start text-xl font-bold text-foreground tabular-nums">
                         {sym}
-                        {fmtNum(m.cumPaid, nl)}
+                        {fmtNum(m.paid ?? 0, nl)}
                       </span>
                     )}
                   </button>
@@ -404,7 +396,7 @@ export function TaxScreen() {
                     <div className="flex flex-col gap-2 pt-1">
                       <p dir="ltr" className="private self-start text-[28px] font-bold tracking-tight text-foreground tabular-nums">
                         {sym}
-                        {fmtNum(m.cumPaid, nl)}
+                        {fmtNum(m.paid ?? 0, nl)}
                       </p>
                       <div className="flex flex-col gap-[7px] text-sm tabular-nums">
                         <Row label={t('realizedGains')} value={`${sym}${fmtNum(m.gains ?? 0, nl)}`} />
@@ -420,12 +412,13 @@ export function TaxScreen() {
                           <Row label={t('offsetByPool')} value={`${sym}${fmtNum(-m.poolUsed, nl)}`} />
                         )}
                         <Row label={t('rate')} value={`${view.ratePct}%`} />
+                        <div className="h-px bg-border" />
                         <Row
                           label={t('withheldThisMonth')}
                           value={m.paid === null ? t('shielded') : `${sym}${fmtNum(m.paid, nl)}`}
+                          bold
+                          big
                         />
-                        <div className="h-px bg-border" />
-                        <Row label={t('withheldYtd')} value={`${sym}${fmtNum(m.cumPaid, nl)}`} bold big />
                       </div>
                     </div>
                   )}
@@ -477,14 +470,14 @@ export function TaxScreen() {
                               <span className="text-xs text-muted-foreground">
                                 {t('trueLiability', { date: fmtDate(`${y.year + 1}-04-30`, locale) })}
                               </span>
-                              <span dir="ltr" className="private text-xl font-bold text-loss tabular-nums">
+                              <span dir="ltr" className="private self-start text-xl font-bold text-loss tabular-nums">
                                 {sym}
                                 {fmtNum(y.owed, nl)}
                               </span>
                             </div>
                             <div className="flex flex-col items-end gap-0.5 text-end">
                               <span className="text-xs text-muted-foreground">{t('taxableShort')}</span>
-                              <span dir="ltr" className="private text-xl font-bold text-foreground tabular-nums">
+                              <span dir="ltr" className="private self-end text-xl font-bold text-foreground tabular-nums">
                                 {sym}
                                 {fmtNum(y.taxable, nl)}
                               </span>
@@ -496,7 +489,7 @@ export function TaxScreen() {
                               <span className="text-xs text-muted-foreground">
                                 {t('refundIn', { year: y.year + 1 })}
                               </span>
-                              <span dir="ltr" className="private text-xl font-bold text-gain tabular-nums">
+                              <span dir="ltr" className="private self-start text-xl font-bold text-gain tabular-nums">
                                 {sym}
                                 {fmtNum(y.refund, nl)}
                               </span>

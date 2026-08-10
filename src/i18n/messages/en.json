@@ -33,6 +33,10 @@
       "US": "US markets",
       "IL": "TASE"
     },
+    "nationality": {
+      "US": "American",
+      "IL": "Israeli"
+    },
     "openCloses": "{market} open · closes {time}",
     "closedOpens": "{market} closed · opens {time}",
     "preOpens": "{market} pre-market · opens {time}",
@@ -273,7 +277,6 @@
     "refundIn": "Refund in {year}",
     "offsetByPool": "Offset by earlier losses",
     "withheldThisMonth": "Withheld this month",
-    "withheldYtd": "Withheld year to date",
     "withheldThisYear": "Withheld this year",
     "withheldAtRate": "Withheld at {rate}%",
     "trueLiability": "Actually owed · filed {date}",

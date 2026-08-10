@@ -128,11 +128,13 @@ export function SettingsScreen() {
             options={marketIds.map((id) => ({
               value: id,
               badge: getMarket(id).currencySymbol,
-              name: tm(`stripName.${id}`),
+              name: tm(`nationality.${id}`),
             }))}
             active={defaultMarket ?? user?.defaultMarket ?? 'US'}
             onPick={pickMarket}
             disabled={!user}
+            // The symbol alone is too thin a label — say whose market it is.
+            showName
           />,
         )}
         {!user && !isPending && (
@@ -204,11 +206,14 @@ function Dropdown({
   active,
   onPick,
   disabled,
+  showName,
 }: {
   options: Array<{ value: string; badge: React.ReactNode; name: string }>;
   active: string;
   onPick: (value: string) => void;
   disabled?: boolean;
+  /** Spell the name out on the trigger, not just in the menu. */
+  showName?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -237,6 +242,7 @@ function Dropdown({
         )}
       >
         {current?.badge}
+        {showName && <span>{current?.name}</span>}
         <ChevronDown className="size-4 text-muted-foreground" aria-hidden />
       </button>
       {open && (
@@ -249,9 +255,9 @@ function Dropdown({
                 setOpen(false);
                 if (o.value !== active) onPick(o.value);
               }}
-              className="flex items-center gap-3 text-start text-[13px] text-foreground"
+              className="flex items-center gap-3 text-start text-[13px] whitespace-nowrap text-foreground"
             >
-              <span className="flex w-5 justify-center">{o.badge}</span>
+              <span className="flex w-5 shrink-0 justify-center">{o.badge}</span>
               <span className="flex-1">{o.name}</span>
               {o.value === active && <Check className="size-4" aria-hidden />}
             </button>
