@@ -106,7 +106,7 @@ export function SessionSparkline({
   previousClose,
   calendar,
   width = 91,
-  height = 20,
+  height = 36,
   className,
 }: {
   points: ChartPoint[];
@@ -127,7 +127,9 @@ export function SessionSparkline({
   const closes = points.map((p) => p.close);
   const lo = Math.min(...closes, previousClose ?? Infinity);
   const hi = Math.max(...closes, previousClose ?? -Infinity);
-  const pad = (hi - lo) * 0.15 || Math.max(Math.abs(hi) * 0.001, 0.01);
+  // Barely any headroom: a mark this small has amplitude to spare, and a
+  // generous pad is what made the day's movement read as a flat line.
+  const pad = (hi - lo) * 0.04 || Math.max(Math.abs(hi) * 0.001, 0.01);
   const yMin = lo - pad;
   const yMax = hi + pad;
   const y = (v: number) => (1 - (v - yMin) / (yMax - yMin || 1)) * height;

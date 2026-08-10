@@ -178,7 +178,7 @@ export function HoldingsTable({
                       previousClose={q?.previousClose ?? series.previousClose}
                       calendar={market.calendar}
                       width={64}
-                      height={20}
+                      height={30}
                     />
                   ) : (
                     <span className="w-16" aria-hidden />

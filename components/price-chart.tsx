@@ -70,7 +70,7 @@ export function PriceChart({
   const baseline = intraday ? previousClose : undefined;
   const lo = Math.min(...closes, baseline ?? Infinity);
   const hi = Math.max(...closes, baseline ?? -Infinity);
-  const pad = (hi - lo) * 0.08 || Math.max(Math.abs(hi) * 0.001, 0.01);
+  const pad = (hi - lo) * 0.05 || Math.max(Math.abs(hi) * 0.001, 0.01);
   const yMin = lo - pad;
   const yMax = hi + pad;
   const y = (v: number) => PAD_Y + (1 - (v - yMin) / (yMax - yMin || 1)) * innerH;

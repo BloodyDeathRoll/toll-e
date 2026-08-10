@@ -58,11 +58,11 @@ export function MarketsScreen() {
           previousClose={(indexQuotes[symbol] ?? liveQuotes[symbol])?.previousClose ?? series.previousClose}
           calendar={market.calendar}
           width={91}
-          height={20}
+          height={36}
         />
       );
     }
-    if (fallback?.length) return <Sparkline points={fallback} up={up} width={91} height={20} />;
+    if (fallback?.length) return <Sparkline points={fallback} up={up} width={91} height={36} />;
     return <span className="w-[91px]" aria-hidden />;
   };
 

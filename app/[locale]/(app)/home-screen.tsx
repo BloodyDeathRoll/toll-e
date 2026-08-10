@@ -228,10 +228,10 @@ export function HomeScreen() {
                     previousClose={live?.previousClose ?? ixSeries.previousClose}
                     calendar={market.calendar}
                     width={90}
-                    height={20}
+                    height={30}
                   />
                 ) : (
-                  <Sparkline points={ix.spark ?? []} up={pct >= 0} width={90} height={20} />
+                  <Sparkline points={ix.spark ?? []} up={pct >= 0} width={90} height={30} />
                 )}
                 <span dir="ltr" className="self-start text-sm font-medium text-foreground tabular-nums">
                   {fmtNum(value, nl)}
@@ -287,7 +287,7 @@ export function HomeScreen() {
                         previousClose={quote?.previousClose ?? hSeries.previousClose}
                         calendar={market.calendar}
                         width={91}
-                        height={20}
+                        height={36}
                       />
                     )}
                     <span className="private flex flex-col items-end gap-0.5">

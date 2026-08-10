@@ -54,7 +54,7 @@ export function WatchlistCard({ marketId }: { marketId: string }) {
             >
               <span className="text-sm font-semibold text-foreground">{q.symbol}</span>
               <span className="flex items-center gap-3">
-                <Sparkline points={q.spark} up={q.changePct >= 0} width={52} height={20} />
+                <Sparkline points={q.spark} up={q.changePct >= 0} width={52} height={30} />
                 <span dir="ltr" className="min-w-[60px] text-end text-sm text-foreground">
                   {fmtNum(q.price, market.numberLocale)}
                 </span>
@@ -108,7 +108,7 @@ function LiveRow({
             previousClose={quote?.previousClose ?? series.previousClose}
             calendar={getMarket(marketId).calendar}
             width={52}
-            height={20}
+            height={30}
           />
         ) : (
           <span className="w-[52px]" aria-hidden />
