@@ -314,7 +314,10 @@
     "editWatchlist": "Edit watchlist",
     "createWatchlist": "Create watchlist",
     "suggestedTitle": "Add suggested tickers",
-    "suggestedHint": "Search for tickers using the top right plus icon"
+    "suggestedHint": "Search for tickers using the top right plus icon",
+    "sectionTitle": "Watchlists",
+    "holdings": "Holdings",
+    "emptyList": "No tickers in this list yet."
   },
   "portfolio": {
     "title": "Holdings",
@@ -403,8 +406,108 @@
     "taxView": "Tax View",
     "performance": "Performance",
     "markets": "Markets",
-    "privacy": "Privacy",
+    "privacy": "Privacy Policy",
     "privacyOn": "On",
-    "terms": "Terms of Use"
+    "terms": "Terms of Use",
+    "watchlists": "Watchlists",
+    "hideAmounts": "Hide amounts"
+  },
+  "legal": {
+    "back": "Back",
+    "updated": "Last updated {date}",
+    "updatedDate": "10 August 2026",
+    "contact": "Questions about this document? Email shaharnaor@outlook.com.",
+    "terms": {
+      "title": "Terms of Use",
+      "intro": "toll-e is a personal investment tracker: you record the trades you have made elsewhere, and it shows what your portfolio is worth and what tax you are likely to owe. By using toll-e you agree to these terms.",
+      "sections": [
+        {
+          "h": "Not advice",
+          "p": [
+            "toll-e is an information tool. Nothing in it is investment, legal, or tax advice, and nothing in it is a recommendation to buy or sell any security.",
+            "The tax figures are estimates produced by our own calculation from the transactions you enter and the tax rate you set. They are not a tax filing, they are not reviewed by an accountant, and they may differ from what you actually owe. Confirm anything that matters with a qualified tax adviser."
+          ]
+        },
+        {
+          "h": "No brokerage connection",
+          "p": [
+            "toll-e does not connect to your broker, does not hold your money, and cannot place trades. Everything it shows comes from data you type in plus public market prices."
+          ]
+        },
+        {
+          "h": "Your account",
+          "p": [
+            "You sign in with Google. You are responsible for keeping access to that Google account secure, and for the accuracy of the transactions you record.",
+            "You may delete your data at any time from Settings. Deleting your account removes your portfolios, transactions, and watchlists."
+          ]
+        },
+        {
+          "h": "Market data",
+          "p": [
+            "Prices, fundamentals, and news come from third-party sources and may be delayed, incomplete, or wrong. They are provided for personal, non-commercial use. Do not rely on them for trading decisions.",
+            "When a data source is unavailable, toll-e may show the last value it stored and mark it as stale."
+          ]
+        },
+        {
+          "h": "Availability and changes",
+          "p": [
+            "toll-e is provided as-is, without warranty of any kind. We do not guarantee it will be available, uninterrupted, or error-free, and we are not liable for losses arising from its use or unavailability.",
+            "We may change or discontinue features, and may update these terms. Continuing to use toll-e after a change means you accept the updated terms."
+          ]
+        },
+        {
+          "h": "Acceptable use",
+          "p": [
+            "Do not attempt to break, overload, or gain unauthorised access to the service, and do not scrape or redistribute the market data it displays."
+          ]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "intro": "This policy explains what toll-e stores, why, and who else can see it. The short version: we keep what is needed to run your portfolio, and we do not sell it.",
+      "sections": [
+        {
+          "h": "What we collect",
+          "p": [
+            "Account: your name and email address, received from Google when you sign in. We never see or store your Google password.",
+            "Your records: the portfolios, transactions, and watchlists you create, plus preferences such as language, display currency, tax rate, and whether amounts are hidden.",
+            "Technical: standard server logs kept by our hosting provider, which include IP address and browser type."
+          ]
+        },
+        {
+          "h": "How we use it",
+          "p": [
+            "To show your portfolio, compute your tax estimates, keep you signed in, and remember your preferences. That is all. We do not run advertising, and we do not sell or rent your data to anyone."
+          ]
+        },
+        {
+          "h": "Who else is involved",
+          "p": [
+            "Google, for sign-in. Yahoo Finance, for market prices, fundamentals, and news — requests for market data are made by our server, so your identity is not sent to them. Vercel, for hosting, and Neon, for the database; both store data on our behalf.",
+            "We may disclose data if the law requires it."
+          ]
+        },
+        {
+          "h": "Where your data lives",
+          "p": [
+            "In a managed Postgres database. Traffic is encrypted in transit. Your records are scoped to your account and are not visible to other users."
+          ]
+        },
+        {
+          "h": "Your choices",
+          "p": [
+            "You can view and edit everything you have entered from inside the app, and delete your data from Settings. Deleting your account removes your portfolios, transactions, and watchlists from the database.",
+            "Because toll-e is used from Israel and the EU, you may also have rights to access, correct, export, or erase your data — email us and we will action it."
+          ]
+        },
+        {
+          "h": "Cookies",
+          "p": [
+            "We set one cookie, to keep you signed in. There are no advertising or tracking cookies."
+          ]
+        }
+      ]
+    }
   }
 }

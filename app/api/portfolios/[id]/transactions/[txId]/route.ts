@@ -5,6 +5,7 @@ import { db } from '@/src/db';
 import { transactions } from '@/src/db/schema';
 import { getSession } from '@/lib/session';
 import { getOwnedPortfolio, listTransactions, toEngineTx } from '@/src/server/portfolios';
+import { syncHoldingsWatchlist } from '@/src/server/holdings-watchlist';
 import { computePortfolio } from '@/src/engine/portfolio';
 
 const patchSchema = z.object({
@@ -65,6 +66,7 @@ export async function PATCH(
     })
     .where(and(eq(transactions.id, txId), eq(transactions.portfolioId, id)))
     .returning();
+  await syncHoldingsWatchlist(session.user.id);
   return NextResponse.json({ transaction: updated });
 }
 
@@ -91,5 +93,6 @@ export async function DELETE(
     .where(and(eq(transactions.id, txId), eq(transactions.portfolioId, id)))
     .returning();
   if (deleted.length === 0) return NextResponse.json({ error: 'not found' }, { status: 404 });
+  await syncHoldingsWatchlist(session.user.id);
   return NextResponse.json({ ok: true });
 }

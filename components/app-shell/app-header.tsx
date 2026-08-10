@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ChartLine, EyeOff, FileText, Gauge, Menu, Percent, X } from 'lucide-react';
+import { ChartLine, EyeOff, FileText, Gauge, List, Menu, Shield, X } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { LangCurrencyPicker } from './lang-currency';
 import { SearchBox } from './search-box';
@@ -20,10 +20,15 @@ export function AppHeader({ action }: { action?: React.ReactNode }) {
 
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Tax lives on the tab bar now, so the menu carries what the bar dropped.
   const menuItems = [
-    { key: 'taxView', href: '/tax', icon: Percent },
+    { key: 'watchlists', href: '/watchlists', icon: List },
     { key: 'performance', href: '/performance', icon: Gauge },
     { key: 'markets', href: '/markets', icon: ChartLine },
+  ] as const;
+  const legalItems = [
+    { key: 'privacy', href: '/privacy', icon: Shield },
+    { key: 'terms', href: '/terms', icon: FileText },
   ] as const;
 
   return (
@@ -71,14 +76,21 @@ export function AppHeader({ action }: { action?: React.ReactNode }) {
             >
               <EyeOff className="size-5 text-subtle" aria-hidden />
               <span className="text-base font-semibold text-foreground">
-                {t('menu.privacy')}
+                {t('menu.hideAmounts')}
                 {privacyOn && <span className="ms-2 text-xs text-brand">{t('menu.privacyOn')}</span>}
               </span>
             </button>
-            <div aria-disabled className="flex items-center gap-4 py-3 opacity-40">
-              <FileText className="size-5 text-subtle" aria-hidden />
-              <span className="text-base font-semibold text-foreground">{t('menu.terms')}</span>
-            </div>
+            {legalItems.map(({ key, href, icon: Icon }) => (
+              <Link
+                key={key}
+                href={href}
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-4 py-3"
+              >
+                <Icon className="size-5 text-subtle" aria-hidden />
+                <span className="text-base font-semibold text-foreground">{t(`menu.${key}`)}</span>
+              </Link>
+            ))}
           </nav>
         </div>
       )}

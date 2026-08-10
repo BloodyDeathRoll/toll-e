@@ -2,6 +2,8 @@
 
 import { useId, useMemo } from 'react';
 import { useCharts } from '@/components/use-market-data';
+import { sessionWindow } from '@/src/markets/calendar';
+import { getMarket } from '@/src/markets/registry';
 import type { ChartRange } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
 
@@ -19,11 +21,14 @@ export interface HoldingWeight {
 export function PortfolioChart({
   rows,
   range,
+  marketId,
   height = 77,
   className,
 }: {
   rows: HoldingWeight[];
   range: ChartRange;
+  /** Supplies the trading calendar that bounds an intraday x-axis. */
+  marketId?: string;
   height?: number;
   className?: string;
 }) {
@@ -35,7 +40,7 @@ export function PortfolioChart({
     if (loaded.length === 0) return [];
     const base = charts[loaded[0].symbol].points;
     const maps = loaded.map((r) => new Map(charts[r.symbol].points.map((p) => [p.t, p.close])));
-    const out: number[] = [];
+    const out: Array<{ t: number; v: number }> = [];
     for (const p of base) {
       let total = 0;
       let complete = true;
@@ -47,7 +52,7 @@ export function PortfolioChart({
         }
         total += loaded[i].shares * close;
       }
-      if (complete) out.push(total);
+      if (complete) out.push({ t: p.t, v: total });
     }
     return out;
   }, [rows, charts]);
@@ -55,15 +60,27 @@ export function PortfolioChart({
   if (series.length < 2) return <div style={{ height }} className={className} aria-hidden />;
 
   const w = 402;
-  const min = Math.min(...series);
-  const max = Math.max(...series);
+  const values = series.map((p) => p.v);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
   const span = max - min || 1;
   const pad = 4;
-  const step = w / (series.length - 1);
-  const ys = series.map((v) => height - pad - ((v - min) / span) * (height - pad * 2));
-  const line = ys.map((y, i) => `${(i * step).toFixed(1)},${y.toFixed(1)}`).join(' ');
-  const area = `0,${height} ${line} ${w},${height}`;
-  const up = series[series.length - 1] >= series[0];
+
+  // Intraday: the axis spans the exchange's extended session, so a day in
+  // progress fills only the part it has traded (the Yahoo shape). Other
+  // ranges keep using the series' own extent.
+  const win = range === '1d' && marketId
+    ? sessionWindow(getMarket(marketId).calendar, new Date(series[series.length - 1].t))
+    : null;
+  const tFrom = win ? Math.min(win.start, series[0].t) : series[0].t;
+  const tTo = win ? Math.max(win.end, series[series.length - 1].t) : series[series.length - 1].t;
+  const tSpan = tTo - tFrom || 1;
+  const x = (t: number) => ((t - tFrom) / tSpan) * w;
+
+  const ys = values.map((v) => height - pad - ((v - min) / span) * (height - pad * 2));
+  const line = series.map((p, i) => `${x(p.t).toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
+  const area = `${x(series[0].t).toFixed(1)},${height} ${line} ${x(series[series.length - 1].t).toFixed(1)},${height}`;
+  const up = values[values.length - 1] >= values[0];
 
   return (
     <svg

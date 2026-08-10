@@ -18,6 +18,7 @@ import { Logo } from '@/components/logo';
 import { ReserveBar } from '@/components/reserve-bar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sparkline, sessionFill, twoToneSpark } from '@/components/charts';
+import { WatchlistAccordions } from '@/components/watchlist-accordions';
 import { WatchlistCard } from '@/components/watchlist-card';
 import type { ChartRange } from '@/src/market-data/types';
 import { useCharts, useIndexQuotes, useQuotes } from '@/components/use-market-data';
@@ -139,19 +140,17 @@ export function HomeScreen() {
     </section>
   );
 
-  // Signed-out: the HP login frame — logo, tagline, Google (no demo data).
+  // Signed-out: the HP login frame — logo, tagline, Google and nothing else.
+  // App chrome (header, tab bar) hides itself while there is no session.
   if (state.status === 'signed-out') {
     return (
-      <main className="flex flex-1 flex-col">
-        <AppHeader />
-        <div className="flex flex-1 flex-col items-center justify-center gap-6 p-6 pb-24">
-          <Logo />
-          <p className="text-center text-2xl font-medium tracking-tight text-foreground">
-            {t('auth.tagline')}
-          </p>
-          <GoogleButton />
-          <DevLogin />
-        </div>
+      <main className="flex flex-1 flex-col items-center justify-center gap-6 p-6">
+        <Logo />
+        <p className="text-center text-2xl font-medium tracking-tight text-foreground">
+          {t('auth.tagline')}
+        </p>
+        <GoogleButton />
+        <DevLogin />
       </main>
     );
   }
@@ -196,7 +195,7 @@ export function HomeScreen() {
             </section>
 
             {/* Full-bleed chart + range pills */}
-            <PortfolioChart rows={overlayRows} range={rangeToChart[mobileRange]} />
+            <PortfolioChart rows={overlayRows} range={rangeToChart[mobileRange]} marketId={marketId} />
             <RangePills value={mobileRange} onChange={setMobileRange} className="mt-2.5" />
           </>
         )}
@@ -296,6 +295,8 @@ export function HomeScreen() {
             })}
           </section>
         )}
+
+        <WatchlistAccordions marketId={marketId} />
       </div>
 
       {/* ---------- Desktop ---------- */}

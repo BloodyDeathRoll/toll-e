@@ -20,6 +20,7 @@ import { ChangePill } from '@/components/quote-bits';
 import { useQuotes, useSearch } from '@/components/use-market-data';
 import { useWatchlists, type WatchlistData } from '@/components/use-watchlists';
 import { demoWatchlists } from '@/src/demo/data';
+import { HOLDINGS_LIST } from '@/src/watchlists/constants';
 import { getMarket, displaySymbol } from '@/src/markets/registry';
 import { fmtNum } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -51,8 +52,14 @@ export function WatchlistsScreen() {
   }, []);
 
   // Demo showcase for signed-out visitors; real lists otherwise.
-  const lists: Array<{ id: string; name: string; symbols: string[]; demo?: boolean }> = real
-    ? real.map((l) => ({ id: l.id, name: l.name, symbols: l.symbols }))
+  // "Holdings" is derived from transactions, so it is read-only here.
+  const lists: Array<{ id: string; name: string; symbols: string[]; demo?: boolean; managed?: boolean }> = real
+    ? real.map((l) => ({
+        id: l.id,
+        name: l.name === HOLDINGS_LIST ? t('holdings') : l.name,
+        symbols: l.symbols,
+        managed: l.name === HOLDINGS_LIST,
+      }))
     : demoWatchlists.map((w, i) => ({
         id: `demo-${i}`,
         name: w.name,
@@ -155,7 +162,7 @@ export function WatchlistsScreen() {
                 >
                   <span className="text-base text-muted-foreground">{l.name}</span>
                 </button>
-                {!l.demo && (
+                {!l.demo && !l.managed && (
                   <div className="relative" ref={menuFor === l.id ? menuRef : undefined}>
                     <button
                       type="button"
@@ -236,7 +243,7 @@ export function WatchlistsScreen() {
                         <button
                           type="button"
                           aria-label={t('removeFromList')}
-                          disabled={Boolean(l.demo)}
+                          disabled={Boolean(l.demo || l.managed)}
                           onClick={() =>
                             patchList(l.id, { symbols: l.symbols.filter((x) => x !== s) })
                           }

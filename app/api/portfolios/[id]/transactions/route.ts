@@ -4,6 +4,7 @@ import { db } from '@/src/db';
 import { transactions } from '@/src/db/schema';
 import { getSession } from '@/lib/session';
 import { getOwnedPortfolio, listTransactions, toEngineTx } from '@/src/server/portfolios';
+import { syncHoldingsWatchlist } from '@/src/server/holdings-watchlist';
 import { validateSell } from '@/src/engine/portfolio';
 
 export async function GET(_req: NextRequest, ctx: RouteContext<'/api/portfolios/[id]/transactions'>) {
@@ -72,5 +73,6 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/portfolios/
       note: t.note,
     })
     .returning();
+  await syncHoldingsWatchlist(session.user.id);
   return NextResponse.json({ transaction: created }, { status: 201 });
 }

@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { House, List, Plus, Repeat, User } from 'lucide-react';
+import { House, Percent, Plus, Repeat, User } from 'lucide-react';
 import { Link, usePathname } from '@/src/i18n/navigation';
+import { useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 
 const leftTabs = [
@@ -11,7 +12,7 @@ const leftTabs = [
 ] as const;
 
 const rightTabs = [
-  { href: '/watchlists', key: 'watchlists', icon: List },
+  { href: '/tax', key: 'tax', icon: Percent },
   { href: '/settings', key: 'account', icon: User },
 ] as const;
 
@@ -19,6 +20,10 @@ const rightTabs = [
 export function BottomNav() {
   const t = useTranslations('nav');
   const pathname = usePathname();
+  const { data: session, isPending } = useSession();
+
+  // The signed-out screen is a bare sign-in wall: no app chrome.
+  if (isPending || !session) return null;
 
   const renderTab = ({
     href,

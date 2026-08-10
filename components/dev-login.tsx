@@ -1,21 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { signIn, signUp } from '@/lib/auth-client';
 
 /**
  * Dev-only password login for on-device (LAN) review, where Google OAuth is
- * impossible: Google refuses private-IP redirect URIs. Renders only when
- * NEXT_PUBLIC_DEV_LOGIN=1; the server side is the same E2E_TEST_AUTH email
- * auth that is hard-disabled in production (lib/auth.ts).
+ * impossible: Google refuses private-IP redirect URIs. Kept off the sign-in
+ * screen — append ?dev=1 to show it. Needs NEXT_PUBLIC_DEV_LOGIN=1; the
+ * server side is the same E2E_TEST_AUTH email auth that is hard-disabled in
+ * production (lib/auth.ts).
  */
 export function DevLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [asked, setAsked] = useState(false);
 
-  if (process.env.NEXT_PUBLIC_DEV_LOGIN !== '1') return null;
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot URL-derived init
+    setAsked(new URLSearchParams(window.location.search).has('dev'));
+  }, []);
+
+  if (process.env.NEXT_PUBLIC_DEV_LOGIN !== '1' || !asked) return null;
 
   const go = async () => {
     setBusy(true);
