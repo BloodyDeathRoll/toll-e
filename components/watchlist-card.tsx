@@ -25,7 +25,9 @@ export function WatchlistCard({ marketId }: { marketId: string }) {
   const symbols = realList?.symbols.slice(0, 5) ?? [];
   const { quotes } = useQuotes(symbols, 60_000);
 
-  const title = realList?.name ?? demoWatchlists[0].name;
+  // Signed in with no lists yet: prompt instead of confusing demo data.
+  const noLists = state.status === 'data' && !realList;
+  const title = realList?.name ?? (noLists ? t('watchlist') : demoWatchlists[0].name);
 
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-card">
@@ -35,11 +37,16 @@ export function WatchlistCard({ marketId }: { marketId: string }) {
         </h2>
         <span className="text-xs text-muted-foreground">{t('watchlist')} ▾</span>
       </div>
+      {noLists && (
+        <p className="border-t border-border px-5 py-4 text-[13px] text-muted-foreground">
+          {t('watchlistNone')}
+        </p>
+      )}
       {realList
         ? symbols.map((s) => (
             <LiveRow key={s} symbol={s} quote={quotes[s]} numberLocale={market.numberLocale} marketId={marketId} />
           ))
-        : demoWatchlists[0].items.slice(3, 6).map((q) => (
+        : !noLists && demoWatchlists[0].items.slice(3, 6).map((q) => (
             <Link
               key={q.symbol}
               href={`/stock/${q.symbol}`}
@@ -66,7 +73,7 @@ export function WatchlistCard({ marketId }: { marketId: string }) {
         </p>
       )}
       <div className="flex justify-end border-t border-border bg-well px-5 py-[11px]">
-        <MoreLink href="/watchlists">{t('editList')}</MoreLink>
+        <MoreLink href="/watchlists">{noLists ? t('watchlistCreate') : t('editList')}</MoreLink>
       </div>
     </section>
   );

@@ -8,7 +8,7 @@ import { MarketMenu } from '@/components/app-shell/market-menu';
 import { SessionStatus } from '@/components/session-indicator';
 import { StaleBadge } from '@/components/stale-badge';
 import { Sparkline } from '@/components/charts';
-import { useFx, useIndexQuotes } from '@/components/use-market-data';
+import { useFx, useIndexQuotes, useQuotes } from '@/components/use-market-data';
 import { getMarket } from '@/src/markets/registry';
 import { demo, demoFx } from '@/src/demo/data';
 import { fmtNum, fmtPct } from '@/lib/format';
@@ -29,10 +29,19 @@ export function MarketsScreen() {
   const name = (x: { name: string; nameHe?: string }) =>
     locale === 'he' && x.nameHe ? x.nameHe : x.name;
 
+  // Live quotes over the static mover universe — demo numbers only as a
+  // fallback so a Yahoo outage degrades instead of blanking the list.
+  const { quotes: liveQuotes, stale: quotesStale } = useQuotes(
+    data.mostActive.map((q) => q.symbol),
+  );
+  const mostActive = data.mostActive.map((q) => {
+    const live = liveQuotes[q.symbol];
+    return { ...q, price: live?.price ?? q.price, changePct: live?.changePct ?? q.changePct };
+  });
   const quotes = {
-    mostActive: data.mostActive,
-    gainers: [...data.mostActive].filter((q) => q.changePct > 0).sort((a, b) => b.changePct - a.changePct),
-    losers: [...data.mostActive].filter((q) => q.changePct < 0).sort((a, b) => a.changePct - b.changePct),
+    mostActive,
+    gainers: [...mostActive].filter((q) => q.changePct > 0).sort((a, b) => b.changePct - a.changePct),
+    losers: [...mostActive].filter((q) => q.changePct < 0).sort((a, b) => a.changePct - b.changePct),
   }[tab];
 
   return (
@@ -94,6 +103,7 @@ export function MarketsScreen() {
               {t(`markets.${key}`)}
             </button>
           ))}
+          <StaleBadge show={quotesStale} />
         </div>
         {quotes.map((q) => (
           <Link

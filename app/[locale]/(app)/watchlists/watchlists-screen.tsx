@@ -125,6 +125,31 @@ export function WatchlistsScreen() {
 
   const chips = real ? real.map((l) => l.name) : demoWatchlists.map((w) => w.name);
 
+  // Signed in, zero lists: prompt for the first list instead of demo data.
+  if (real && real.length === 0) {
+    return (
+      <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3.5 p-4 md:py-7">
+        <div className="flex items-center gap-3 pt-1">
+          <button type="button" onClick={() => router.back()} aria-label={t('editList')} className="md:hidden">
+            <ArrowLeft className="size-[18px] text-foreground rtl:-scale-x-100" aria-hidden />
+          </button>
+          <h1 className="text-xl font-semibold text-foreground">{t('editList')}</h1>
+        </div>
+        <section className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6">
+          <h2 className="text-base font-semibold text-foreground">{t('emptyTitle')}</h2>
+          <p className="text-sm text-muted-foreground">{t('emptyBody')}</p>
+          <button
+            type="button"
+            onClick={newList}
+            className="rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-primary-foreground"
+          >
+            {t('emptyCta')}
+          </button>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3.5 p-4 md:py-7">
       <div className="flex items-center justify-between pt-1">
@@ -248,7 +273,7 @@ export function WatchlistsScreen() {
               value={addQuery}
               placeholder={t('addTicker')}
               onChange={(e) => setAddQuery(e.target.value)}
-              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              className="w-full bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground"
             />
             {addQuery && addResults.length > 0 && (
               <ul className="absolute inset-x-4 bottom-full z-50 mb-1 overflow-hidden rounded-xl border border-border bg-popover shadow-[0_12px_32px_rgba(0,0,0,0.55)]">

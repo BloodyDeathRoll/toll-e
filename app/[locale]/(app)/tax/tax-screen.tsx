@@ -108,7 +108,7 @@ export function TaxScreen() {
     view = {
       isReal: true,
       year,
-      years: years.slice(0, 3),
+      years,
       ratePct: ledger.ratePct,
       due: ledger.due,
       realizedGains: ledger.realizedGains,
@@ -182,7 +182,7 @@ export function TaxScreen() {
       : t('carriedIn');
 
   const yearToggle = (
-    <div className="flex gap-0.5 rounded-lg border border-border bg-card p-[3px]" dir="ltr">
+    <div className="flex max-w-full gap-0.5 overflow-x-auto rounded-lg border border-border bg-card p-[3px]" dir="ltr">
       {view.years.map((y) => (
         <button
           key={y}
@@ -216,7 +216,7 @@ export function TaxScreen() {
 
   const salesList = (
     <>
-      {view.sales.slice(0, 4).map((s) => (
+      {view.sales.map((s) => (
         <div key={s.id} className="border-t border-border">
           <button
             type="button"
@@ -334,6 +334,19 @@ export function TaxScreen() {
             <MoreLink href="/tax">{t('exportYearReport', { year: view.year })}</MoreLink>
           </div>
         </section>
+
+        {/* Sales history for the picked year */}
+        {view.sales.length > 0 && (
+          <section className="overflow-hidden rounded-2xl border border-border bg-card">
+            <h2 className="px-4 pt-3.5 pb-2 text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+              {t('salesIn', { year: view.year })}
+            </h2>
+            {salesList}
+            <div className="flex justify-end border-t border-border bg-well px-4 py-2.5">
+              <MoreLink href="/transactions">{t('allSales')}</MoreLink>
+            </div>
+          </section>
+        )}
       </div>
 
       {/* ---------- Desktop (design 3c) ---------- */}
@@ -470,7 +483,7 @@ export function TaxScreen() {
 
             <section className="overflow-hidden rounded-2xl border border-border bg-card">
               <h2 className="px-5 pt-[18px] pb-3 text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-                {t('recentSales')}
+                {t('salesIn', { year: view.year })}
               </h2>
               {salesList}
               <div className="flex justify-end border-t border-border bg-well px-5 py-3">

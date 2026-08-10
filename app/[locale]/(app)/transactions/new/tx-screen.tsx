@@ -253,7 +253,7 @@ export function TxScreen() {
                   setSymbolQuery('');
                 }}
                 onChange={(e) => setSymbolQuery(e.target.value)}
-                className="w-full rounded-lg border border-border bg-well px-3 py-2 text-end text-[15px] font-semibold text-foreground outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
+                className="w-full rounded-lg border border-border bg-well px-3.5 py-3 text-end text-base font-semibold text-foreground outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
               />
               {pickerOpen && results.length > 0 && (
                 <ul className="absolute inset-x-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-border bg-popover shadow-[0_12px_32px_rgba(0,0,0,0.55)]">
@@ -307,7 +307,7 @@ export function TxScreen() {
               value={tradeDate}
               max={today}
               onChange={(e) => setTradeDate(e.target.value)}
-              className="rounded-lg border border-border bg-well px-3 py-1.5 text-[15px] text-foreground outline-none [color-scheme:dark] focus-visible:border-primary"
+              className="rounded-lg border border-border bg-well px-3.5 py-2.5 text-base text-foreground outline-none [color-scheme:dark] focus-visible:border-primary"
             />
           </div>
         </section>

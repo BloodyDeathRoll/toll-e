@@ -14,7 +14,9 @@
     "search": "Search ticker, company, index",
     "addTransaction": "Add transaction",
     "back": "Back",
-    "performance": "Performance"
+    "performance": "Performance",
+    "transactions": "Transactions",
+    "account": "Account"
   },
   "market": {
     "menuTitle": "Market",
@@ -84,7 +86,9 @@
     "emptyTitle": "No holdings yet",
     "emptyBody": "Add your first transaction and toll-e will track value, gains, and the tax picture for you.",
     "emptyCta": "Add your first transaction",
-    "noSalesYet": "Appears after your first sale — sells create the tax picture."
+    "noSalesYet": "Appears after your first sale — sells create the tax picture.",
+    "watchlistNone": "No watchlist yet — create one to follow tickers here.",
+    "watchlistCreate": "Create watchlist"
   },
   "markets": {
     "leadingIndexes": "Leading indexes",
@@ -243,7 +247,8 @@
     "shieldNoteNone": "Realized losses carry forward indefinitely and offset future gains automatically. Shield balance: {amount}.",
     "emptyTitle": "No tax events yet",
     "emptyBody": "Tax is computed from sales. Once you record a sell, the yearly ledger, monthly breakdown, and loss shield show up here.",
-    "emptyCta": "Record a sale"
+    "emptyCta": "Record a sale",
+    "salesIn": "Sales in {year}"
   },
   "journal": {
     "title": "Transactions",
@@ -267,7 +272,10 @@
     "moveToList": "Move to list",
     "newList": "New list",
     "addTicker": "＋ Add ticker",
-    "demoNote": "Sample lists — sign in to build your own."
+    "demoNote": "Sample lists — sign in to build your own.",
+    "emptyTitle": "No watchlists yet",
+    "emptyBody": "Create your first watchlist to follow the tickers you care about.",
+    "emptyCta": "Create your first watchlist"
   },
   "portfolio": {
     "title": "Holdings",

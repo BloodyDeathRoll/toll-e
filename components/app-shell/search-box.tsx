@@ -53,7 +53,7 @@ export function SearchBox({ className }: { className?: string }) {
           if (e.key === 'Enter' && results[0]) go(results[0].symbol);
           if (e.key === 'Escape') setOpen(false);
         }}
-        className="h-9 w-full rounded-lg border border-border bg-well ps-9 pe-3 text-[13px] text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
+        className="h-10 w-full rounded-lg border border-border bg-well ps-9 pe-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20"
       />
       {open && results.length > 0 && (
         <ul className="absolute inset-x-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-border bg-popover shadow-[0_12px_32px_rgba(0,0,0,0.55)]">

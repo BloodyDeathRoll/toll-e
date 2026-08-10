@@ -153,13 +153,13 @@ export function HomeScreen() {
 
         <div className="relative">
           <Search
-            className="pointer-events-none absolute start-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden
           />
           <input
             type="search"
             placeholder={t('nav.search')}
-            className="h-10 w-full rounded-lg border border-border bg-card ps-9 pe-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+            className="h-12 w-full rounded-lg border border-border bg-card ps-10 pe-3 text-base text-foreground outline-none placeholder:text-muted-foreground"
             disabled
           />
         </div>
@@ -181,12 +181,12 @@ export function HomeScreen() {
               {sym}
               {fmtNum(p.value, nl)}
             </p>
-            <p className={cn('private flex gap-3.5 text-sm font-medium tabular-nums', up ? 'text-gain' : 'text-loss')}>
-              <span>
+            <p className="private flex gap-3.5 text-sm font-medium tabular-nums">
+              <span className={up ? 'text-gain' : 'text-loss'}>
                 <span dir="ltr">{fmtSigned(p.dayChange, nl)} ({fmtPct(p.dayChangePct, nl)})</span>{' '}
                 {t('home.today')}
               </span>
-              <span>
+              <span className={p.allTimePct >= 0 ? 'text-gain' : 'text-loss'}>
                 <span dir="ltr">{fmtPct(p.allTimePct, nl)}</span> {t('home.allWord')}
               </span>
             </p>
@@ -199,7 +199,10 @@ export function HomeScreen() {
                   {fmtNum(reserve.due, nl)}
                 </span>
               </div>
-              <MoreLink href="/tax">{t('home.taxView')}</MoreLink>
+              <div className="flex flex-col items-end gap-1.5">
+                <MoreLink href="/tax">{t('home.taxView')}</MoreLink>
+                <MoreLink href="/performance">{t('nav.performance')}</MoreLink>
+              </div>
             </div>
           </section>
         )}
@@ -256,7 +259,7 @@ export function HomeScreen() {
             <span className="text-xs text-faint">{t('home.marketValue')}</span>
           </div>
           {rows
-            ? rows.slice(0, 3).map((h) => (
+            ? rows.map((h) => (
                 <Link
                   key={h.symbol}
                   href={`/stock/${h.symbol}`}
@@ -276,7 +279,7 @@ export function HomeScreen() {
                   </span>
                 </Link>
               ))
-            : data.holdings.slice(0, 3).map((h) => (
+            : data.holdings.map((h) => (
                 <Link
                   key={h.symbol}
                   href={`/stock/${h.symbol}`}
@@ -323,12 +326,12 @@ export function HomeScreen() {
                   {sym}
                   {fmtNum(p.value, nl)}
                 </p>
-                <p className={cn('private flex gap-4 text-sm tabular-nums', up ? 'text-gain' : 'text-loss')}>
-                  <span>
+                <p className="private flex gap-4 text-sm tabular-nums">
+                  <span className={up ? 'text-gain' : 'text-loss'}>
                     <span dir="ltr">{fmtSigned(p.dayChange, nl)} ({fmtPct(p.dayChangePct, nl)})</span>{' '}
                     {t('home.today')}
                   </span>
-                  <span>
+                  <span className={p.allTimeChange >= 0 ? 'text-gain' : 'text-loss'}>
                     <span dir="ltr">{fmtSigned(p.allTimeChange, nl)} ({fmtPct(p.allTimePct, nl)})</span>{' '}
                     {t('home.allTimeWord')}
                   </span>

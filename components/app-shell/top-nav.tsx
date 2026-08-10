@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 const links = [
   { href: '/', key: 'portfolio' },
   { href: '/markets', key: 'markets' },
+  { href: '/performance', key: 'performance' },
   { href: '/tax', key: 'tax' },
   { href: '/watchlists', key: 'watchlists' },
 ] as const;
