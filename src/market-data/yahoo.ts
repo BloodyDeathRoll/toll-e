@@ -111,12 +111,11 @@ export class YahooProvider implements MarketDataProvider {
         volume: p.volume ?? undefined,
       }));
 
-    // '1d' = last session only: keep points sharing the newest exchange-local day.
+    let sessionPrevClose: number | undefined;
     if (range === '1d' && points.length > 0) {
-      const offsetMs = (res.meta.gmtoffset ?? 0) * 1000;
-      const dayKey = (t: number) => Math.floor((t + offsetMs) / day);
-      const last = dayKey(points[points.length - 1].t);
-      points = points.filter((p) => dayKey(p.t) === last);
+      const session = pickSession(points, (res.meta.gmtoffset ?? 0) * 1000);
+      points = session.points;
+      sessionPrevClose = session.previousClose;
     }
 
     return {
@@ -125,7 +124,7 @@ export class YahooProvider implements MarketDataProvider {
       range,
       interval: spec.interval,
       timezone: res.meta.exchangeTimezoneName ?? 'UTC',
-      previousClose: res.meta.chartPreviousClose ?? undefined,
+      previousClose: sessionPrevClose ?? res.meta.chartPreviousClose ?? undefined,
       points,
     };
   }
@@ -286,4 +285,35 @@ export class YahooProvider implements MarketDataProvider {
       asOf: new Date(q.regularMarketTime ?? Date.now()).toISOString().slice(0, 10),
     };
   }
+}
+
+/**
+ * Reduce an over-fetched intraday series to a single session.
+ *
+ * The newest exchange-local day that has actually *traded* wins, so a chart
+ * keeps showing the last session's shape until the next one opens — an index
+ * at 09:31, holding a single print, would otherwise collapse to a dot.
+ *
+ * `previousClose` is the last print before the chosen session: a fallback
+ * datum for the dashed reference line. Callers prefer the quote's official
+ * previous close, which is what the percentage pills are computed from, since
+ * this one can be a post-market tick a few cents off. Chart metadata's
+ * chartPreviousClose is not usable at all — it sits before the whole
+ * over-fetched window, days away.
+ */
+export function pickSession<T extends { t: number; close: number }>(
+  points: T[],
+  offsetMs: number,
+): { points: T[]; previousClose?: number } {
+  if (points.length === 0) return { points };
+  const day = 24 * 60 * 60 * 1000;
+  const dayKey = (t: number) => Math.floor((t + offsetMs) / day);
+  const days = [...new Set(points.map((p) => dayKey(p.t)))].sort((a, b) => a - b);
+  const traded = days.filter((d) => points.filter((p) => dayKey(p.t) === d).length >= 2);
+  const chosen = traded.length ? traded[traded.length - 1] : days[days.length - 1];
+  const before = points.filter((p) => dayKey(p.t) < chosen);
+  return {
+    points: points.filter((p) => dayKey(p.t) === chosen),
+    previousClose: before.length ? before[before.length - 1].close : undefined,
+  };
 }

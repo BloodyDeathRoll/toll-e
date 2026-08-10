@@ -51,14 +51,13 @@ export function WatchlistsScreen() {
     return () => document.removeEventListener('mousedown', onDown);
   }, []);
 
-  // Demo showcase for signed-out visitors; real lists otherwise.
-  // "Holdings" is derived from transactions, so it is read-only here.
-  const lists: Array<{ id: string; name: string; symbols: string[]; demo?: boolean; managed?: boolean }> = real
+  // Demo showcase for signed-out visitors; real lists otherwise. "Holdings"
+  // is filled in from transactions but is an ordinary container otherwise.
+  const lists: Array<{ id: string; name: string; symbols: string[]; demo?: boolean }> = real
     ? real.map((l) => ({
         id: l.id,
         name: l.name === HOLDINGS_LIST ? t('holdings') : l.name,
         symbols: l.symbols,
-        managed: l.name === HOLDINGS_LIST,
       }))
     : demoWatchlists.map((w, i) => ({
         id: `demo-${i}`,
@@ -162,7 +161,7 @@ export function WatchlistsScreen() {
                 >
                   <span className="text-base text-muted-foreground">{l.name}</span>
                 </button>
-                {!l.demo && !l.managed && (
+                {!l.demo && (
                   <div className="relative" ref={menuFor === l.id ? menuRef : undefined}>
                     <button
                       type="button"
@@ -243,7 +242,7 @@ export function WatchlistsScreen() {
                         <button
                           type="button"
                           aria-label={t('removeFromList')}
-                          disabled={Boolean(l.demo || l.managed)}
+                          disabled={Boolean(l.demo)}
                           onClick={() =>
                             patchList(l.id, { symbols: l.symbols.filter((x) => x !== s) })
                           }

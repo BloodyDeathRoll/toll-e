@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { House, Percent, Plus, Repeat, User } from 'lucide-react';
+import { HouseFilled } from '@/components/icons';
 import { Link, usePathname } from '@/src/i18n/navigation';
 import { useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -37,11 +38,15 @@ export function BottomNav() {
           href={href}
           className="flex flex-1 flex-col items-center justify-end gap-0.5"
         >
-          <Icon
-            className={cn('size-6', active ? 'text-primary' : 'text-foreground/70')}
-            fill={active && (key === 'home' || key === 'account') ? 'currentColor' : 'none'}
-            aria-hidden
-          />
+          {active && key === 'home' ? (
+            <HouseFilled className="size-6 text-primary" />
+          ) : (
+            <Icon
+              className={cn('size-6', active ? 'text-primary' : 'text-foreground/70')}
+              fill={active && key === 'account' ? 'currentColor' : 'none'}
+              aria-hidden
+            />
+          )}
           <span className={cn('text-xs', active ? 'text-brand' : 'text-foreground')}>
             {t(key)}
           </span>
