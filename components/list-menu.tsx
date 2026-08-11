@@ -10,9 +10,11 @@ import { cn } from '@/lib/utils';
  * appears — home screen or Watchlists. Callers supply the behaviour, since
  * Watchlists switches screens in place while the home screen navigates.
  *
- * `locked` is the Holdings list: it is filled in from transactions, so every
- * action that would edit it is shown (the menu must not change shape from one
- * list to the next) but disabled. Only creating a new list survives.
+ * `locked` is the Holdings list: its *membership* comes from transactions, so
+ * adding tickers and deleting the list are shown (the menu must not change
+ * shape from one list to the next) but disabled. Editing stays live — the
+ * order of the rows is the reader's to choose, and that screen is reorder-only
+ * for a managed list.
  */
 export function ListMenu({
   onEdit,
@@ -54,7 +56,7 @@ export function ListMenu({
       </button>
       {open && (
         <div className="absolute end-0 top-full z-50 mt-1 flex w-56 flex-col gap-4 rounded-[20px] bg-well p-6 shadow-lg">
-          <button type="button" disabled={locked} onClick={run(onEdit)} className={cn(item, 'text-foreground')}>
+          <button type="button" onClick={run(onEdit)} className={cn(item, 'text-foreground')}>
             <Pencil className="size-4 shrink-0" aria-hidden />
             {t('editWatchlist')}
           </button>

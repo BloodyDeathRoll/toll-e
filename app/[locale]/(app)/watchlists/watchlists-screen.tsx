@@ -98,6 +98,7 @@ export function WatchlistsScreen({
       <EditList
         list={editingList}
         marketId={marketId}
+        managed={editingList.name === HOLDINGS_LIST}
         addOpen={mode.addOpen}
         onBack={toBrowse}
         onPatch={patchList}
@@ -277,10 +278,21 @@ export function WatchlistsScreen({
   );
 }
 
-/** Edit watchlist (design frame): rename, add, drag-reorder, per-row + list delete. */
+/**
+ * Edit watchlist (design frame): rename, add, drag-reorder, per-row + list
+ * delete.
+ *
+ * `managed` is Holdings. What it holds is transactions' business, so the two
+ * ways in and the two ways out — add, remove, rename, delete the list — are
+ * all gone. The order is not: which of your positions you want to see first
+ * is a reading preference, and it survives the next sync (the reconcile only
+ * adds and removes, it never rewrites sortOrder). So the screen keeps its
+ * drag handles and loses everything else.
+ */
 function EditList({
   list,
   marketId,
+  managed = false,
   addOpen = false,
   onBack,
   onPatch,
@@ -288,6 +300,8 @@ function EditList({
 }: {
   list: WatchlistData;
   marketId: string;
+  /** Holdings: reorder only. */
+  managed?: boolean;
   /** Opened straight from "Add tickers": the search is already waiting. */
   addOpen?: boolean;
   onBack: () => void;
@@ -298,7 +312,7 @@ function EditList({
   const market = getMarket(marketId);
   const { quotes } = useQuotes(list.symbols, 60_000);
   const [name, setName] = useState(list.name);
-  const [searchOpen, setSearchOpen] = useState(addOpen);
+  const [searchOpen, setSearchOpen] = useState(addOpen && !managed);
   const [query, setQuery] = useState('');
   const results = useSearch(query, marketId)
     .filter((r) => !list.symbols.includes(r.symbol))
@@ -313,6 +327,7 @@ function EditList({
   };
 
   const saveName = () => {
+    if (managed) return;
     if (name && name !== list.name) void onPatch(list.id, { name });
   };
 
@@ -330,18 +345,24 @@ function EditList({
           <ArrowLeft className="size-6 text-foreground rtl:-scale-x-100" aria-hidden />
         </button>
         <h1 className="flex-1 text-base font-semibold text-foreground">{t('editWatchlist')}</h1>
-        <button
-          type="button"
-          aria-label={t('addTickers')}
-          aria-expanded={searchOpen}
-          onClick={() => setSearchOpen((v) => !v)}
-          className="text-foreground"
-        >
-          <Plus className="size-6 rounded-full border border-foreground p-0.5" aria-hidden />
-        </button>
+        {!managed && (
+          <button
+            type="button"
+            aria-label={t('addTickers')}
+            aria-expanded={searchOpen}
+            onClick={() => setSearchOpen((v) => !v)}
+            className="text-foreground"
+          >
+            <Plus className="size-6 rounded-full border border-foreground p-0.5" aria-hidden />
+          </button>
+        )}
       </div>
 
-      {searchOpen && (
+      {managed && (
+        <p className="px-6 pb-4 text-[13px] text-muted-foreground">{t('reorderOnlyNote')}</p>
+      )}
+
+      {searchOpen && !managed && (
         <div className="flex flex-col gap-2 px-4 pb-4">
           <input
             autoFocus
@@ -377,17 +398,23 @@ function EditList({
 
       <section className="mx-4 rounded-xl bg-card px-4 py-1">
         <div className="flex items-center gap-3 border-b border-border py-3">
-          <Pencil className="size-4 text-muted-foreground" aria-hidden />
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onBlur={saveName}
-            aria-label={t('listName')}
-            className="min-w-0 flex-1 bg-transparent text-base text-foreground outline-none"
-          />
-          <button type="button" aria-label={t('deleteList')} onClick={() => void onDelete(list.id)}>
-            <Trash2 className="size-5 text-muted-foreground" aria-hidden />
-          </button>
+          {managed ? (
+            <span className="min-w-0 flex-1 text-base text-foreground">{t('holdings')}</span>
+          ) : (
+            <>
+              <Pencil className="size-4 text-muted-foreground" aria-hidden />
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={saveName}
+                aria-label={t('listName')}
+                className="min-w-0 flex-1 bg-transparent text-base text-foreground outline-none"
+              />
+              <button type="button" aria-label={t('deleteList')} onClick={() => void onDelete(list.id)}>
+                <Trash2 className="size-5 text-muted-foreground" aria-hidden />
+              </button>
+            </>
+          )}
         </div>
         <ReorderList
           items={list.symbols}
@@ -403,13 +430,15 @@ function EditList({
                 <span className="truncate text-xs text-foreground">{quotes[s]?.name ?? s}</span>
                 <span className="text-xs text-muted-foreground">{t('equity')}</span>
               </span>
-              <button
-                type="button"
-                aria-label={t('removeFromList')}
-                onClick={() => void onPatch(list.id, { symbols: list.symbols.filter((x) => x !== s) })}
-              >
-                <Trash2 className="size-5 text-muted-foreground" aria-hidden />
-              </button>
+              {!managed && (
+                <button
+                  type="button"
+                  aria-label={t('removeFromList')}
+                  onClick={() => void onPatch(list.id, { symbols: list.symbols.filter((x) => x !== s) })}
+                >
+                  <Trash2 className="size-5 text-muted-foreground" aria-hidden />
+                </button>
+              )}
             </>
           )}
         </ReorderList>
