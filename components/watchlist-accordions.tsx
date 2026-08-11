@@ -6,8 +6,9 @@ import { ChevronDown } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { ListMenu } from '@/components/list-menu';
 import { RowLink } from '@/components/row-link';
-import { ChangePill } from '@/components/quote-bits';
-import { useQuotes } from '@/components/use-market-data';
+import { AfterHours, ChangePill } from '@/components/quote-bits';
+import { SessionSparkline } from '@/components/charts';
+import { useCharts, useQuotes } from '@/components/use-market-data';
 import { useWatchlists } from '@/components/use-watchlists';
 import { HOLDINGS_LIST } from '@/src/watchlists/constants';
 import { displaySymbol, getMarket, marketForSymbol } from '@/src/markets/registry';
@@ -37,10 +38,10 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
       symbols: l.symbols.filter((s) => marketForSymbol(s).id === marketId),
       total: l.symbols.length,
     }));
-  const { quotes } = useQuotes(
-    lists.filter((l) => !collapsed.has(l.id)).flatMap((l) => l.symbols),
-    60_000,
-  );
+  // Only what is on screen: a collapsed list costs neither quotes nor charts.
+  const shown = lists.filter((l) => !collapsed.has(l.id)).flatMap((l) => l.symbols);
+  const { quotes } = useQuotes(shown, 60_000);
+  const charts = useCharts(shown, '1d');
 
   if (lists.length === 0) return null;
 
@@ -91,26 +92,38 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
                 l.symbols.map((s) => {
                   const q = quotes[s];
                   const sm = marketForSymbol(s);
+                  const series = charts[s];
                   return (
                     <RowLink
                       key={s}
                       href={`/stock/${s}`}
                       className="flex items-center justify-between gap-4 border-b border-border py-2.5"
                     >
-                      <span className="flex min-w-0 flex-col">
-                        <span className="text-[18px] font-bold text-foreground">
-                          {displaySymbol(s, sm)}
-                        </span>
-                        <span className="truncate text-xs text-foreground">{q?.name ?? s}</span>
+                      {/* Ticker alone: the day's mark is what the row is for,
+                          and the company name is what it would cost. */}
+                      <span className="text-[18px] font-bold text-foreground">
+                        {displaySymbol(s, sm)}
                       </span>
-                      <span className="flex shrink-0 flex-col items-end gap-0.5">
-                        {q && (
-                          <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
-                            {sm.currencySymbol}
-                            {fmtNum(q.price, sm.numberLocale)}
-                          </span>
+                      <span className="flex shrink-0 items-center gap-6">
+                        {series && (
+                          <SessionSparkline
+                            points={series.points}
+                            previousClose={q?.previousClose ?? series.previousClose}
+                            calendar={sm.calendar}
+                            width={91}
+                            height={36}
+                          />
                         )}
-                        <ChangePill pct={q?.changePct ?? 0} numberLocale={nl} className="text-[16px]" />
+                        <span className="flex flex-col items-end gap-0.5">
+                          {q && (
+                            <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
+                              {sm.currencySymbol}
+                              {fmtNum(q.price, sm.numberLocale)}
+                            </span>
+                          )}
+                          <ChangePill pct={q?.changePct ?? 0} numberLocale={nl} className="text-[16px]" />
+                          <AfterHours quote={q} numberLocale={nl} />
+                        </span>
                       </span>
                     </RowLink>
                   );
