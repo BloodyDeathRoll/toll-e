@@ -35,9 +35,15 @@ def draw_mark(size: int, bg, fg, scale: float) -> Image.Image:
     top = cy - box / 2
     bottom = cy + box / 2
     # Stem, offset left so the foot's rightward curve keeps the glyph balanced.
+    # It runs the full height rather than stopping short of the foot: both are
+    # one stem-width with a half-width radius, so ending them on the same
+    # baseline makes the stem's bottom cap and the foot's left cap the same
+    # circle, and the two read as one continuous stroke. Stopping the stem
+    # early left each shape rounding away from the other — a pinch at the
+    # join, visible as a notch on the home screen.
     stem_x = cx - stem_w * 0.9
     d.rounded_rectangle(
-        [stem_x, top, stem_x + stem_w, bottom - stem_w * 0.9],
+        [stem_x, top, stem_x + stem_w, bottom],
         radius=r,
         fill=fg,
     )
