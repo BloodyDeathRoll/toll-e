@@ -81,9 +81,10 @@ export function TaxScreen() {
   const [pickedYear, setPickedYear] = useState<number | null>(null);
   const [openSale, setOpenSale] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<(typeof mobileTabs)[number]>('monthly');
-  // undefined = "latest open" default; null = all collapsed.
-  const [openMonth, setOpenMonthRaw] = useState<number | null | undefined>(undefined);
-  const [openYearState, setOpenYearRaw] = useState<number | null | undefined>(undefined);
+  // Both start collapsed. undefined = "latest open" (armed by "Detailed view");
+  // null = all collapsed.
+  const [openMonth, setOpenMonthRaw] = useState<number | null | undefined>(null);
+  const [openYearState, setOpenYearRaw] = useState<number | null | undefined>(null);
   const monthlyRef = useRef<HTMLElement>(null);
   // Armed by "Detailed view" on the yearly tab; the scroll has to wait for the
   // monthly section to render, and a ref keeps it out of the render cycle.

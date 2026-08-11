@@ -1,119 +1,127 @@
 # Session Handoff — 2026-08-11
 
 ## Goal
-Rewrite the tax engine to model Israeli capital-gains tax the way it actually
-works — withheld at source month by month, with prior-year loss shield coming
-back as a refund the following year — and carry that change through the plan,
-the mobile screens, and the demo fixtures.
+Work through a long list of UI corrections from phone review: chart session
+bounds, the watchlist star sheet, transaction month labels, the tax "Detailed
+view" jump — then make the market selector actually select the market (not a
+display currency) and filter every screen by it, then a round of Hebrew/RTL
+alignment fixes.
 
 ## Current State
-Green: `pnpm typecheck`, `pnpm test` (74 tests, 5 files), `pnpm lint`, and
-`en`/`he` message-key parity all pass.
+Everything below is committed, pushed, CI green, and **live on
+https://toll-e.vercel.app** (deployed manually — see Failed Attempts).
 
-- Engine (`src/engine/tax/index.ts`) fully rewritten and covered by 18 tests.
-- Tax page, Home reserve card, sell preview, Performance page all migrated.
-- Demo fixtures corrected and pinned by a new guard test.
-- `toll-e-plan.md` §3.1 rewritten to match.
-- **Nothing is committed.** All work is uncommitted in the working tree.
-- **Not verified in a browser.** Only screenshots the user supplied were
-  reviewed; the new Performance layout has not been seen rendered.
+Verified working:
+- All four language × market combinations, and they survive a reload.
+  🇺🇸/🇮🇱 = language, $/₪ = market, in the header picker and on the Account page.
+- Market filters everything owned: home, transactions, tax, performance,
+  watchlists. A market with no portfolio shows its own empty state.
+- Charts fill the axis after the close; measured 0%→100% on all marks.
+- Hebrew alignment fixes on the stock page, tax screen, and holders table.
 
-Working tree also contains another session's work (see Active Files).
+Known broken / not done:
+- **Push-to-deploy is not firing.** `4ee58a4` produced no Vercel deployment
+  (no GitHub deployment, commit status `pending` with zero statuses, 20+ min).
+  `2612423` deployed fine two hours earlier. Undiagnosed.
+- `$-0.00` still shows for zero realized losses on the tax screen.
+- Search deliberately still returns both markets (so you can add a US ticker
+  while browsing Israel). Flagged to the user; no objection yet.
+- Two duplicate "AI bets" test lists in the dev account.
+- Legal pages still need a lawyer; one human Google sign-in on production and
+  localhost would close the OAuth loop; the old OAuth client in the old Google
+  account is still there.
 
 ## Active Files
-
-Mine this session:
-- `src/engine/tax/index.ts` — the rewrite: pool walk, shield layers, refund.
-- `src/engine/tax/tax.test.ts` — rewritten to the new spec (18 tests).
-- `src/demo/demo-tax.test.ts` — NEW, 12 tests pinning demo data to engine rules.
-- `src/demo/data.ts` — fixture numbers corrected; `poolUsed` added to rows.
-- `src/server/tax.ts` — payload gains `shieldLossRemaining`, `shieldLayers`.
-- `src/server/performance.ts` — `taxDue` split into `taxPaid`/`taxOwed`/`taxRefund`.
-- `app/[locale]/(app)/tax/tax-screen.tsx` — panels rebuilt on the new fields.
-- `app/[locale]/(app)/home-screen.tsx` — reserve card now leads with withheld.
-- `app/[locale]/(app)/performance/performance-screen.tsx` — paid/owed/refund + year total.
-- `app/[locale]/(app)/transactions/new/tx-screen.tsx` — sell preview uses pool, not shield.
-- `src/i18n/messages/{en,he}.json` — keys added and retired in `taxPage`/`home`/`tx`/`perf`.
-- `toll-e-plan.md` — §3.1, plus lines 31 and 140.
-
-NOT mine — a peer session (`toll-e-7e`) worked in this tree concurrently:
-`journal-screen.tsx`, `more-link.tsx`, `watchlist-sheet.tsx`,
-`lang-currency.tsx`, `src/markets/calendar.ts`, `src/markets/calendar.test.ts`.
-It also landed commit `4491e6c`. Do not attribute those to the tax work.
+- `src/markets/calendar.ts` — `intradayBounds` now takes `now` and fills the
+  axis once the session is over.
+- `src/markets/calendar.test.ts` — 6 new `intradayBounds` cases.
+- `src/markets/registry.ts` — `marketForSymbol(symbol)`, from the provider suffix.
+- `components/app-shell/lang-currency.tsx` — header picker: language × market.
+- `app/[locale]/(app)/settings/settings-screen.tsx` — two dropdowns (Language
+  by flag, Market by `$ American` / `₪ Israeli`); display-currency row deleted.
+- `components/use-portfolio.ts`, `components/use-tax.ts`,
+  `app/[locale]/(app)/transactions/journal-screen.tsx`,
+  `app/[locale]/(app)/performance/performance-screen.tsx` — generation guard so
+  only the newest request writes state.
+- `src/server/performance.ts`, `app/api/performance/route.ts` — scoped to a
+  market; display currency follows that market.
+- `components/watchlist-sheet.tsx` — Holdings shown selected + disabled at 40%.
+- `components/watchlist-accordions.tsx`, `components/watchlist-card.tsx`,
+  `app/[locale]/(app)/watchlists/watchlists-screen.tsx` — rows filtered to the
+  selected market, priced by each ticker's own market.
+- `app/[locale]/(app)/stock/[symbol]/stock-screen.tsx` — market from the symbol,
+  not the lens; header price hugs the start; gain rows stack; holders columns
+  aligned; card spacing on Financials/News/Analysis.
+- `app/[locale]/(app)/tax/tax-screen.tsx` — monthly tab reports the month only;
+  figures hug their column start; yearly "Detailed view" → monthly + scroll.
+- `components/more-link.tsx` — added `MoreButton` (in-page, not a route).
+- `src/i18n/messages/{en,he}.json` — 427 keys each, no drift.
 
 ## Changes Made This Session
-
-1. **Established the correct model** over several rounds with the user. The old
-   engine subtracted prior-year shield from the current year's taxable. Wrong.
-   The real mechanics:
-   - *Within a year:* broker withholds at source. A running loss pool carries
-     forward **within the year only**; a gain month draws it down first, the
-     remainder is taxed and paid at month end. Order matters — a February gain
-     is withheld even if November loses.
-   - *Across years:* nothing applies at source. The year is paid in full. A
-     loss year registers `|net| × rate` with the government. A later year's
-     shield offsets its liability, and `paid − owed` returns as a refund in the
-     following year's filing.
-2. **Engine rewrite.** `MonthLedger.tax` → `paid`, plus `poolIn/poolUsed/poolOut`.
-   `YearLedger.due` → `paid`, `owedBeforeShield`, `shieldUsed`, `owed`,
-   `refundNextYear`, `registered`.
-3. **Shield as layers** (`ShieldLayer[]`), consumed oldest-first, each locking
-   the rate at registration. WHY: the user confirmed a 40k loss registered at
-   25% stays worth exactly 10k if the rate later changes. Layers also give the
-   money-primary / loss-secondary display the user asked for.
-   NOTE: `TaxRuleSet` holds one flat rate, so today every layer registers at the
-   same rate — the rate-lock is architecture for §3.3, not reachable behavior.
-4. **Consumers migrated**, plus i18n keys added/retired in both locales.
-5. **Rounding fix** found on self-review: year `paid` summed unrounded month
-   values, so a month column could foot a cent off the year. Now accumulates
-   the rounded figure.
-6. **Demo fixtures corrected** (they contradicted the engine): US May
-   1,725 → 1,325, IL May 5,400 → 3,950 (earlier losses absorbed); `taxable` was
-   post-shield, now year net; `short` now measured against withheld.
-   `src/demo/demo-tax.test.ts` walks the pool independently to stop drift.
-7. **Performance page** (mobile) now answers all four of the user's questions:
-   tax paid, what should have been paid, refund expected, year total.
+1. **Five carry-over items**: after-hours charts fill the width; Holdings shown
+   selected-and-disabled in the star sheet; `$`/`₪` instead of `$USD`/`₪NIS`;
+   month captions in the transaction journal (date sort only — other sorts
+   scramble dates and a caption would lie); yearly tax "Detailed view" jumps to
+   that year's months.
+2. **Market selector**. The header's $/₪ set a display-currency preference that
+   had nothing to do with which portfolio you saw. It now sets the market and
+   writes the same state the Account page writes, so they cannot disagree.
+   Display currency is gone entirely; Performance reports in the viewed
+   market's own currency, so nothing needed it.
+3. **Market as a filter**. Performance was aggregating every portfolio.
+   Watchlists listed both markets' tickers priced in whichever currency the
+   lens happened to be. Per-symbol surfaces went the other way — the stock page
+   now takes currency, number format and calendar from where the ticker trades.
+4. **Account page**: two dropdowns keyed on the registry, so a third language
+   or fourth market is an entry rather than a redesign.
+5. **Hebrew alignment**: figures drifted left wherever a `dir="ltr"` span filled
+   its column — the direction switch also decides where digits sit inside the
+   box. Fixed with `self-start`/`self-end`; the holders table carries `dir` on
+   an inline child so `text-end` resolves against the page instead of flipping.
+6. **Monthly tax tab** now reports the month alone; year-to-date moved to the
+   Yearly tab only. `withheldYtd` key removed.
+7. A **concurrent Claude session** rewrote the tax engine to the
+   withholding-at-source model (`due`→`owed`, `MonthLedger.tax`→`paid`, plus
+   `paid`/`refundNextYear`) in the same files. Both bodies of work went into
+   `2612423` because they could not be split without a broken commit.
 
 ## Failed Attempts
-
-- **Explained the model wrong first.** The opening explanation described the
-  shield as reducing the current year's tax directly, matching the old code and
-  `toll-e-plan.md:115`. Both were wrong. Do not trust the pre-session plan text
-  on this topic — §3.1 is now the corrected source.
-- **Reported a live bug that wasn't one.** Claimed the Performance page showed
-  a visible mismatch between "Tax accrued" and the month rows. The user's
-  screenshot disproved it: with `SHIELD = $0.00`, paid equals owed and the page
-  was consistent (673.70 + 483.10 = 1,156.80). The discrepancy only exists once
-  a shield is registered. Verify against real data before calling something broken.
-- **Over-explained repeatedly.** The user asked three times for shorter, plainer
-  answers and pushed back hard on verbosity and on desktop examples. This project
-  is **mobile-only right now** — the desktop layouts exist in code but are not
-  being worked on, so do not use them for examples.
-- **Paused work on a stale premise.** On finding a peer session editing the same
-  file, the user chose "pause the UI". The peer then confirmed it was hands-off
-  on those screens and that the migration was what had typecheck red and blocked
-  its commit. Pausing could not reach green either way, so the work was finished
-  instead and the peer notified.
+- **`vercel --prod` was needed because push-to-deploy silently did nothing.**
+  Do not assume a green push reaches production; check
+  `gh api repos/BloodyDeathRoll/toll-e/deployments`. Before any CLI deploy,
+  confirm `.vercelignore` still covers `.env.*` — a past CLI deploy shipped a
+  local env file and pointed OAuth at localhost.
+- **Checked production with the wrong marker twice.** `Display currency` still
+  exists as `perf.displayCurrency`, so grepping for it "proved" a stale build
+  that was actually fresh. Grep for a string introduced by the commit.
+- **`prettier --write` reformatted a whole file** against the repo's style
+  (it uses single quotes; prettier here does not). Reverted and hand-applied.
+- **`pnpm typecheck | tail -3` hid 25 errors** behind the route-type banner.
+  Always grep the output for `error`.
+- **`getByRole('button', {name: '$ US'})` clicked `$ USD`** — substring match.
+  This produced a false "the Account market selector does nothing" report.
+  Use `exact: true`.
+- **A stale-response race**, not a filtering bug, was why ₪ showed US positions:
+  the market hydrates from localStorage a beat after mount, so the previous
+  market's request was often still in flight and landed last.
+- Splitting the tax-engine work from the market work into separate commits was
+  attempted and abandoned — the message bundles and `tax-screen.tsx` are shared,
+  and any split leaves a commit that does not typecheck.
 
 ## Next Step
-
-Run the app and look at the two migrated screens on a phone viewport — nothing
-has been visually verified:
-
+**Diagnose why pushes stop triggering Vercel.** Same symptom shape as the
+CI-not-running mystery in the previous handoff, which turned out not to be
+quota. Start with the Vercel GitHub app's connection and the project's Git
+settings; compare `2612423` (deployed) with `4ee58a4` (did not):
 ```
-pnpm dev        # then /performance and /tax
+gh api repos/BloodyDeathRoll/toll-e/deployments --jq '.[] | "\(.created_at) \(.sha[0:7])"'
+gh api repos/BloodyDeathRoll/toll-e/commits/<sha>/status
 ```
 
-To actually exercise the shield path (paid ≠ owed), the account needs a prior
-loss year; current data has `SHIELD = $0.00`, so the new lines stay hidden.
-
-Then:
-1. Commit. The tree mixes this work with the peer session's — check `git diff`
-   per file against the Active Files list above before staging.
-2. Decide the open UI question: `tax-screen.tsx:190` still shows per-sale tax as
-   `gain × rate`, ignoring the pool, so a sale can read higher than its month.
-   Desktop-only (the sales card is inside the `hidden md:flex` block), so it can
-   wait. Fix would be to split the month's `poolUsed` across its gain sales
-   proportionally.
-3. `src/server/performance.ts` recomputes `computeTax` twice per portfolio (once
-   to collect years, once for the selected year). Pre-existing, not touched.
+Follow-ups:
+- Fix `$-0.00` for zero realized losses in `app/[locale]/(app)/tax/tax-screen.tsx`.
+- Desktop still uses the old star dropdown (`WatchlistMenuButton` in
+  `components/watchlist-star.tsx`) rather than the bottom sheet.
+- Decide whether search should filter by market (currently does not, on purpose).
+- Remaining v1 gaps: tax export button is visual-only, TASE hours are
+  `TODO(verify)`, holiday arrays are empty.
