@@ -1,3 +1,4 @@
+import { AppContent } from './app-content';
 import { AuthGuard } from './auth-guard';
 import { MarketProvider } from './market-context';
 import { TopNav } from './top-nav';
@@ -12,7 +13,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <MarketProvider>
       <AuthGuard />
       <TopNav />
-      <div className="flex flex-1 flex-col pb-[104px] md:pb-0">{children}</div>
+      <AppContent>{children}</AppContent>
       <BottomNav />
     </MarketProvider>
   );

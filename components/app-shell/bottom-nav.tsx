@@ -5,6 +5,7 @@ import { House, Percent, Plus, Repeat, User } from 'lucide-react';
 import { HouseFilled } from '@/components/icons';
 import { Link, usePathname } from '@/src/i18n/navigation';
 import { useSession } from '@/lib/auth-client';
+import { useHydrated } from '@/lib/use-hydrated';
 import { cn } from '@/lib/utils';
 
 const leftTabs = [
@@ -17,17 +18,29 @@ const rightTabs = [
   { href: '/settings', key: 'account', icon: User },
 ] as const;
 
+/**
+ * Full-page flows: each ends in its own single action — Save a transaction,
+ * Save a list — and the bar has no business competing with it, or offering a
+ * way out of a half-filled form. The tab bar is for the app's four screens.
+ */
+const OWN_ACTION = ['/transactions/new', '/watchlists/new'];
+
+/** Does this screen show the tab bar? Also decides whether to reserve room. */
+export function reservesBottomNav(pathname: string): boolean {
+  return !OWN_ACTION.some((p) => pathname.startsWith(p));
+}
+
 /** Mobile bottom tab bar (Components/bottomNav) — hidden on md+. */
 export function BottomNav() {
   const t = useTranslations('nav');
   const pathname = usePathname();
   const { data: session, isPending } = useSession();
+  const hydrated = useHydrated();
 
-  // The signed-out screen is a bare sign-in wall: no app chrome.
-  if (isPending || !session) return null;
-  // Creating a watchlist is a flow with its own Save button; the bar would
-  // only compete with it.
-  if (pathname.startsWith('/watchlists/new')) return null;
+  // The signed-out screen is a bare sign-in wall: no app chrome. The bar is
+  // held back one render so it matches the server's HTML — see useHydrated.
+  if (!hydrated || isPending || !session) return null;
+  if (!reservesBottomNav(pathname)) return null;
 
   // On Watchlists the centre button makes a list rather than a transaction,
   // matching the plus in that screen's header.

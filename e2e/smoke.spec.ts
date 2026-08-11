@@ -70,10 +70,13 @@ test.describe('stock page tabs', () => {
   test.beforeEach(async ({ page, baseURL }) => {
     await signIn(page, baseURL!);
   });
+  // Revenue vs earnings belongs to the Financials tab (its own test below).
+  // The desktop summary also carried it, but the app is mobile-only now —
+  // the 480px frame means the md: layout never paints.
   test('summary shows key statistics', async ({ page }) => {
     await page.goto('/en/stock/NVDA');
     await expect(seen(page, 'Key statistics')).toBeVisible();
-    await expect(seen(page, 'Revenue vs earnings')).toBeVisible();
+    await expect(seen(page, 'Your position')).toBeVisible();
   });
 
   test('news tab shows a feed or its empty state', async ({ page }) => {

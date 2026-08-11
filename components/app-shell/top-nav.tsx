@@ -14,6 +14,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { ChangePill } from '@/components/quote-bits';
 import { useIndexQuotes } from '@/components/use-market-data';
 import { useSession } from '@/lib/auth-client';
+import { useHydrated } from '@/lib/use-hydrated';
 import { getMarket } from '@/src/markets/registry';
 import { demo } from '@/src/demo/data';
 import { fmtNum } from '@/lib/format';
@@ -33,9 +34,11 @@ export function TopNav() {
   const t = useTranslations();
   const pathname = usePathname();
   const { data: session, isPending } = useSession();
+  const hydrated = useHydrated();
 
-  // The signed-out screen is a bare sign-in wall: no app chrome.
-  if (isPending || !session) return null;
+  // The signed-out screen is a bare sign-in wall: no app chrome. The navbar
+  // is held back one render so it matches the server's HTML — see useHydrated.
+  if (!hydrated || isPending || !session) return null;
 
   return (
     <header className="sticky top-0 z-40 hidden md:block">
