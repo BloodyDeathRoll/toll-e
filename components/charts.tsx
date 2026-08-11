@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { intradaySeries, type TradingCalendar } from '@/src/markets/calendar';
+import { sessionLine, type TradingCalendar } from '@/src/markets/calendar';
 import type { ChartPoint } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
 
@@ -93,18 +93,23 @@ export function twoToneSpark(closes: number[], height = 24): { points: number[];
 }
 
 /**
- * Intraday sparkline. Each point sits at its real time-of-day against the
- * session axis: while the market is trading that is today's bell-to-bell
- * window, so a live day stops where it has traded — as on Yahoo. Off hours
- * the finished session spans the full width.
+ * Intraday sparkline, in the two views {@link sessionLine} draws:
  *
- * The dashed rule is the previous close, and the line is two-tone around it:
- * green while above yesterday's close, red while below.
+ * - **Trading.** The axis is today's bell-to-bell session and the line covers
+ *   only the part of it that has traded — from the previous close at the
+ *   opening bell to a dot on the live price. Two minutes in, that is a stroke
+ *   at the left edge with the day's width reserved beside it.
+ * - **Closed.** The last finished session, spanning the full width.
+ *
+ * The dashed rule is the previous close either way, and the line is two-tone
+ * around it: green above yesterday's close, red below.
  */
 export function SessionSparkline({
   points,
   previousClose,
   calendar,
+  price,
+  priceAt,
   width = 91,
   height = 36,
   className,
@@ -112,19 +117,27 @@ export function SessionSparkline({
   points: ChartPoint[];
   previousClose?: number;
   calendar: TradingCalendar;
+  /** Live quote price — the line's last point while the session is running. */
+  price?: number;
+  /** Epoch ms of that quote's last trade (`Quote.asOf`). */
+  priceAt?: number;
   width?: number;
   height?: number;
   className?: string;
 }) {
   const id = useId();
-  const { points: shown, from, to } = intradaySeries(calendar, points);
-  if (shown.length < 2) return <span style={{ width, height }} className={className} aria-hidden />;
+  const { points: shown, from, to, live } = sessionLine(
+    calendar,
+    points.map((p) => ({ t: p.t, v: p.close })),
+    { previousClose, price, priceAt },
+  );
+  if (shown.length === 0) return <span style={{ width, height }} className={className} aria-hidden />;
 
   const last = shown[shown.length - 1];
   const span = to - from || 1;
   const x = (t: number) => ((t - from) / span) * width;
 
-  const closes = shown.map((p) => p.close);
+  const closes = shown.map((p) => p.v);
   const lo = Math.min(...closes, previousClose ?? Infinity);
   const hi = Math.max(...closes, previousClose ?? -Infinity);
   // Barely any headroom: a mark this small has amplitude to spare, and a
@@ -134,11 +147,9 @@ export function SessionSparkline({
   const yMax = hi + pad;
   const y = (v: number) => (1 - (v - yMin) / (yMax - yMin || 1)) * height;
 
-  const line = shown.map((p) => `${x(p.t).toFixed(1)},${y(p.close).toFixed(1)}`).join(' ');
+  const line = shown.map((p) => `${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
   const base = previousClose === undefined ? undefined : y(previousClose);
-  const up = previousClose === undefined
-    ? last.close >= shown[0].close
-    : last.close >= previousClose;
+  const up = previousClose === undefined ? last.v >= shown[0].v : last.v >= previousClose;
 
   return (
     <svg
@@ -182,6 +193,16 @@ export function SessionSparkline({
           <polyline points={line} fill="none" strokeWidth="1.5" className="stroke-gain" clipPath={`url(#${id}-above)`} />
           <polyline points={line} fill="none" strokeWidth="1.5" className="stroke-loss" clipPath={`url(#${id}-below)`} />
         </>
+      )}
+      {/* Live mark on the last price. Minutes into a session it is most of
+          what there is to see, and a one-point line draws nothing at all. */}
+      {live && (
+        <circle
+          cx={x(last.t).toFixed(1)}
+          cy={y(last.v).toFixed(1)}
+          r="2.5"
+          className={up ? 'fill-gain' : 'fill-loss'}
+        />
       )}
     </svg>
   );

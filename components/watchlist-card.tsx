@@ -101,11 +101,13 @@ function LiveRow({
         {displaySymbol(symbol, marketForSymbol(symbol))}
       </span>
       <span className="flex items-center gap-3">
-        {series && series.points.length > 1 ? (
+        {series ? (
           <SessionSparkline
             points={series.points}
             previousClose={quote?.previousClose ?? series.previousClose}
             calendar={marketForSymbol(symbol).calendar}
+            price={quote?.price}
+            priceAt={quote?.asOf}
             width={52}
             height={30}
           />

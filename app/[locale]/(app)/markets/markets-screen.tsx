@@ -51,12 +51,15 @@ export function MarketsScreen() {
 
   const spark = (symbol: string, fallback: number[] | undefined, up: boolean) => {
     const series = (symbol in indexCharts ? indexCharts : moverCharts)[symbol];
-    if (series && series.points.length > 1) {
+    const q = indexQuotes[symbol] ?? liveQuotes[symbol];
+    if (series) {
       return (
         <SessionSparkline
           points={series.points}
-          previousClose={(indexQuotes[symbol] ?? liveQuotes[symbol])?.previousClose ?? series.previousClose}
+          previousClose={q?.previousClose ?? series.previousClose}
           calendar={market.calendar}
+          price={q?.price}
+          priceAt={q?.asOf}
           width={91}
           height={36}
         />

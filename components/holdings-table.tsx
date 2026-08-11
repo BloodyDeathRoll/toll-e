@@ -172,11 +172,13 @@ export function HoldingsTable({
             return (
               <>
                 <span className="flex justify-end">
-                  {series && series.points.length > 1 ? (
+                  {series ? (
                     <SessionSparkline
                       points={series.points}
                       previousClose={q?.previousClose ?? series.previousClose}
                       calendar={market.calendar}
+                      price={q?.price}
+                      priceAt={q?.asOf}
                       width={64}
                       height={30}
                     />

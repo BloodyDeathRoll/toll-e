@@ -244,28 +244,96 @@ function liveSession(cal: TradingCalendar, now: number): { start: number; end: n
  * An intraday series and the axis it is drawn against, in one call — the
  * companion to {@link intradayBounds} for charts that plot points.
  *
- * While the session is live the axis is the trading day, so bars from outside
- * it (a pre-market print that survived into the series) are dropped rather
- * than drawn off the side of the canvas. Off hours the series is whole and
- * spans the full width.
+ * The two views again, and `live` says which one you got:
+ *
+ * - **`live: true`** — the regular session is running. The axis is the
+ *   bell-to-bell day and the points are today's only, however few. At the
+ *   opening bell that is *zero* bars, and it is still view one: the caller
+ *   anchors the line at the previous close and carries it to the live price,
+ *   which is the sliver-at-the-left-edge shape Yahoo shows a minute in.
+ *   Bars from outside the session (a pre-market print that survived into the
+ *   series) are dropped rather than drawn off the side of the canvas.
+ * - **`live: false`** — the session on show is finished; it spans the width.
+ *
+ * `lastTradeAt` is the provider's last-trade stamp (a quote's `asOf`, chart
+ * metadata's `regularMarketTime`). It is what separates "the bell just rang
+ * and no bar has printed" from "this exchange is shut today and our calendar
+ * does not know it" — the two look identical in the bars alone. Without it,
+ * an empty session falls back to the finished day rather than blanking.
  */
 export function intradaySeries<T extends { t: number }>(
   cal: TradingCalendar,
   points: T[],
   now: number = Date.now(),
-): { points: T[]; from: number; to: number } {
+  lastTradeAt?: number,
+): { points: T[]; from: number; to: number; live: boolean } {
   const whole = () => ({
     points,
     from: points[0]?.t ?? 0,
     to: points[points.length - 1]?.t ?? 1,
+    live: false,
   });
-  if (points.length === 0) return whole();
 
   const win = liveSession(cal, now);
   if (!win) return whole();
+
   const session = points.filter((p) => p.t >= win.start);
-  // Live, but nothing has printed today — an unlisted holiday, or a market
-  // still waking up. What we hold is the last finished session: full width.
-  if (session.length === 0) return whole();
-  return { points: session, from: win.start, to: Math.max(win.end, session[session.length - 1].t) };
+  if (session.length > 0) {
+    return {
+      points: session,
+      from: win.start,
+      to: Math.max(win.end, session[session.length - 1].t),
+      live: true,
+    };
+  }
+  // Trading, but no bar has printed yet: the 5m feed is up to five minutes
+  // behind the bell. The tape settles it — a trade stamped inside today's
+  // session means view one with an empty series, and the caller draws the
+  // previous close and the live price. No such trade means the exchange is
+  // shut (an unlisted holiday), so the last finished session stays up.
+  if (lastTradeAt !== undefined && lastTradeAt >= win.start) {
+    return { points: [], from: win.start, to: win.end, live: true };
+  }
+  return whole();
+}
+
+/** A point on an intraday line: epoch ms and a value (a close, a total). */
+export interface SeriesPoint {
+  t: number;
+  v: number;
+}
+
+/**
+ * The polyline an intraday chart actually draws, for both views.
+ *
+ * View two is the bars as they are. View one is the bars plus the two things
+ * that make a session-in-progress legible before it has any width:
+ *
+ * - a first point on the **previous close** at the opening bell, so the line
+ *   leaves the dashed rule instead of floating unattached, and
+ * - a last point at the **live quote**, which runs minutes ahead of a 5m bar
+ *   feed and is all there is to draw in the first five minutes of the day.
+ *
+ * With both, the moment the bell rings the chart is a stroke at the left edge
+ * against a full-session axis — what Yahoo shows, and what an empty
+ * `points` array could never produce on its own.
+ */
+export function sessionLine(
+  cal: TradingCalendar,
+  points: SeriesPoint[],
+  opts: { previousClose?: number; price?: number; priceAt?: number; now?: number } = {},
+): { points: SeriesPoint[]; from: number; to: number; live: boolean } {
+  const now = opts.now ?? Date.now();
+  const win = intradaySeries(cal, points, now, opts.priceAt);
+  if (!win.live) return win;
+
+  const line = [...win.points];
+  if (opts.previousClose !== undefined) line.unshift({ t: win.from, v: opts.previousClose });
+  if (opts.price !== undefined) {
+    const lastT = line.length ? line[line.length - 1].t : win.from;
+    const t = Math.min(win.to, Math.max(opts.priceAt ?? now, lastT));
+    // A bar stamped later than the quote is the fresher datum; leave it be.
+    if (t > lastT || line.length === 0) line.push({ t, v: opts.price });
+  }
+  return { ...win, points: line };
 }

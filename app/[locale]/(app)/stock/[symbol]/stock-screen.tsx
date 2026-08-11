@@ -385,7 +385,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
               {/* Chart + ranges */}
               <section className="flex flex-col gap-2.5 pt-4">
                 <div className="px-2">
-                  {series && series.points.length > 0 ? (
+                  {series && (series.points.length > 0 || range === '1D') ? (
                     <PriceChart
                       points={series.points}
                       up={up}
@@ -394,6 +394,8 @@ export function StockScreen({ symbol }: { symbol: string }) {
                       timezone={series.timezone}
                       fullDay={range === '1D'}
                       previousClose={live?.previousClose ?? series.previousClose}
+                      price={range === '1D' ? live?.price : undefined}
+                      priceAt={range === '1D' ? live?.asOf : undefined}
                       marketId={market.id}
                     />
                   ) : (
@@ -594,7 +596,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                       </span>
                     </div>
                   </div>
-                  {series && series.points.length > 0 ? (
+                  {series && (series.points.length > 0 || range === '1D') ? (
                     <PriceChart
                       points={series.points}
                       up={up}
@@ -603,6 +605,8 @@ export function StockScreen({ symbol }: { symbol: string }) {
                       timezone={series.timezone}
                       fullDay={range === '1D'}
                       previousClose={live?.previousClose ?? series.previousClose}
+                      price={range === '1D' ? live?.price : undefined}
+                      priceAt={range === '1D' ? live?.asOf : undefined}
                       marketId={market.id}
                     />
                   ) : (

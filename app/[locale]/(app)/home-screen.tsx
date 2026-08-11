@@ -59,10 +59,11 @@ export function HomeScreen() {
   const router = useRouter();
   // Holdings is a real (managed) watchlist, so its menu acts on that list.
   const { state: listsState, deleteList } = useWatchlists();
-  const holdingsListId =
+  const holdingsList =
     listsState.status === 'data'
-      ? listsState.lists.find((l) => l.name === HOLDINGS_LIST)?.id
+      ? listsState.lists.find((l) => l.name === HOLDINGS_LIST)
       : undefined;
+  const holdingsListId = holdingsList?.id;
   // Stocks toggled OFF the performance chart (default: all overlaid).
   const [hiddenOverlays, setHiddenOverlays] = useState<Set<string>>(new Set());
   const toggleOverlay = (symbol: string) =>
@@ -112,7 +113,16 @@ export function HomeScreen() {
         taxable: data.tax.taxable,
         isReal: false,
       };
-  const rows = real ? positionRows(real.positions, taxRate) : null;
+  // The Holdings list's row order is the reader's, set by dragging on its edit
+  // screen — so it is what the section is laid out in, not the engine's order.
+  // A position the list has not caught up with yet (a buy mid-sync) sorts to
+  // the end rather than vanishing.
+  const holdingsRank = new Map((holdingsList?.symbols ?? []).map((s, i) => [s, i]));
+  const rows = real
+    ? [...positionRows(real.positions, taxRate)].sort(
+        (a, b) => (holdingsRank.get(a.symbol) ?? Infinity) - (holdingsRank.get(b.symbol) ?? Infinity),
+      )
+    : null;
   const overlayRows: OverlayRow[] = (rows ?? data.holdings).map((h) => ({
     symbol: h.symbol,
     shares: h.shares,
@@ -146,6 +156,11 @@ export function HomeScreen() {
   const portfolioPrevClose = overlayRows.every((r) => holdingQuotes[r.symbol]?.previousClose)
     ? overlayRows.reduce((sum, r) => sum + r.shares * (holdingQuotes[r.symbol].previousClose ?? 0), 0)
     : undefined;
+  // …and the freshest trade behind the live total, so the 1D chart can draw
+  // the session before the 5m bar feed has any bars in it.
+  const portfolioAsOf = overlayRows
+    .map((r) => holdingQuotes[r.symbol]?.asOf)
+    .reduce<number | undefined>((max, t) => (t !== undefined && (max === undefined || t > max) ? t : max), undefined);
 
   const emptyCard = (
     <section className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6">
@@ -228,6 +243,8 @@ export function HomeScreen() {
               range={rangeToChart[mobileRange]}
               marketId={marketId}
               previousClose={portfolioPrevClose}
+              value={p.value}
+              valueAt={portfolioAsOf}
             />
             <RangePills value={mobileRange} onChange={setMobileRange} className="mt-2.5" />
           </>
@@ -252,6 +269,8 @@ export function HomeScreen() {
                       points={ixSeries.points}
                       previousClose={live?.previousClose ?? ixSeries.previousClose}
                       calendar={market.calendar}
+                      price={live?.price}
+                      priceAt={live?.asOf}
                       width={90}
                       height={30}
                     />
@@ -349,6 +368,8 @@ export function HomeScreen() {
                         points={hSeries.points}
                         previousClose={quote?.previousClose ?? hSeries.previousClose}
                         calendar={market.calendar}
+                        price={quote?.price}
+                        priceAt={quote?.asOf}
                         width={91}
                         height={36}
                       />

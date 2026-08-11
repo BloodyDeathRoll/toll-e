@@ -85,9 +85,14 @@ export function useIndexQuotes(marketId: string, refreshMs = 30_000) {
   return { quotes: bySymbol, stale };
 }
 
+// A 1D series grows all session; left unpolled it froze at whatever the page
+// load caught — including, across the opening bell, the previous day.
+const INTRADAY_REFRESH = 60_000;
+
 export function useChart(symbol: string, range: ChartRange) {
   return useJson<ChartSeries>(
     `/api/market/chart/${encodeURIComponent(symbol)}?range=${range}`,
+    range === '1d' ? INTRADAY_REFRESH : undefined,
   );
 }
 
@@ -98,7 +103,7 @@ export function useCharts(symbols: string[], range: ChartRange) {
   useEffect(() => {
     if (!key) return;
     let alive = true;
-    (async () => {
+    const load = async () => {
       const entries = await Promise.all(
         key.split(',').map(async (s) => {
           try {
@@ -113,9 +118,17 @@ export function useCharts(symbols: string[], range: ChartRange) {
       if (alive) {
         setCharts(Object.fromEntries(entries.filter((e): e is NonNullable<typeof e> => e !== null)));
       }
-    })();
+    };
+    load();
+    if (range !== '1d') {
+      return () => {
+        alive = false;
+      };
+    }
+    const id = setInterval(load, INTRADAY_REFRESH);
     return () => {
       alive = false;
+      clearInterval(id);
     };
   }, [key, range]);
   return charts;

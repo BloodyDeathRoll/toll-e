@@ -111,6 +111,8 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
                             points={series.points}
                             previousClose={q?.previousClose ?? series.previousClose}
                             calendar={sm.calendar}
+                            price={q?.price}
+                            priceAt={q?.asOf}
                             width={91}
                             height={36}
                           />

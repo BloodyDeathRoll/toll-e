@@ -2,7 +2,7 @@
 
 import { useId, useMemo } from 'react';
 import { useCharts } from '@/components/use-market-data';
-import { intradaySeries } from '@/src/markets/calendar';
+import { sessionLine } from '@/src/markets/calendar';
 import { getMarket } from '@/src/markets/registry';
 import type { ChartRange } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
@@ -23,6 +23,8 @@ export function PortfolioChart({
   range,
   marketId,
   previousClose,
+  value,
+  valueAt,
   height = 77,
   className,
 }: {
@@ -32,6 +34,14 @@ export function PortfolioChart({
   marketId?: string;
   /** Yesterday's portfolio value — drawn as the dashed reference line. */
   previousClose?: number;
+  /**
+   * The portfolio's live value. Holdings quotes refresh every 30s while the
+   * 5m bar feed lags the bell by minutes, so at the open this is the only
+   * datum the day has — without it the chart is blank until 09:35.
+   */
+  value?: number;
+  /** Epoch ms behind `value` — the freshest holding quote's `asOf`. */
+  valueAt?: number;
   height?: number;
   className?: string;
 }) {
@@ -61,13 +71,13 @@ export function PortfolioChart({
   }, [rows, charts]);
 
   // Intraday: while the market is trading the axis is the session, so a day
-  // in progress fills only the part it has traded (the Yahoo shape) and
-  // anything outside those hours is left off. Other ranges — and off hours —
-  // keep the series' own extent, full width.
+  // in progress fills only the part it has traded (the Yahoo shape), running
+  // from yesterday's value at the bell to the live total. Other ranges — and
+  // off hours — keep the series' own extent, full width.
   const window =
     range === '1d' && marketId
-      ? intradaySeries(getMarket(marketId).calendar, series)
-      : { points: series, from: series[0]?.t ?? 0, to: series[series.length - 1]?.t ?? 1 };
+      ? sessionLine(getMarket(marketId).calendar, series, { previousClose, price: value, priceAt: valueAt })
+      : { points: series, from: series[0]?.t ?? 0, to: series[series.length - 1]?.t ?? 1, live: false };
   const shown = window.points;
 
   if (shown.length < 2) return <div style={{ height }} className={className} aria-hidden />;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useId } from 'react';
-import { intradaySeries } from '@/src/markets/calendar';
+import { sessionLine } from '@/src/markets/calendar';
 import { getMarket } from '@/src/markets/registry';
 import type { ChartPoint } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,8 @@ export function PriceChart({
   timezone,
   fullDay = false,
   previousClose,
+  price,
+  priceAt,
   marketId,
   className,
 }: {
@@ -41,24 +43,30 @@ export function PriceChart({
   fullDay?: boolean;
   /** Dashed reference line for an intraday day. */
   previousClose?: number;
+  /** Live quote price — the line's last point while the session is running. */
+  price?: number;
+  /** Epoch ms of that quote's last trade (`Quote.asOf`). */
+  priceAt?: number;
   /** Supplies the trading calendar behind `fullDay`. */
   marketId?: string;
   className?: string;
 }) {
   const id = useId();
-  if (points.length === 0) return <div style={{ height }} className={className} aria-hidden />;
 
   const VB = 1000; // viewBox width; the graph stretches to the container
   const plotH = height - TIME_H;
   const innerH = plotH - PAD_Y * 2;
 
   // x-domain: the live session when asked (a day in progress ⇒ a partial
-  // chart), otherwise the data's own extent.
+  // chart, previous close to live price), otherwise the data's own extent.
+  const flat = points.map((p) => ({ t: p.t, v: p.close }));
   const series =
     fullDay && intraday && marketId
-      ? intradaySeries(getMarket(marketId).calendar, points)
-      : { points, from: points[0].t, to: points[points.length - 1].t };
+      ? sessionLine(getMarket(marketId).calendar, flat, { previousClose, price, priceAt })
+      : { points: flat, from: flat[0]?.t ?? 0, to: flat[flat.length - 1]?.t ?? 1 };
   const shown = series.points;
+  if (shown.length === 0) return <div style={{ height }} className={className} aria-hidden />;
+
   const firstT = shown[0].t;
   const lastT = shown[shown.length - 1].t;
   const xFrom = series.from;
@@ -67,7 +75,7 @@ export function PriceChart({
   const x = (t: number) => ((t - xFrom) / xSpan) * VB;
 
   // y-domain: the series, widened to keep the previous-close line on screen.
-  const closes = shown.map((p) => p.close);
+  const closes = shown.map((p) => p.v);
   const baseline = intraday ? previousClose : undefined;
   const lo = Math.min(...closes, baseline ?? Infinity);
   const hi = Math.max(...closes, baseline ?? -Infinity);
@@ -76,7 +84,7 @@ export function PriceChart({
   const yMax = hi + pad;
   const y = (v: number) => PAD_Y + (1 - (v - yMin) / (yMax - yMin || 1)) * innerH;
 
-  const line = shown.map((p) => `${x(p.t).toFixed(1)},${y(p.close).toFixed(1)}`).join(' ');
+  const line = shown.map((p) => `${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
   const area = `${x(firstT).toFixed(1)},${plotH} ${line} ${x(lastT).toFixed(1)},${plotH}`;
 
   const priceTicks = Array.from({ length: 4 }, (_, i) => yMin + ((yMax - yMin) * (i + 0.5)) / 4);

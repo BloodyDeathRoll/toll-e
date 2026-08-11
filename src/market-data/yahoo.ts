@@ -11,7 +11,13 @@ import type {
   StockFinancials,
   Summary,
 } from './types';
-import { hoursFor, toExchangeLocal, type SessionPhase, type TradingCalendar } from '@/src/markets/calendar';
+import {
+  hoursFor,
+  sessionWindow,
+  toExchangeLocal,
+  type SessionPhase,
+  type TradingCalendar,
+} from '@/src/markets/calendar';
 import { marketForSymbol } from '@/src/markets/registry';
 
 // Unofficial Yahoo endpoints (toll-e-plan.md §5) — accepted MVP risk, and the
@@ -113,8 +119,14 @@ export class YahooProvider implements MarketDataProvider {
       }));
 
     let sessionPrevClose: number | undefined;
-    if (range === '1d' && points.length > 0) {
-      const session = pickSession(points, marketForSymbol(symbol).calendar);
+    if (range === '1d') {
+      // The tape's own last-trade stamp decides whether the exchange is
+      // really trading today — the calendar alone cannot tell a bell that
+      // just rang from a holiday it does not know about.
+      const lastTradeAt = res.meta.regularMarketTime
+        ? new Date(res.meta.regularMarketTime).getTime()
+        : undefined;
+      const session = pickSession(points, marketForSymbol(symbol).calendar, Date.now(), lastTradeAt);
       points = session.points;
       sessionPrevClose = session.previousClose;
     }
@@ -292,15 +304,26 @@ export class YahooProvider implements MarketDataProvider {
 /**
  * Reduce an over-fetched intraday series to a single regular session.
  *
- * A session is bell-to-bell: only regular-hours bars count, and the newest
- * exchange-local day that has actually *traded* wins. So the chart keeps
- * showing the last finished session until the next one opens — a handful of
- * 04:00 pre-market prints is not a day, and an index at 09:31 holding a
- * single print would collapse to a dot.
+ * A session is bell-to-bell: only regular-hours bars count. Which day wins
+ * follows the clock, in the two views the charts draw:
+ *
+ * - **Trading.** The regular session is running and the tape has printed
+ *   inside it, so today is the session — one bar, or none at all. A 5m feed
+ *   is up to five minutes behind the bell, and holding yesterday's finished
+ *   day over that gap is what made the first minutes of trading render as a
+ *   full-width chart of the wrong day. The chart draws the gap from the
+ *   previous close and the live quote.
+ * - **Closed.** The newest exchange-local day that has actually traded — so
+ *   the last finished session stays up through the pre-market, where a
+ *   handful of 04:00 prints is not a day.
  *
  * Extended-hours bars are dropped rather than plotted: the pre/post move has
  * its own quote pill, and mixing it in is what stretched fifteen minutes of
  * pre-market across a sixteen-hour axis.
+ *
+ * `lastTradeAt` is the provider's last-trade stamp. Without a trade inside
+ * today's session the exchange is shut whatever the calendar says (an
+ * unlisted TASE holiday), and the finished day stays up.
  *
  * `previousClose` is the previous session's last regular print: a fallback
  * datum for the dashed reference line. Callers prefer the quote's official
@@ -311,7 +334,19 @@ export class YahooProvider implements MarketDataProvider {
 export function pickSession<T extends { t: number; close: number }>(
   points: T[],
   cal: TradingCalendar,
+  now: number = Date.now(),
+  lastTradeAt?: number,
 ): { points: T[]; previousClose?: number } {
+  const today = toExchangeLocal(cal, new Date(now));
+  const todayHours = hoursFor(cal, today.isoDate, today.weekday);
+  const bell = sessionWindow(cal, new Date(now))?.regular;
+  const trading =
+    todayHours !== undefined &&
+    bell !== undefined &&
+    today.minuteOfDay >= todayHours.open &&
+    today.minuteOfDay < todayHours.close &&
+    (lastTradeAt === undefined || lastTradeAt >= bell.start);
+
   if (points.length === 0) return { points };
 
   const stamped = points.map((p) => {
@@ -328,15 +363,18 @@ export function pickSession<T extends { t: number; close: number }>(
 
   const newestFirst = [...new Set(stamped.map((s) => s.day))].sort().reverse();
   const regularOn = (d: string) => stamped.filter((s) => s.day === d && s.regular);
-  const chosen =
-    newestFirst.find((d) => regularOn(d).length >= 2) ??
-    newestFirst.find((d) => regularOn(d).length >= 1) ??
-    // Nothing looks like a regular session — an exchange whose hours we have
-    // wrong. Show the newest day whole rather than nothing at all.
-    newestFirst[0];
+  // While the bell is ringing the session is today's, full stop — even before
+  // a single bar has printed. Off hours, the newest day that traded.
+  const chosen = trading
+    ? today.isoDate
+    : (newestFirst.find((d) => regularOn(d).length >= 2) ??
+      newestFirst.find((d) => regularOn(d).length >= 1) ??
+      // Nothing looks like a regular session — an exchange whose hours we have
+      // wrong. Show the newest day whole rather than nothing at all.
+      newestFirst[0]);
 
   const session = regularOn(chosen);
-  const kept = session.length ? session : stamped.filter((s) => s.day === chosen);
+  const kept = session.length || trading ? session : stamped.filter((s) => s.day === chosen);
   const before = stamped.filter((s) => s.day < chosen && s.regular);
   return {
     points: kept.map((s) => s.p),

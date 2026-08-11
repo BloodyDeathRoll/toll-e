@@ -5,6 +5,7 @@ import {
   intradayBounds,
   intradaySeries,
   scheduleFor,
+  sessionLine,
   toExchangeLocal,
 } from './calendar';
 import { getMarket } from './registry';
@@ -225,17 +226,87 @@ describe('intradaySeries', () => {
     expect(s.points).toEqual(points.slice(1));
     expect(s.from).toBe(at('2026-08-04T13:30:00Z'));
     expect(s.to).toBe(at('2026-08-04T20:00:00Z'));
+    expect(s.live).toBe(true);
   });
 
   it('keeps the whole series off hours', () => {
     const points = bars('2026-08-04T13:30:00Z', '2026-08-04T20:00:00Z');
     const s = intradaySeries(us, points, at('2026-08-04T23:00:00Z'));
-    expect(s).toEqual({ points, from: points[0].t, to: points[1].t });
+    expect(s).toEqual({ points, from: points[0].t, to: points[1].t, live: false });
   });
 
-  it('keeps the last finished session when the live one has no prints', () => {
+  it('keeps the last finished session when nothing says the market traded', () => {
+    // Live by the calendar, but no bars today and no last-trade stamp: an
+    // unlisted holiday for all we know, so the finished day stays up.
     const points = bars('2026-08-03T13:30:00Z', '2026-08-03T20:00:00Z');
     const s = intradaySeries(us, points, at('2026-08-04T15:00:00Z'));
-    expect(s).toEqual({ points, from: points[0].t, to: points[1].t });
+    expect(s).toEqual({ points, from: points[0].t, to: points[1].t, live: false });
+  });
+
+  it('opens the session axis on the bell, before any bar has printed', () => {
+    // 09:31 EDT. The 5m feed still holds only yesterday, but the tape has
+    // printed today — that is view one, empty, for the caller to anchor.
+    const points = bars('2026-08-03T13:30:00Z', '2026-08-03T20:00:00Z');
+    const now = at('2026-08-04T13:31:00Z');
+    const s = intradaySeries(us, points, now, now);
+    expect(s).toEqual({
+      points: [],
+      from: at('2026-08-04T13:30:00Z'),
+      to: at('2026-08-04T20:00:00Z'),
+      live: true,
+    });
+  });
+
+  it('holds the finished session when the last trade predates the bell', () => {
+    // Calendar says open, tape says the last print was yesterday: shut.
+    const points = bars('2026-08-03T13:30:00Z', '2026-08-03T20:00:00Z');
+    const s = intradaySeries(us, points, at('2026-08-04T15:00:00Z'), at('2026-08-03T20:00:00Z'));
+    expect(s.live).toBe(false);
+    expect(s.points).toEqual(points);
+  });
+});
+
+describe('sessionLine', () => {
+  const at = (iso: string) => utc(iso).getTime();
+  const open = at('2026-08-04T13:30:00Z'); // 09:30 EDT
+  const close = at('2026-08-04T20:00:00Z');
+
+  it('draws previous close → live price when the bell has just rung', () => {
+    const now = at('2026-08-04T13:32:00Z');
+    const l = sessionLine(us, [], { previousClose: 100, price: 101, priceAt: now, now });
+    expect(l.live).toBe(true);
+    expect(l.from).toBe(open);
+    expect(l.to).toBe(close);
+    expect(l.points).toEqual([
+      { t: open, v: 100 },
+      { t: now, v: 101 },
+    ]);
+  });
+
+  it('anchors the bars at the previous close and tips them with the quote', () => {
+    const now = at('2026-08-04T15:03:00Z');
+    const bar = { t: at('2026-08-04T15:00:00Z'), v: 104 };
+    const l = sessionLine(us, [bar], { previousClose: 100, price: 105, priceAt: now, now });
+    expect(l.points).toEqual([{ t: open, v: 100 }, bar, { t: now, v: 105 }]);
+  });
+
+  it('leaves a bar stamped later than the quote as the last point', () => {
+    const now = at('2026-08-04T15:03:00Z');
+    const bar = { t: at('2026-08-04T15:05:00Z'), v: 104 };
+    const l = sessionLine(us, [bar], { previousClose: 100, price: 105, priceAt: at('2026-08-04T15:00:00Z'), now });
+    expect(l.points).toEqual([{ t: open, v: 100 }, bar]);
+  });
+
+  it('adds nothing off hours — the finished session is the line', () => {
+    const points = [
+      { t: open, v: 100 },
+      { t: close, v: 110 },
+    ];
+    const l = sessionLine(us, points, {
+      previousClose: 99,
+      price: 111,
+      now: at('2026-08-04T23:00:00Z'),
+    });
+    expect(l).toEqual({ points, from: open, to: close, live: false });
   });
 });

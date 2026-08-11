@@ -4,7 +4,8 @@ import { cached } from './cache';
 import { getChartFromDb, getFxFallback, getQuotesFromDb } from './fallback';
 import { persistDailyCloses, persistFx } from './persist';
 import { YahooProvider } from './yahoo';
-import { getMarket } from '@/src/markets/registry';
+import { sessionWindow } from '@/src/markets/calendar';
+import { getMarket, marketForSymbol } from '@/src/markets/registry';
 import type {
   ChartRange,
   ChartSeries,
@@ -60,9 +61,25 @@ export async function getQuotes(symbols: string[]): Promise<Quote[]> {
   });
 }
 
+/**
+ * Intraday TTL, clamped so a cached entry never outlives the session it was
+ * fetched in. Five minutes either side of the opening bell is one cache
+ * entry, and the one fetched at 09:29 holds *yesterday's* finished session —
+ * serving it until 09:34 is what made the first minutes of trading render a
+ * full-width chart of the wrong day. Expire exactly on the bell instead.
+ */
+function intradayTtl(symbol: string, now: number = Date.now()): number {
+  const win = sessionWindow(marketForSymbol(symbol).calendar, new Date(now));
+  const nextEdge = win
+    ? [win.regular.start, win.regular.end].find((edge) => edge > now)
+    : undefined;
+  if (nextEdge === undefined) return TTL.chartIntraday;
+  return Math.max(1_000, Math.min(TTL.chartIntraday, nextEdge - now));
+}
+
 export async function getChart(symbol: string, range: ChartRange): Promise<ChartSeries> {
   const intraday = range === '1d' || range === '5d';
-  return cached(`chart:${symbol}:${range}`, intraday ? TTL.chartIntraday : TTL.chartDaily, async () => {
+  return cached(`chart:${symbol}:${range}`, intraday ? intradayTtl(symbol) : TTL.chartDaily, async () => {
     try {
       const series = await yahoo(() => provider.getChart(symbol, range));
       persistDailyCloses(series);
