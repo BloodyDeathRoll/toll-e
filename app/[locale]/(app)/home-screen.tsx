@@ -20,6 +20,7 @@ import { Logo } from '@/components/logo';
 import { ReserveBar } from '@/components/reserve-bar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SessionSparkline, Sparkline } from '@/components/charts';
+import { SwipeRow } from '@/components/swipe-row';
 import { WatchlistAccordions } from '@/components/watchlist-accordions';
 import { WatchlistCard } from '@/components/watchlist-card';
 import { useWatchlists } from '@/components/use-watchlists';
@@ -132,7 +133,14 @@ export function HomeScreen() {
   const holdingSymbols = overlayRows.map((r) => r.symbol);
   const { quotes: holdingQuotes } = useQuotes(holdingSymbols);
   const holdingCharts = useCharts(holdingSymbols, '1d');
-  const indexSymbols = data.indexes.slice(0, 3).map((ix) => ix.symbol);
+  // Every index this market tracks, in registry order — the strip swipes, so
+  // there is no reason to show a subset. Demo entries supply the display name
+  // and a fallback spark; a symbol the registry does not track would never get
+  // a live quote, so the registry is what decides.
+  const trackedIndexes = market.indexes
+    .map((symbol) => data.indexes.find((ix) => ix.symbol === symbol))
+    .filter((ix): ix is (typeof data.indexes)[number] => Boolean(ix));
+  const indexSymbols = trackedIndexes.map((ix) => ix.symbol);
   const indexCharts = useCharts(indexSymbols, '1d');
   // Yesterday's close for the whole portfolio — the chart's dashed datum.
   const portfolioPrevClose = overlayRows.every((r) => holdingQuotes[r.symbol]?.previousClose)
@@ -225,42 +233,47 @@ export function HomeScreen() {
           </>
         )}
 
-        {/* Index trio */}
-        <section className="flex gap-2.5 px-6 py-6">
-          {data.indexes.slice(0, 3).map((ix) => {
-            const live = indexQuotes[ix.symbol];
-            const value = live?.price ?? ix.value;
-            const pct = live?.changePct ?? ix.changePct;
-            const ixSeries = indexCharts[ix.symbol];
-            return (
-              <div
-                key={ix.symbol}
-                className="flex flex-1 flex-col gap-1 rounded-lg border border-border bg-card p-2.5"
-              >
-                <span className="text-sm font-medium text-foreground">{name(ix)}</span>
-                {ixSeries ? (
-                  <SessionSparkline
-                    points={ixSeries.points}
-                    previousClose={live?.previousClose ?? ixSeries.previousClose}
-                    calendar={market.calendar}
-                    width={90}
-                    height={30}
-                  />
-                ) : (
-                  <Sparkline points={ix.spark ?? []} up={pct >= 0} width={90} height={30} />
-                )}
-                <span dir="ltr" className="self-start text-sm font-medium text-foreground tabular-nums">
-                  {fmtNum(value, nl)}
-                </span>
-                <span
-                  dir="ltr"
-                  className={cn('self-start text-sm font-medium tabular-nums', pct >= 0 ? 'text-gain' : 'text-loss')}
+        {/* Index strip: three cards to a screen, the rest a swipe away. */}
+        <section className="py-6">
+          <SwipeRow itemClassName="w-[calc((100%-1.25rem)/3)]" label={t('home.indexes')}>
+            {trackedIndexes.map((ix) => {
+              const live = indexQuotes[ix.symbol];
+              const value = live?.price ?? ix.value;
+              const pct = live?.changePct ?? ix.changePct;
+              const ixSeries = indexCharts[ix.symbol];
+              return (
+                <div
+                  key={ix.symbol}
+                  className="flex h-full flex-col gap-1 rounded-lg border border-border bg-card p-2.5"
                 >
-                  {fmtPct(pct, nl)}
-                </span>
-              </div>
-            );
-          })}
+                  <span className="truncate text-sm font-medium text-foreground">{name(ix)}</span>
+                  {ixSeries ? (
+                    <SessionSparkline
+                      points={ixSeries.points}
+                      previousClose={live?.previousClose ?? ixSeries.previousClose}
+                      calendar={market.calendar}
+                      width={90}
+                      height={30}
+                    />
+                  ) : (
+                    <Sparkline points={ix.spark ?? []} up={pct >= 0} width={90} height={30} />
+                  )}
+                  <span dir="ltr" className="self-start text-sm font-medium text-foreground tabular-nums">
+                    {fmtNum(value, nl)}
+                  </span>
+                  <span
+                    dir="ltr"
+                    className={cn(
+                      'self-start text-sm font-medium tabular-nums',
+                      pct >= 0 ? 'text-gain' : 'text-loss',
+                    )}
+                  >
+                    {fmtPct(pct, nl)}
+                  </span>
+                </div>
+              );
+            })}
+          </SwipeRow>
         </section>
 
         {/* Holdings */}

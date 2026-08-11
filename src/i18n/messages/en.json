@@ -49,6 +49,7 @@
     }
   },
   "home": {
+    "indexes": "Market indexes",
     "portfolioValue": "Portfolio value",
     "holdingsIn": "holdings · {currency}",
     "today": "today",

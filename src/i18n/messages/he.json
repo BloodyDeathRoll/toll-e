@@ -49,6 +49,7 @@
     }
   },
   "home": {
+    "indexes": "מדדי שוק",
     "portfolioValue": "שווי התיק",
     "holdingsIn": "החזקות · {currency}",
     "today": "היום",
