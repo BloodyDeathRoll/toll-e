@@ -18,9 +18,12 @@ export interface MarketDef {
 
 const h = (hh: number, mm: number) => hh * 60 + mm;
 
-// NYSE/Nasdaq regular session, US Eastern. Holidays filled in Phase 1.
+// NYSE/Nasdaq regular session, US Eastern.
 // Extended hours: pre-market 04:00–09:30, after-hours 16:00–20:00.
 const usDay = { preOpen: h(4, 0), open: h(9, 30), close: h(16, 0), postClose: h(20, 0) };
+// Half-day: 13:00 bell, after-hours ends 17:00. The intraday axis narrows to
+// match, so an early close still reads as a full session.
+const usHalfDay = { preOpen: h(4, 0), open: h(9, 30), close: h(13, 0), postClose: h(17, 0) };
 const usCalendar: TradingCalendar = {
   timezone: 'America/New_York',
   schedules: [
@@ -28,7 +31,37 @@ const usCalendar: TradingCalendar = {
       hours: { 1: usDay, 2: usDay, 3: usDay, 4: usDay, 5: usDay },
     },
   ],
-  holidays: [],
+  // NYSE/Nasdaq closures, weekend dates already resolved to their observed
+  // weekday. Extend each December for the year after next.
+  holidays: [
+    // 2026
+    '2026-01-01', // New Year's Day
+    '2026-01-19', // Martin Luther King Jr. Day
+    '2026-02-16', // Washington's Birthday
+    '2026-04-03', // Good Friday
+    '2026-05-25', // Memorial Day
+    '2026-06-19', // Juneteenth
+    '2026-07-03', // Independence Day (observed, the 4th is a Saturday)
+    '2026-09-07', // Labor Day
+    '2026-11-26', // Thanksgiving
+    '2026-12-25', // Christmas
+    // 2027
+    '2027-01-01',
+    '2027-01-18',
+    '2027-02-15',
+    '2027-03-26', // Good Friday
+    '2027-05-31',
+    '2027-06-18', // Juneteenth (observed)
+    '2027-07-05', // Independence Day (observed)
+    '2027-09-06',
+    '2027-11-25',
+    '2027-12-24', // Christmas (observed)
+  ],
+  specialHours: {
+    '2026-11-27': usHalfDay, // day after Thanksgiving
+    '2026-12-24': usHalfDay, // Christmas Eve
+    '2027-11-26': usHalfDay, // day after Thanksgiving
+  },
 };
 
 // TASE: Sun–Thu historically; moved to Mon–Fri in January 2026.
@@ -52,6 +85,9 @@ const ilCalendar: TradingCalendar = {
       hours: { 1: ilDay, 2: ilDay, 3: ilDay, 4: ilDay, 5: ilFri },
     },
   ],
+  // TODO(verify): TASE closures follow the Hebrew calendar and are not
+  // encoded yet. Charts survive an unlisted one — a session with no prints of
+  // its own falls back to the last finished session, drawn full width.
   holidays: [],
 };
 

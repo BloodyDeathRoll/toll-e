@@ -11,7 +11,8 @@ import type {
   StockFinancials,
   Summary,
 } from './types';
-import type { SessionPhase } from '@/src/markets/calendar';
+import { hoursFor, toExchangeLocal, type SessionPhase, type TradingCalendar } from '@/src/markets/calendar';
+import { marketForSymbol } from '@/src/markets/registry';
 
 // Unofficial Yahoo endpoints (toll-e-plan.md §5) — accepted MVP risk, and the
 // reason everything routes through the MarketDataProvider interface.
@@ -113,7 +114,7 @@ export class YahooProvider implements MarketDataProvider {
 
     let sessionPrevClose: number | undefined;
     if (range === '1d' && points.length > 0) {
-      const session = pickSession(points, (res.meta.gmtoffset ?? 0) * 1000);
+      const session = pickSession(points, marketForSymbol(symbol).calendar);
       points = session.points;
       sessionPrevClose = session.previousClose;
     }
@@ -289,32 +290,56 @@ export class YahooProvider implements MarketDataProvider {
 }
 
 /**
- * Reduce an over-fetched intraday series to a single session.
+ * Reduce an over-fetched intraday series to a single regular session.
  *
- * The newest exchange-local day that has actually *traded* wins, so a chart
- * keeps showing the last session's shape until the next one opens — an index
- * at 09:31, holding a single print, would otherwise collapse to a dot.
+ * A session is bell-to-bell: only regular-hours bars count, and the newest
+ * exchange-local day that has actually *traded* wins. So the chart keeps
+ * showing the last finished session until the next one opens — a handful of
+ * 04:00 pre-market prints is not a day, and an index at 09:31 holding a
+ * single print would collapse to a dot.
  *
- * `previousClose` is the last print before the chosen session: a fallback
+ * Extended-hours bars are dropped rather than plotted: the pre/post move has
+ * its own quote pill, and mixing it in is what stretched fifteen minutes of
+ * pre-market across a sixteen-hour axis.
+ *
+ * `previousClose` is the previous session's last regular print: a fallback
  * datum for the dashed reference line. Callers prefer the quote's official
- * previous close, which is what the percentage pills are computed from, since
- * this one can be a post-market tick a few cents off. Chart metadata's
- * chartPreviousClose is not usable at all — it sits before the whole
- * over-fetched window, days away.
+ * previous close, which is what the percentage pills are computed from. Chart
+ * metadata's chartPreviousClose is not usable at all — it sits before the
+ * whole over-fetched window, days away.
  */
 export function pickSession<T extends { t: number; close: number }>(
   points: T[],
-  offsetMs: number,
+  cal: TradingCalendar,
 ): { points: T[]; previousClose?: number } {
   if (points.length === 0) return { points };
-  const day = 24 * 60 * 60 * 1000;
-  const dayKey = (t: number) => Math.floor((t + offsetMs) / day);
-  const days = [...new Set(points.map((p) => dayKey(p.t)))].sort((a, b) => a - b);
-  const traded = days.filter((d) => points.filter((p) => dayKey(p.t) === d).length >= 2);
-  const chosen = traded.length ? traded[traded.length - 1] : days[days.length - 1];
-  const before = points.filter((p) => dayKey(p.t) < chosen);
+
+  const stamped = points.map((p) => {
+    const local = toExchangeLocal(cal, new Date(p.t));
+    const hours = hoursFor(cal, local.isoDate, local.weekday);
+    return {
+      p,
+      day: local.isoDate,
+      // The bell itself is in: a bar stamped 16:00 is the closing auction,
+      // not after-hours.
+      regular: hours !== undefined && local.minuteOfDay >= hours.open && local.minuteOfDay <= hours.close,
+    };
+  });
+
+  const newestFirst = [...new Set(stamped.map((s) => s.day))].sort().reverse();
+  const regularOn = (d: string) => stamped.filter((s) => s.day === d && s.regular);
+  const chosen =
+    newestFirst.find((d) => regularOn(d).length >= 2) ??
+    newestFirst.find((d) => regularOn(d).length >= 1) ??
+    // Nothing looks like a regular session — an exchange whose hours we have
+    // wrong. Show the newest day whole rather than nothing at all.
+    newestFirst[0];
+
+  const session = regularOn(chosen);
+  const kept = session.length ? session : stamped.filter((s) => s.day === chosen);
+  const before = stamped.filter((s) => s.day < chosen && s.regular);
   return {
-    points: points.filter((p) => dayKey(p.t) === chosen),
-    previousClose: before.length ? before[before.length - 1].close : undefined,
+    points: kept.map((s) => s.p),
+    previousClose: before.length ? before[before.length - 1].p.close : undefined,
   };
 }

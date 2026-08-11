@@ -1,7 +1,7 @@
 'use client';
 
 import { useId } from 'react';
-import { intradayBounds } from '@/src/markets/calendar';
+import { intradaySeries } from '@/src/markets/calendar';
 import { getMarket } from '@/src/markets/registry';
 import type { ChartPoint } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
@@ -34,9 +34,9 @@ export function PriceChart({
   /** Exchange tz — intraday tick labels shift to its wall clock. */
   timezone?: string;
   /**
-   * Yahoo-style 1D axis: the scale spans the exchange's whole extended
-   * session, so a live session only fills the part of the day it has traded
-   * instead of stretching two hours across the full width.
+   * Yahoo-style 1D axis: while the market is trading the scale spans the
+   * whole session, so a live day only fills the part of it that has traded.
+   * Off hours the finished session spans the full width.
    */
   fullDay?: boolean;
   /** Dashed reference line for an intraday day. */
@@ -52,21 +52,22 @@ export function PriceChart({
   const plotH = height - TIME_H;
   const innerH = plotH - PAD_Y * 2;
 
-  // x-domain: the whole session when asked (partial day ⇒ partial chart),
-  // otherwise the data's own extent.
-  const firstT = points[0].t;
-  const lastT = points[points.length - 1].t;
-  const bounds =
+  // x-domain: the live session when asked (a day in progress ⇒ a partial
+  // chart), otherwise the data's own extent.
+  const series =
     fullDay && intraday && marketId
-      ? intradayBounds(getMarket(marketId).calendar, firstT, lastT)
-      : { from: firstT, to: lastT };
-  const xFrom = bounds.from;
-  const xTo = bounds.to;
+      ? intradaySeries(getMarket(marketId).calendar, points)
+      : { points, from: points[0].t, to: points[points.length - 1].t };
+  const shown = series.points;
+  const firstT = shown[0].t;
+  const lastT = shown[shown.length - 1].t;
+  const xFrom = series.from;
+  const xTo = series.to;
   const xSpan = xTo - xFrom || 1;
   const x = (t: number) => ((t - xFrom) / xSpan) * VB;
 
   // y-domain: the series, widened to keep the previous-close line on screen.
-  const closes = points.map((p) => p.close);
+  const closes = shown.map((p) => p.close);
   const baseline = intraday ? previousClose : undefined;
   const lo = Math.min(...closes, baseline ?? Infinity);
   const hi = Math.max(...closes, baseline ?? -Infinity);
@@ -75,7 +76,7 @@ export function PriceChart({
   const yMax = hi + pad;
   const y = (v: number) => PAD_Y + (1 - (v - yMin) / (yMax - yMin || 1)) * innerH;
 
-  const line = points.map((p) => `${x(p.t).toFixed(1)},${y(p.close).toFixed(1)}`).join(' ');
+  const line = shown.map((p) => `${x(p.t).toFixed(1)},${y(p.close).toFixed(1)}`).join(' ');
   const area = `${x(firstT).toFixed(1)},${plotH} ${line} ${x(lastT).toFixed(1)},${plotH}`;
 
   const priceTicks = Array.from({ length: 4 }, (_, i) => yMin + ((yMax - yMin) * (i + 0.5)) / 4);

@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { intradayBounds, type TradingCalendar } from '@/src/markets/calendar';
+import { intradaySeries, type TradingCalendar } from '@/src/markets/calendar';
 import type { ChartPoint } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
 
@@ -93,10 +93,10 @@ export function twoToneSpark(closes: number[], height = 24): { points: number[];
 }
 
 /**
- * Intraday sparkline drawn against the exchange's whole extended session:
- * each point sits at its real time-of-day, so a session that opens at 09:30
- * starts a third of the way in and a live day stops where it has traded —
- * position and width both carry meaning, as on Yahoo.
+ * Intraday sparkline. Each point sits at its real time-of-day against the
+ * session axis: while the market is trading that is today's bell-to-bell
+ * window, so a live day stops where it has traded — as on Yahoo. Off hours
+ * the finished session spans the full width.
  *
  * The dashed rule is the previous close, and the line is two-tone around it:
  * green while above yesterday's close, red while below.
@@ -117,14 +117,14 @@ export function SessionSparkline({
   className?: string;
 }) {
   const id = useId();
-  if (points.length < 2) return <span style={{ width, height }} className={className} aria-hidden />;
+  const { points: shown, from, to } = intradaySeries(calendar, points);
+  if (shown.length < 2) return <span style={{ width, height }} className={className} aria-hidden />;
 
-  const last = points[points.length - 1];
-  const { from, to } = intradayBounds(calendar, points[0].t, last.t);
+  const last = shown[shown.length - 1];
   const span = to - from || 1;
   const x = (t: number) => ((t - from) / span) * width;
 
-  const closes = points.map((p) => p.close);
+  const closes = shown.map((p) => p.close);
   const lo = Math.min(...closes, previousClose ?? Infinity);
   const hi = Math.max(...closes, previousClose ?? -Infinity);
   // Barely any headroom: a mark this small has amplitude to spare, and a
@@ -134,10 +134,10 @@ export function SessionSparkline({
   const yMax = hi + pad;
   const y = (v: number) => (1 - (v - yMin) / (yMax - yMin || 1)) * height;
 
-  const line = points.map((p) => `${x(p.t).toFixed(1)},${y(p.close).toFixed(1)}`).join(' ');
+  const line = shown.map((p) => `${x(p.t).toFixed(1)},${y(p.close).toFixed(1)}`).join(' ');
   const base = previousClose === undefined ? undefined : y(previousClose);
   const up = previousClose === undefined
-    ? last.close >= points[0].close
+    ? last.close >= shown[0].close
     : last.close >= previousClose;
 
   return (

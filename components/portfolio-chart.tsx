@@ -2,7 +2,7 @@
 
 import { useId, useMemo } from 'react';
 import { useCharts } from '@/components/use-market-data';
-import { intradayBounds } from '@/src/markets/calendar';
+import { intradaySeries } from '@/src/markets/calendar';
 import { getMarket } from '@/src/markets/registry';
 import type { ChartRange } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
@@ -60,10 +60,20 @@ export function PortfolioChart({
     return out;
   }, [rows, charts]);
 
-  if (series.length < 2) return <div style={{ height }} className={className} aria-hidden />;
+  // Intraday: while the market is trading the axis is the session, so a day
+  // in progress fills only the part it has traded (the Yahoo shape) and
+  // anything outside those hours is left off. Other ranges — and off hours —
+  // keep the series' own extent, full width.
+  const window =
+    range === '1d' && marketId
+      ? intradaySeries(getMarket(marketId).calendar, series)
+      : { points: series, from: series[0]?.t ?? 0, to: series[series.length - 1]?.t ?? 1 };
+  const shown = window.points;
+
+  if (shown.length < 2) return <div style={{ height }} className={className} aria-hidden />;
 
   const w = 402;
-  const values = series.map((p) => p.v);
+  const values = shown.map((p) => p.v);
   // The dashed previous close stays in frame, so it joins the y-domain.
   const base = range === '1d' ? previousClose : undefined;
   const min = Math.min(...values, base ?? Infinity);
@@ -71,21 +81,13 @@ export function PortfolioChart({
   const span = max - min || 1;
   const pad = 4;
 
-  // Intraday: the axis spans the exchange's extended session, so a day in
-  // progress fills only the part it has traded (the Yahoo shape). Other
-  // ranges keep using the series' own extent.
-  const bounds = range === '1d' && marketId
-    ? intradayBounds(getMarket(marketId).calendar, series[0].t, series[series.length - 1].t)
-    : { from: series[0].t, to: series[series.length - 1].t };
-  const tFrom = bounds.from;
-  const tTo = bounds.to;
-  const tSpan = tTo - tFrom || 1;
-  const x = (t: number) => ((t - tFrom) / tSpan) * w;
+  const tSpan = window.to - window.from || 1;
+  const x = (t: number) => ((t - window.from) / tSpan) * w;
 
   const yOf = (v: number) => height - pad - ((v - min) / span) * (height - pad * 2);
   const ys = values.map(yOf);
-  const line = series.map((p, i) => `${x(p.t).toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
-  const area = `${x(series[0].t).toFixed(1)},${height} ${line} ${x(series[series.length - 1].t).toFixed(1)},${height}`;
+  const line = shown.map((p, i) => `${x(p.t).toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
+  const area = `${x(shown[0].t).toFixed(1)},${height} ${line} ${x(shown[shown.length - 1].t).toFixed(1)},${height}`;
   const up = base !== undefined
     ? values[values.length - 1] >= base
     : values[values.length - 1] >= values[0];

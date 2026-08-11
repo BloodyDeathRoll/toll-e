@@ -34,6 +34,14 @@ export interface TradingCalendar {
   schedules: SessionSchedule[];
   /** ISO dates (exchange-local) the exchange is fully closed. Filled per-year in Phase 1. */
   holidays: string[];
+  /**
+   * ISO date (exchange-local) → that day's hours, overriding the weekday
+   * schedule: half-days (Christmas Eve, the day after Thanksgiving), late
+   * opens, one-off extensions. Every session question — is it open, which
+   * phase, and how wide the intraday axis is — goes through these first, so a
+   * 13:00 close narrows the chart to 09:30–13:00 on that day only.
+   */
+  specialHours?: Record<string, SessionHours>;
 }
 
 export interface ExchangeLocalTime {
@@ -75,6 +83,20 @@ export function scheduleFor(cal: TradingCalendar, isoDate: string): SessionSched
   return active;
 }
 
+/**
+ * The hours in force on an exchange-local date: a holiday is shut, a special
+ * day (early close, late open) overrides its weekday, everything else follows
+ * the schedule. `undefined` = the exchange does not trade that day.
+ */
+export function hoursFor(
+  cal: TradingCalendar,
+  isoDate: string,
+  weekday: Weekday,
+): SessionHours | undefined {
+  if (cal.holidays.includes(isoDate)) return undefined;
+  return cal.specialHours?.[isoDate] ?? scheduleFor(cal, isoDate).hours[weekday];
+}
+
 export interface MarketState {
   open: boolean;
   /** Minutes until the next open/close transition, when computable within 14 days. */
@@ -87,10 +109,9 @@ export interface MarketState {
  */
 export function getMarketState(cal: TradingCalendar, now: Date): MarketState {
   const local = toExchangeLocal(cal, now);
-  const today = scheduleFor(cal, local.isoDate).hours[local.weekday];
-  const isHoliday = cal.holidays.includes(local.isoDate);
+  const today = hoursFor(cal, local.isoDate, local.weekday);
 
-  if (today && !isHoliday && local.minuteOfDay >= today.open && local.minuteOfDay < today.close) {
+  if (today && local.minuteOfDay >= today.open && local.minuteOfDay < today.close) {
     return { open: true, minutesToChange: today.close - local.minuteOfDay };
   }
 
@@ -98,8 +119,7 @@ export function getMarketState(cal: TradingCalendar, now: Date): MarketState {
   for (let d = 0; d < 14; d++) {
     const probe = new Date(now.getTime() + d * 24 * 60 * 60 * 1000);
     const p = toExchangeLocal(cal, probe);
-    if (cal.holidays.includes(p.isoDate)) continue;
-    const h = scheduleFor(cal, p.isoDate).hours[p.weekday];
+    const h = hoursFor(cal, p.isoDate, p.weekday);
     if (!h) continue;
     if (d === 0 && local.minuteOfDay >= h.open) continue; // today's session already over
     const minutes =
@@ -130,11 +150,10 @@ export interface SessionState {
 /** Which trading phase is the exchange in at `now`? Holiday-aware. */
 export function getSessionState(cal: TradingCalendar, now: Date): SessionState {
   const local = toExchangeLocal(cal, now);
-  const today = scheduleFor(cal, local.isoDate).hours[local.weekday];
-  const isHoliday = cal.holidays.includes(local.isoDate);
+  const today = hoursFor(cal, local.isoDate, local.weekday);
   const m = local.minuteOfDay;
 
-  if (today && !isHoliday) {
+  if (today) {
     if (today.preOpen !== undefined && m >= today.preOpen && m < today.open) {
       return { phase: 'pre', minutesToChange: today.open - m };
     }
@@ -154,17 +173,15 @@ export function getSessionState(cal: TradingCalendar, now: Date): SessionState {
  * falling back to the regular open/close) for the exchange-local day that
  * contains `at`. Returns null when the exchange is shut that day.
  *
- * Intraday charts plot against this window rather than the data's own extent,
- * so a session in progress fills only the part of the axis it has actually
- * traded — the Yahoo shape, instead of stretching two hours across a day.
+ * `regular` is the bell-to-bell session, and it is what intraday charts are
+ * drawn against while trading (see {@link intradayBounds}).
  */
 export function sessionWindow(
   cal: TradingCalendar,
   at: Date,
 ): { start: number; end: number; regular: { start: number; end: number } } | null {
   const local = toExchangeLocal(cal, at);
-  if (cal.holidays.includes(local.isoDate)) return null;
-  const hours = scheduleFor(cal, local.isoDate).hours[local.weekday];
+  const hours = hoursFor(cal, local.isoDate, local.weekday);
   if (!hours) return null;
 
   // Absolute ms of exchange-local midnight: step back from `at` by its
@@ -186,8 +203,21 @@ export function sessionWindow(
 }
 
 /**
- * The x-axis bounds for an intraday series: the extended session when the
- * data actually reaches into pre/post hours, the regular session otherwise.
+ * The x-axis bounds for an intraday series. There are exactly two views:
+ *
+ * - **Trading.** The regular session is running *right now* and the series
+ *   belongs to it, so the axis is that day's bell-to-bell window (09:30–16:00
+ *   ET for the US, 09:59–17:25 for TASE, and whatever a special half-day
+ *   says). A session two hours in fills two hours of the width — the Yahoo
+ *   shape, and the only time a chart is allowed to stop short.
+ * - **Everything else.** Pre-market, after-hours, overnight, weekends,
+ *   holidays, half-days once their early bell has rung: the session on show
+ *   is finished, so it fills the whole width. No reserved space for trading
+ *   that is not coming.
+ *
+ * The test is against the clock, never the data — a market that stamps its
+ * last bar early, or a handful of pre-market prints on a day that has not
+ * opened, must not read as "still trading".
  */
 export function intradayBounds(
   cal: TradingCalendar,
@@ -195,16 +225,47 @@ export function intradayBounds(
   lastT: number,
   now: number = Date.now(),
 ): { from: number; to: number } {
-  const win = sessionWindow(cal, new Date(lastT));
-  if (!win) return { from: firstT, to: lastT };
-  // Once the bell has rung the day is complete, so the series fills the axis
-  // rather than leaving room for trading that is not coming. This also covers
-  // overnight, where the chart shows the last finished session. The test is
-  // against the clock, not the data: exchanges routinely stamp their final bar
-  // a few minutes early, and that must not read as "still trading".
-  if (now >= win.regular.end || lastT >= win.regular.end) return { from: firstT, to: lastT };
-  // Mid-session: reserve the whole day, extended hours included only for
-  // instruments that actually trade them.
-  const bounds = firstT < win.regular.start ? { start: win.start, end: win.end } : win.regular;
-  return { from: Math.min(bounds.start, firstT), to: Math.max(bounds.end, lastT) };
+  const win = liveSession(cal, now);
+  // The series has to be *this* session's; anything older (an unlisted
+  // holiday, a market that has not printed yet) is a finished day.
+  if (!win || lastT < win.start) return { from: firstT, to: lastT };
+  return { from: win.start, to: Math.max(win.end, lastT) };
+}
+
+/** The regular session in progress at `now`, or null outside trading hours. */
+function liveSession(cal: TradingCalendar, now: number): { start: number; end: number } | null {
+  const win = sessionWindow(cal, new Date(now));
+  if (!win) return null;
+  const { start, end } = win.regular;
+  return now >= start && now < end ? { start, end } : null;
+}
+
+/**
+ * An intraday series and the axis it is drawn against, in one call — the
+ * companion to {@link intradayBounds} for charts that plot points.
+ *
+ * While the session is live the axis is the trading day, so bars from outside
+ * it (a pre-market print that survived into the series) are dropped rather
+ * than drawn off the side of the canvas. Off hours the series is whole and
+ * spans the full width.
+ */
+export function intradaySeries<T extends { t: number }>(
+  cal: TradingCalendar,
+  points: T[],
+  now: number = Date.now(),
+): { points: T[]; from: number; to: number } {
+  const whole = () => ({
+    points,
+    from: points[0]?.t ?? 0,
+    to: points[points.length - 1]?.t ?? 1,
+  });
+  if (points.length === 0) return whole();
+
+  const win = liveSession(cal, now);
+  if (!win) return whole();
+  const session = points.filter((p) => p.t >= win.start);
+  // Live, but nothing has printed today — an unlisted holiday, or a market
+  // still waking up. What we hold is the last finished session: full width.
+  if (session.length === 0) return whole();
+  return { points: session, from: win.start, to: Math.max(win.end, session[session.length - 1].t) };
 }

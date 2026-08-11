@@ -3,6 +3,7 @@ import {
   getMarketState,
   getSessionState,
   intradayBounds,
+  intradaySeries,
   scheduleFor,
   toExchangeLocal,
 } from './calendar';
@@ -128,17 +129,16 @@ describe('intradayBounds', () => {
 
   const at = (iso: string) => utc(iso).getTime();
 
-  it('reserves the rest of the regular session mid-day for a regular-hours series', () => {
+  it('reserves the rest of the regular session while the market is trading', () => {
     const b = intradayBounds(us, open, at('2026-08-04T15:00:00Z'), at('2026-08-04T15:00:00Z')); // 11:00 EDT
     expect(b.from).toBe(open);
     expect(b.to).toBe(close);
   });
 
-  it('reserves the extended window when the series reaches into pre-market', () => {
+  it('never reserves extended hours — the axis is the bell-to-bell session', () => {
     const pre = utc('2026-08-04T08:00:00Z').getTime(); // 04:00 EDT
     const b = intradayBounds(us, pre, at('2026-08-04T15:00:00Z'), at('2026-08-04T15:00:00Z'));
-    expect(b.from).toBe(pre);
-    expect(b.to).toBe(utc('2026-08-05T00:00:00Z').getTime()); // 20:00 EDT
+    expect(b).toEqual({ from: open, to: close });
   });
 
   it('fills the axis once the closing bell has rung', () => {
@@ -150,6 +150,20 @@ describe('intradayBounds', () => {
     const post = at('2026-08-04T22:00:00Z'); // 18:00 EDT
     const b = intradayBounds(us, open, post, post);
     expect(b).toEqual({ from: open, to: post });
+  });
+
+  it('fills the axis in the pre-market, where the day has not opened yet', () => {
+    // 08:15 EDT: yesterday's finished session is what is on screen.
+    const now = at('2026-08-04T12:15:00Z');
+    const prevOpen = at('2026-08-03T13:30:00Z');
+    const prevClose = at('2026-08-03T20:00:00Z');
+    expect(intradayBounds(us, prevOpen, prevClose, now)).toEqual({ from: prevOpen, to: prevClose });
+  });
+
+  it('fills the axis when only pre-market has printed', () => {
+    const pre = at('2026-08-04T08:00:00Z'); // 04:00 EDT
+    const now = at('2026-08-04T08:15:00Z');
+    expect(intradayBounds(us, pre, now, now)).toEqual({ from: pre, to: now });
   });
 
   it('fills the axis when the last bar is stamped just before the bell', () => {
@@ -167,5 +181,61 @@ describe('intradayBounds', () => {
     const sat = utc('2026-08-08T14:00:00Z').getTime();
     const b = intradayBounds(us, sat - 3_600_000, sat, sat);
     expect(b).toEqual({ from: sat - 3_600_000, to: sat });
+  });
+
+  it('fills the axis on a holiday, even mid-"session"', () => {
+    // 2026-12-25 (Fri), 11:00 EST — the exchange is shut, so yesterday shows.
+    const prevOpen = at('2026-12-24T14:30:00Z');
+    const prevClose = at('2026-12-24T18:00:00Z');
+    const b = intradayBounds(us, prevOpen, prevClose, at('2026-12-25T16:00:00Z'));
+    expect(b).toEqual({ from: prevOpen, to: prevClose });
+  });
+
+  it('narrows to the early bell on a half-day, then fills once it rings', () => {
+    // 2026-12-24 (Thu) EST: half-day, 09:30–13:00.
+    const halfOpen = at('2026-12-24T14:30:00Z');
+    const halfClose = at('2026-12-24T18:00:00Z');
+    const midday = at('2026-12-24T16:00:00Z'); // 11:00 EST, still trading
+    expect(intradayBounds(us, halfOpen, midday, midday)).toEqual({ from: halfOpen, to: halfClose });
+    // 13:30 EST: the early close has rung, so the short day spans the width.
+    const afterBell = at('2026-12-24T18:30:00Z');
+    expect(intradayBounds(us, halfOpen, halfClose, afterBell)).toEqual({
+      from: halfOpen,
+      to: halfClose,
+    });
+  });
+
+  it('fills the axis when the series predates a live session', () => {
+    // Market open, but all we hold is the previous session (an unlisted
+    // holiday, or a symbol that has not printed today).
+    const prevOpen = at('2026-08-03T13:30:00Z');
+    const prevClose = at('2026-08-03T20:00:00Z');
+    const b = intradayBounds(us, prevOpen, prevClose, at('2026-08-04T15:00:00Z'));
+    expect(b).toEqual({ from: prevOpen, to: prevClose });
+  });
+});
+
+describe('intradaySeries', () => {
+  const at = (iso: string) => utc(iso).getTime();
+  const bars = (...isos: string[]) => isos.map((iso) => ({ t: at(iso) }));
+
+  it('drops pre-market bars while the session is running', () => {
+    const points = bars('2026-08-04T08:00:00Z', '2026-08-04T13:30:00Z', '2026-08-04T14:00:00Z');
+    const s = intradaySeries(us, points, at('2026-08-04T15:00:00Z'));
+    expect(s.points).toEqual(points.slice(1));
+    expect(s.from).toBe(at('2026-08-04T13:30:00Z'));
+    expect(s.to).toBe(at('2026-08-04T20:00:00Z'));
+  });
+
+  it('keeps the whole series off hours', () => {
+    const points = bars('2026-08-04T13:30:00Z', '2026-08-04T20:00:00Z');
+    const s = intradaySeries(us, points, at('2026-08-04T23:00:00Z'));
+    expect(s).toEqual({ points, from: points[0].t, to: points[1].t });
+  });
+
+  it('keeps the last finished session when the live one has no prints', () => {
+    const points = bars('2026-08-03T13:30:00Z', '2026-08-03T20:00:00Z');
+    const s = intradaySeries(us, points, at('2026-08-04T15:00:00Z'));
+    expect(s).toEqual({ points, from: points[0].t, to: points[1].t });
   });
 });
