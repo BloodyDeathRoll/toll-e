@@ -78,8 +78,24 @@ export interface Summary {
   currency: string;
   exchange?: string;
   sector?: string;
+  /** Finer than sector: 'Semiconductors' inside 'Technology'. */
+  industry?: string;
+  /** The provider's business description — a paragraph, not a tagline. */
+  description?: string;
   stats: KeyStats;
   nextEarningsDate?: string; // ISO date
+}
+
+/** Sector or industry — the two lenses a screen can be built on. */
+export type ScreenKind = 'sector' | 'industry';
+
+export interface Screen {
+  kind: ScreenKind;
+  /** The classification as the provider spells it. */
+  name: string;
+  /** How many instruments match in total; `quotes` is the leading slice. */
+  total: number;
+  quotes: Quote[];
 }
 
 export interface FxRate {
@@ -173,6 +189,8 @@ export interface MarketDataProvider {
   getQuote(symbols: string[]): Promise<Quote[]>;
   getChart(symbol: string, range: ChartRange): Promise<ChartSeries>;
   search(query: string): Promise<SearchResult[]>;
+  /** Leading instruments in a sector or industry, largest first. */
+  getScreen(kind: ScreenKind, name: string, marketId: string): Promise<Screen>;
   getSummary(symbol: string): Promise<Summary>;
   getFx(pair: string): Promise<FxRate>;
   getNews(symbol: string): Promise<NewsItem[]>;

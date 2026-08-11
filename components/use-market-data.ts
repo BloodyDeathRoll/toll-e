@@ -7,6 +7,8 @@ import type {
   FxRate,
   NewsItem,
   Quote,
+  Screen,
+  ScreenKind,
   SearchResult,
   StockAnalysis,
   StockFinancials,
@@ -132,6 +134,13 @@ export function useCharts(symbols: string[], range: ChartRange) {
     };
   }, [key, range]);
   return charts;
+}
+
+/** Leading names in a sector or industry, for the classification screen. */
+export function useScreen(kind: ScreenKind, name: string, marketId: string) {
+  return useJson<Screen>(
+    `/api/market/screen?kind=${kind}&name=${encodeURIComponent(name)}&market=${marketId}`,
+  );
 }
 
 export function useSummary(symbol: string) {

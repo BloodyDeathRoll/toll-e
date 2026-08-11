@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ListPlus, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
+import { InfoDot } from '@/components/info-dot';
 import { cn } from '@/lib/utils';
 
 /**
@@ -80,54 +81,11 @@ export function ListMenu({
 }
 
 /**
- * The 12px info dot beside a locked list's title. Its tooltip is the one
+ * The info dot beside a locked list's title. Its tooltip is the one
  * explanation Holdings needs, and it belongs here rather than hidden behind
  * the menu.
  */
 export function ListInfo({ note }: { note: string }) {
   const t = useTranslations('lists');
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [open]);
-
-  return (
-    <span className="relative ms-1 inline-flex self-start pt-px" ref={ref}>
-      <button
-        type="button"
-        aria-label={t('listInfo')}
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className="flex size-3 items-center justify-center"
-      >
-        <Info className="size-3 text-muted-foreground" />
-      </button>
-      {open && (
-        <span
-          role="tooltip"
-          className="absolute start-0 top-full z-50 mt-1 w-56 rounded-[20px] bg-well p-4 text-sm normal-case tracking-normal text-muted-foreground shadow-lg"
-        >
-          {note}
-        </span>
-      )}
-    </span>
-  );
-}
-
-/** 12×12 info glyph — lucide's own is stroke-tuned for 24px and reads muddy this small. */
-function Info({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 12 12" fill="none" className={className} aria-hidden>
-      <circle cx="6" cy="6" r="5.25" stroke="currentColor" strokeWidth="1.1" />
-      <circle cx="6" cy="3.4" r="0.75" fill="currentColor" />
-      <path d="M6 5.4v3.4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
-    </svg>
-  );
+  return <InfoDot label={t('listInfo')} note={note} className="ms-1 pt-px" />;
 }

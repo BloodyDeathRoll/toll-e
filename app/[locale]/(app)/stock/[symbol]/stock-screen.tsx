@@ -11,6 +11,7 @@ import { SessionBadge } from '@/components/session-indicator';
 import { LineChart } from '@/components/charts';
 import { ChangePill, AfterHours } from '@/components/quote-bits';
 import { UnderlineTabs } from '@/components/underline-tabs';
+import { InfoDot } from '@/components/info-dot';
 import { PriceChart, type ScrubPoint } from '@/components/price-chart';
 import {
   useAnalysis,
@@ -67,6 +68,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
     setRange(r);
   };
   const [finPeriod, setFinPeriod] = useState<'annual' | 'quarterly'>('annual');
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   // Deep-linkable tabs (?tab=news) — read after mount so SSR markup stays stable.
   useEffect(() => {
@@ -222,6 +224,43 @@ export function StockScreen({ symbol }: { symbol: string }) {
         <span className="text-xs text-muted-foreground">{t('earnings')}</span>
       </span>
     </div>
+  );
+
+  // About: the company in its own provider's words, and the two
+  // classifications it trades under. Each tag is a way out of this page —
+  // into the leading names that share it.
+  const aboutCard = (summary?.description || summary?.sector || summary?.industry) && (
+    <section className="flex flex-col gap-3 border-t border-border p-6">
+      <h2 className="text-xs uppercase text-muted-foreground">{t('about')}</h2>
+      {summary?.description && (
+        <p className={cn('text-sm leading-relaxed text-foreground', !aboutOpen && 'line-clamp-4')}>
+          {summary.description}
+        </p>
+      )}
+      {summary?.description && summary.description.length > 220 && (
+        <button
+          type="button"
+          onClick={() => setAboutOpen((v) => !v)}
+          className="self-start text-sm font-semibold text-primary"
+        >
+          {aboutOpen ? t('readLess') : t('readMore')}
+        </button>
+      )}
+      <div className="flex flex-wrap gap-2 pt-1">
+        {([['sector', summary?.sector], ['industry', summary?.industry]] as const).map(
+          ([kind, name]) =>
+            name && (
+              <Link
+                key={kind}
+                href={`/screen/${kind}/${encodeURIComponent(name)}`}
+                className="rounded-full border border-border bg-well px-3 py-1.5 text-[13px] text-foreground"
+              >
+                {name}
+              </Link>
+            ),
+        )}
+      </div>
+    </section>
   );
 
   const financialsCard = (
@@ -514,7 +553,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   <StatCell label={t('open')} value={fmtNum(stats.open, nl)} end />
                 </div>
                 <div className="flex items-center justify-between tabular-nums">
-                  <StatCell label={t('vol')} value={stats.volume} />
+                  <StatCell label={t('vol')} value={stats.volume} note={t('aboutVol')} />
                   <StatCell
                     label={t('avgVol')}
                     value={live?.avgVolume !== undefined ? fmtCompact(live.avgVolume, nl) : '—'}
@@ -522,17 +561,19 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   />
                 </div>
                 <div className="flex items-center justify-between tabular-nums">
-                  <StatCell label={t('pe')} value={fmtNum(stats.pe, nl, 1)} />
-                  <StatCell label={t('mktCap')} value={stats.marketCap} end />
+                  <StatCell label={t('pe')} value={fmtNum(stats.pe, nl, 1)} note={t('aboutPe')} />
+                  <StatCell label={t('mktCap')} value={stats.marketCap} note={t('aboutMktCap')} end />
                 </div>
                 <div className="flex items-center justify-between tabular-nums">
-                  <StatCell label={t('beta')} value={fmtNum(stats.beta, nl)} />
+                  <StatCell label={t('beta')} value={fmtNum(stats.beta, nl)} note={t('aboutBeta')} />
                   <StatCell label={t('divYield')} value={`${fmtNum(stats.divYieldPct, nl)}%`} end />
                 </div>
                 <div className="flex items-center justify-between tabular-nums">
                   <StatCell label={t('earningsDate')} value={fmtDate(eventDate, locale)} />
                 </div>
               </section>
+
+              {aboutCard}
             </>
           )}
           {tab === 'financials' && (
@@ -726,10 +767,28 @@ function RangeSlider({
   );
 }
 
-function StatCell({ label, value, end }: { label: string; value: string; end?: boolean }) {
+/**
+ * One key statistic. `note` adds the 12px info dot beside the label — the
+ * four figures a reader is most likely to have met without ever being told
+ * what they mean carry one.
+ */
+function StatCell({
+  label,
+  value,
+  note,
+  end,
+}: {
+  label: string;
+  value: string;
+  note?: string;
+  end?: boolean;
+}) {
   return (
     <span className={cn('flex flex-col gap-2', end && 'items-end')}>
-      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        {label}
+        {note && <InfoDot label={label} note={note} align={end ? 'end' : 'start'} />}
+      </span>
       <span dir="ltr" className="text-base font-medium text-foreground">{value}</span>
     </span>
   );

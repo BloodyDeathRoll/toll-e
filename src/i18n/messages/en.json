@@ -187,7 +187,14 @@
     "prevClose": "Previous Close",
     "avgVol": "Avg Volume",
     "earningsDate": "Earnings Date",
-    "analysisSection": "Analysis"
+    "analysisSection": "Analysis",
+    "about": "About",
+    "readMore": "More",
+    "readLess": "Less",
+    "aboutPe": "Price to earnings: what you pay for each unit of the company's annual profit. A high P/E means the market expects growth; a low one can mean a bargain or a business in trouble. Only comparable between companies in the same industry.",
+    "aboutVol": "Volume: shares traded today. Compare it with the average — unusually heavy trading means news, and it makes a price move more meaningful.",
+    "aboutMktCap": "Market cap: share price times shares outstanding, the whole company's price tag. It is what \"large cap\" and \"small cap\" mean, and it drives how steady a stock tends to be.",
+    "aboutBeta": "Beta: how hard the stock swings against the wider market. Above 1 moves more than the market, below 1 moves less, and a negative beta moves the other way."
   },
   "tx": {
     "title": "Add transaction",
@@ -532,5 +539,13 @@
         }
       ]
     }
+  },
+  "screen": {
+    "sector": "Sector",
+    "industry": "Industry",
+    "leading": "Leading by market cap",
+    "countOf": "{shown} of {total}",
+    "empty": "No listed companies matched this classification in the selected market.",
+    "failed": "Couldn't load this list."
   }
 }

@@ -12,6 +12,8 @@ import type {
   FxRate,
   NewsItem,
   Quote,
+  Screen,
+  ScreenKind,
   SearchResult,
   StockAnalysis,
   StockFinancials,
@@ -41,6 +43,8 @@ const TTL = {
   // reasonably fresh without hammering the endpoint.
   chartDaily: 60 * 60_000,
   search: 60 * 60_000,
+  // A sector's leading names barely move; their prices do, a little.
+  screen: 5 * 60_000,
   summary: 24 * 60 * 60_000,
   news: 15 * 60_000,
   // Analyst data and reported financials move on earnings cadence.
@@ -105,6 +109,17 @@ export async function search(query: string, marketId?: string): Promise<SearchRe
   );
 }
 
+/** Leading instruments in a sector or industry, largest first. */
+export async function getScreen(
+  kind: ScreenKind,
+  name: string,
+  marketId: string,
+): Promise<Screen> {
+  return cached(`screen:${kind}:${name}:${marketId}`, TTL.screen, () =>
+    yahoo(() => provider.getScreen(kind, name, marketId)),
+  );
+}
+
 export async function getSummary(symbol: string): Promise<Summary> {
   return cached(`summary:${symbol}`, TTL.summary, () => yahoo(() => provider.getSummary(symbol)));
 }
@@ -144,6 +159,8 @@ export type {
   FxRate,
   NewsItem,
   Quote,
+  Screen,
+  ScreenKind,
   SearchResult,
   StockAnalysis,
   StockFinancials,

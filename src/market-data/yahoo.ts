@@ -6,6 +6,8 @@ import type {
   MarketDataProvider,
   NewsItem,
   Quote,
+  Screen,
+  ScreenKind,
   SearchResult,
   StockAnalysis,
   StockFinancials,
@@ -48,6 +50,16 @@ const rangeSpec: Record<ChartRange, { back: number | 'ytd' | 'max'; interval: '5
 };
 
 type YQuote = Awaited<ReturnType<typeof yf.quote>>;
+
+/**
+ * The screener's spelling of a classification, which is not the profile's.
+ * A profile says 'Software - Infrastructure'; the screener only answers to
+ * 'Software—Infrastructure', em dash and no spaces, and returns an empty set
+ * for anything else rather than an error.
+ */
+export function screenerName(name: string): string {
+  return name.replace(/ - /g, '—');
+}
 
 function toQuote(q: YQuote): Quote {
   const extended =
@@ -142,6 +154,71 @@ export class YahooProvider implements MarketDataProvider {
     };
   }
 
+  /**
+   * Leading instruments in a sector or industry, largest first.
+   *
+   * Yahoo's screener has two faces. The library wraps the GET one, which only
+   * serves fifteen canned screens ("day_gainers"); the classification filters
+   * live on a POST endpoint it does not model. So this goes through the
+   * client's own fetch — which is the point, since that is what carries the
+   * cookie/crumb handshake the endpoint demands. `_fetch` would otherwise
+   * apply our POST to the crumb request too and get a 405 back, hence the
+   * priming call: an ordinary GET first leaves a cached crumb behind.
+   */
+  async getScreen(kind: ScreenKind, name: string, marketId: string): Promise<Screen> {
+    const eq = (field: string, value: string) => ({
+      operator: 'or',
+      operands: [{ operator: 'EQ', operands: [field, value] }],
+    });
+    const body = {
+      size: 30,
+      offset: 0,
+      sortField: 'intradaymarketcap',
+      sortType: 'DESC',
+      quoteType: 'EQUITY',
+      query: {
+        operator: 'AND',
+        // Region keeps a TASE screen on TASE rather than answering with Wall
+        // Street's version of the same industry.
+        operands: [eq('region', marketId.toLowerCase()), eq(kind, screenerName(name))],
+      },
+      userId: '',
+      userIdType: 'guid',
+    };
+
+    const client = yf as unknown as {
+      _fetch: (
+        url: string,
+        params: Record<string, string>,
+        opts: { fetchOptions: RequestInit },
+        type: string,
+        needsCrumb: boolean,
+      ) => Promise<unknown>;
+    };
+    await yf.quote('AAPL').catch(() => undefined); // prime the crumb
+    const res = (await client._fetch(
+      'https://query2.finance.yahoo.com/v1/finance/screener',
+      { lang: 'en-US', region: 'US', formatted: 'false' },
+      {
+        fetchOptions: {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        },
+      },
+      'json',
+      true,
+    )) as { finance?: { result?: Array<{ total?: number; quotes?: YQuote[] }> } };
+
+    const result = res.finance?.result?.[0];
+    return {
+      kind,
+      name,
+      total: result?.total ?? 0,
+      quotes: (result?.quotes ?? []).map(toQuote),
+    };
+  }
+
   async search(query: string): Promise<SearchResult[]> {
     const res = await yf.search(query);
     return res.quotes
@@ -174,6 +251,8 @@ export class YahooProvider implements MarketDataProvider {
       currency: price?.currency ?? 'USD',
       exchange: price?.exchangeName,
       sector: res.summaryProfile?.sector,
+      industry: res.summaryProfile?.industry,
+      description: res.summaryProfile?.longBusinessSummary,
       stats: {
         marketCap: price?.marketCap ?? detail?.marketCap,
         peTtm: detail?.trailingPE,
