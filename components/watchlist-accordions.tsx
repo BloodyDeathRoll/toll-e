@@ -6,7 +6,7 @@ import { ChevronDown } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { ListMenu } from '@/components/list-menu';
 import { RowLink } from '@/components/row-link';
-import { AfterHours, ChangePill } from '@/components/quote-bits';
+import { AfterHours, ChangePill, NO_VALUE } from '@/components/quote-bits';
 import { SessionSparkline } from '@/components/charts';
 import { useCharts, useQuotes } from '@/components/use-market-data';
 import { useWatchlists } from '@/components/use-watchlists';
@@ -118,13 +118,13 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
                           />
                         )}
                         <span className="flex flex-col items-end gap-0.5">
-                          {q && (
-                            <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
-                              {sm.currencySymbol}
-                              {fmtNum(q.price, sm.numberLocale)}
-                            </span>
-                          )}
-                          <ChangePill pct={q?.changePct ?? 0} numberLocale={nl} className="text-[16px]" />
+                          {/* No quote yet: a dash holds the row's shape and
+                              says nothing, rather than the row silently
+                              losing its price line. */}
+                          <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
+                            {q ? `${sm.currencySymbol}${fmtNum(q.price, sm.numberLocale)}` : NO_VALUE}
+                          </span>
+                          <ChangePill pct={q?.changePct} numberLocale={nl} className="text-[16px]" />
                           <AfterHours quote={q} numberLocale={nl} />
                         </span>
                       </span>

@@ -9,7 +9,7 @@ import { useMarket } from '@/components/app-shell/market-context';
 import { ListInfo, ListMenu } from '@/components/list-menu';
 import { ReorderList } from '@/components/reorder-list';
 import { RowLink } from '@/components/row-link';
-import { ChangePill } from '@/components/quote-bits';
+import { ChangePill, NO_VALUE } from '@/components/quote-bits';
 import { useQuotes, useSearch } from '@/components/use-market-data';
 import { useWatchlists, type WatchlistData } from '@/components/use-watchlists';
 import { demoWatchlists } from '@/src/demo/data';
@@ -224,7 +224,9 @@ export function WatchlistsScreen({
                     ? demoWatchlists.flatMap((w) => w.items).find((it) => it.symbol === s)
                     : undefined;
                   const price = q?.price ?? demoQuote?.price;
-                  const pct = q?.changePct ?? demoQuote?.changePct ?? 0;
+                  // No `?? 0` tail: a quote that has not landed reads as a
+                  // dash, not as an unchanged day.
+                  const pct = q?.changePct ?? demoQuote?.changePct;
                   const sm = marketForSymbol(s); // a list may span markets
                   return (
                     <div key={s} className="flex items-center gap-4 border-t border-border py-3">
@@ -244,12 +246,11 @@ export function WatchlistsScreen({
                           <span className="text-xs text-muted-foreground">{t('equity')}</span>
                         </span>
                         <span className="flex shrink-0 flex-col items-end gap-0.5">
-                          {price !== undefined && (
-                            <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
-                              {sm.currencySymbol}
-                              {fmtNum(price, sm.numberLocale)}
-                            </span>
-                          )}
+                          <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
+                            {price !== undefined
+                              ? `${sm.currencySymbol}${fmtNum(price, sm.numberLocale)}`
+                              : NO_VALUE}
+                          </span>
                           <ChangePill pct={pct} numberLocale={nl} variant="soft" className="text-[16px]" />
                         </span>
                       </RowLink>

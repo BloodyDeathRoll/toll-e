@@ -53,14 +53,33 @@ const TTL = {
   fx: 12 * 60 * 60_000,
 } as const;
 
+/**
+ * How many symbols go to the provider at once. A watchlist screen can ask for
+ * far more than this in one breath; the answer is to split the ask, not to
+ * drop its tail.
+ */
+const QUOTE_BATCH = 20;
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+
 export async function getQuotes(symbols: string[]): Promise<Quote[]> {
-  const key = [...symbols].sort().join(',');
+  // Overlapping watchlists ask for the same ticker twice; the provider should
+  // hear it once, and the cache key should not care about the order asked in.
+  const wanted = [...new Set(symbols)];
+  const key = [...wanted].sort().join(',');
   return cached(`quote:${key}`, TTL.quote, async () => {
     try {
-      return await yahoo(() => provider.getQuote(symbols));
+      const batches = await Promise.all(
+        chunk(wanted, QUOTE_BATCH).map((part) => yahoo(() => provider.getQuote(part))),
+      );
+      return batches.flat();
     } catch {
       // Degraded mode: last persisted closes (asOf tells the UI how old).
-      return getQuotesFromDb(symbols);
+      return getQuotesFromDb(wanted);
     }
   });
 }

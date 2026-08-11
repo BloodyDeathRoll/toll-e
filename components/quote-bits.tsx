@@ -3,10 +3,18 @@ import { fmtPct } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { Quote } from '@/src/market-data/types';
 
+/** What a figure reads as when there is no figure. */
+export const NO_VALUE = '—';
+
 /**
  * Change badge from the design system. `filled` (default): solid green/red
  * pill with white text. `soft`: tinted background with colored text
  * (watchlist rows).
+ *
+ * `pct` may be missing — a quote that has not arrived, or one the provider
+ * had nothing for. That renders as a muted dash, never as a green 0.00%:
+ * "we don't know" and "unchanged" are different claims, and only one of them
+ * is safe to make about somebody's money.
  */
 export function ChangePill({
   pct,
@@ -14,27 +22,30 @@ export function ChangePill({
   variant = 'filled',
   className,
 }: {
-  pct: number;
+  pct?: number;
   numberLocale: string;
   variant?: 'filled' | 'soft';
   className?: string;
 }) {
+  const unknown = pct === undefined || Number.isNaN(pct);
   return (
     <span
       dir="ltr"
       className={cn(
         'rounded-[4px] px-1 py-0.5 text-sm font-semibold tabular-nums',
-        variant === 'filled'
-          ? pct >= 0
-            ? 'bg-gain-surface text-white'
-            : 'bg-loss-surface text-white'
-          : pct >= 0
-            ? 'bg-gain/10 text-gain'
-            : 'bg-loss/10 text-loss',
+        unknown
+          ? 'bg-muted/40 text-muted-foreground'
+          : variant === 'filled'
+            ? pct >= 0
+              ? 'bg-gain-surface text-white'
+              : 'bg-loss-surface text-white'
+            : pct >= 0
+              ? 'bg-gain/10 text-gain'
+              : 'bg-loss/10 text-loss',
         className,
       )}
     >
-      {fmtPct(pct, numberLocale)}
+      {unknown ? NO_VALUE : fmtPct(pct, numberLocale)}
     </span>
   );
 }
