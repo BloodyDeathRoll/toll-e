@@ -7,11 +7,14 @@ import { cn } from '@/lib/utils';
 
 /**
  * A ticker row that navigates to the stock view. Opening it is a server
- * render away, so the row answers the tap immediately: a spinner at its
- * trailing edge for as long as the navigation is pending.
+ * render away, so the row answers the tap immediately: it dims and a spinner
+ * turns over it for as long as the navigation is pending.
  *
- * The spinner is always in the layout and only fades in — an indicator that
- * appears out of nowhere would shove the row's numbers sideways mid-tap.
+ * The indicator is an overlay, never a column. A spinner sitting in the row's
+ * flow — even an always-present, zero-opacity one — steals width from the end
+ * of the row, and the numbers stop meeting the margin the name is measured
+ * against (mirrored, and just as wrong, in RTL).
+ *
  * A prefetched route never goes pending, which is the point: it was instant.
  */
 export function RowLink({
@@ -25,22 +28,24 @@ export function RowLink({
   children: React.ReactNode;
 } & Omit<React.ComponentProps<typeof Link>, 'href' | 'className' | 'children'>) {
   return (
-    <Link href={href} className={className} {...rest}>
+    <Link href={href} className={cn('relative', className)} {...rest}>
       {children}
-      <RowSpinner />
+      <RowPending />
     </Link>
   );
 }
 
-function RowSpinner() {
+function RowPending() {
   const { pending } = useLinkStatus();
   return (
-    <Loader2
+    <span
       aria-hidden
       className={cn(
-        'size-4 shrink-0 animate-spin text-muted-foreground transition-opacity duration-150',
+        'pointer-events-none absolute inset-0 flex items-center justify-center bg-background/70 transition-opacity duration-150',
         pending ? 'opacity-100' : 'opacity-0',
       )}
-    />
+    >
+      <Loader2 className="size-5 animate-spin text-muted-foreground" />
+    </span>
   );
 }
