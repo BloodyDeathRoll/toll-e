@@ -1,6 +1,6 @@
 'use client';
 
-import { useId } from 'react';
+import { useId, useRef, useState } from 'react';
 import { sessionLine } from '@/src/markets/calendar';
 import { getMarket } from '@/src/markets/registry';
 import type { ChartPoint } from '@/src/market-data/types';
@@ -16,6 +16,12 @@ const PAD_Y = 8;
 const AXIS_W = 54;
 const TIME_H = 18;
 
+/** The point under the scrubbing finger: epoch ms and the value there. */
+export interface ScrubPoint {
+  t: number;
+  v: number;
+}
+
 export function PriceChart({
   points,
   up,
@@ -27,6 +33,7 @@ export function PriceChart({
   price,
   priceAt,
   marketId,
+  onScrub,
   className,
 }: {
   points: ChartPoint[];
@@ -49,9 +56,17 @@ export function PriceChart({
   priceAt?: number;
   /** Supplies the trading calendar behind `fullDay`. */
   marketId?: string;
+  /**
+   * Scrubbing: the point under the finger, or null when it lifts. The
+   * headline above the chart is what reads it out — the chart only draws the
+   * crosshair.
+   */
+  onScrub?: (point: ScrubPoint | null) => void;
   className?: string;
 }) {
   const id = useId();
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [scrub, setScrub] = useState<number | null>(null);
 
   const VB = 1000; // viewBox width; the graph stretches to the container
   const plotH = height - TIME_H;
@@ -106,8 +121,42 @@ export function PriceChart({
 
   const decimals = yMax - yMin < 5 ? 2 : yMax < 1000 ? 1 : 0;
 
+  // The plot is inset from the container by the price gutter, so a viewBox x
+  // maps to a percentage of the whole minus its share of that gutter — the
+  // same arithmetic the time-axis labels already use.
+  const leftOf = (t: number) =>
+    `calc(${((x(t) / VB) * 100).toFixed(3)}% - ${((x(t) / VB) * AXIS_W).toFixed(1)}px)`;
+
+  // A range switch swaps the series under us; an index from the old one would
+  // read out the wrong bar for a frame.
+  const at = scrub !== null && scrub < shown.length ? shown[scrub] : null;
+
+  /** Nearest point to where the finger is, in container coordinates. */
+  const pickAt = (clientX: number) => {
+    const box = boxRef.current?.getBoundingClientRect();
+    if (!box) return;
+    const plotW = box.width - AXIS_W;
+    const frac = Math.min(1, Math.max(0, (clientX - box.left) / (plotW || 1)));
+    const wanted = xFrom + frac * xSpan;
+    let best = 0;
+    let bestGap = Infinity;
+    for (let i = 0; i < shown.length; i++) {
+      const gap = Math.abs(shown[i].t - wanted);
+      if (gap >= bestGap) continue;
+      bestGap = gap;
+      best = i;
+    }
+    setScrub(best);
+    onScrub?.({ t: shown[best].t, v: shown[best].v });
+  };
+
+  const endScrub = () => {
+    setScrub(null);
+    onScrub?.(null);
+  };
+
   return (
-    <div dir="ltr" className={cn('relative', className)} style={{ height }}>
+    <div dir="ltr" className={cn('relative', className)} style={{ height }} ref={boxRef}>
       {/* Graph — horizontally stretched, vertically 1:1 */}
       <svg
         width="100%"
@@ -173,18 +222,66 @@ export function PriceChart({
         ))}
       </div>
 
+      {/* Crosshair. HTML, not SVG: the viewBox stretches horizontally, so a
+          circle drawn in it would come out an ellipse. */}
+      {at && (
+        <>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute w-px bg-foreground/40"
+            style={{ left: leftOf(at.t), top: 0, height: plotH }}
+          />
+          <div
+            aria-hidden
+            className={cn(
+              'pointer-events-none absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-background',
+              up ? 'bg-gain' : 'bg-loss',
+            )}
+            style={{ left: leftOf(at.t), top: y(at.v) }}
+          />
+        </>
+      )}
+
       {/* Time axis */}
       <div className="absolute inset-x-0 bottom-0 text-[11px] text-muted-foreground" style={{ height: TIME_H }}>
         {timeTicks.map((t) => (
           <span
             key={t}
-            className="absolute -translate-x-1/2 whitespace-nowrap"
-            style={{ left: `calc(${(x(t) / VB) * 100}% - ${((x(t) / VB) * AXIS_W).toFixed(1)}px)` }}
+            className={cn('absolute -translate-x-1/2 whitespace-nowrap', at && 'opacity-0')}
+            style={{ left: leftOf(t) }}
           >
             {label(t)}
           </span>
         ))}
+        {/* The scrubbed moment replaces the ticks, so the row never doubles up. */}
+        {at && (
+          <span
+            className="absolute -translate-x-1/2 whitespace-nowrap font-medium text-foreground"
+            style={{ left: leftOf(at.t) }}
+          >
+            {label(at.t)}
+          </span>
+        )}
       </div>
+
+      {/* Pointer surface over the plot. `pan-y` so a vertical swipe still
+          scrolls the page and only a sideways drag scrubs. */}
+      <div
+        role="presentation"
+        className="absolute inset-y-0 start-0"
+        style={{ width: `calc(100% - ${AXIS_W}px)`, height: plotH, touchAction: 'pan-y' }}
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          pickAt(e.clientX);
+        }}
+        onPointerMove={(e) => {
+          // Mouse hovers scrub too; a touch has to be down.
+          if (e.buttons > 0 || e.pointerType === 'mouse') pickAt(e.clientX);
+        }}
+        onPointerUp={endScrub}
+        onPointerCancel={endScrub}
+        onPointerLeave={endScrub}
+      />
     </div>
   );
 }

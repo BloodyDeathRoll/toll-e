@@ -11,7 +11,7 @@ import { SessionBadge } from '@/components/session-indicator';
 import { LineChart } from '@/components/charts';
 import { ChangePill, AfterHours } from '@/components/quote-bits';
 import { UnderlineTabs } from '@/components/underline-tabs';
-import { PriceChart } from '@/components/price-chart';
+import { PriceChart, type ScrubPoint } from '@/components/price-chart';
 import {
   useAnalysis,
   useChart,
@@ -58,6 +58,14 @@ export function StockScreen({ symbol }: { symbol: string }) {
   const holding = getDemoHolding(marketId, symbol) ?? getDemoHolding(marketId === 'US' ? 'IL' : 'US', symbol);
   const [tab, setTab] = useState<Tab>('summary');
   const [range, setRange] = useState('1D');
+  // The point under a scrubbing finger. The headline reads it out in place of
+  // the live quote, Yahoo-style, and a range switch drops it — the index it
+  // came from belongs to the series being replaced.
+  const [scrub, setScrub] = useState<ScrubPoint | null>(null);
+  const pickRange = (r: string) => {
+    setScrub(null);
+    setRange(r);
+  };
   const [finPeriod, setFinPeriod] = useState<'annual' | 'quarterly'>('annual');
 
   // Deep-linkable tabs (?tab=news) — read after mount so SSR markup stays stable.
@@ -108,6 +116,24 @@ export function StockScreen({ symbol }: { symbol: string }) {
   const eventDate = summary?.nextEarningsDate ?? stock.nextEvent.date;
   const up = changePct >= 0;
 
+  // Scrubbing shows the value at that moment, and its move from where the
+  // range started: the previous close on a 1D chart, the first bar otherwise.
+  const rangeBase =
+    range === '1D' ? (live?.previousClose ?? series?.previousClose) : series?.points[0]?.close;
+  const shownPrice = scrub ? scrub.v : price;
+  const shownChange = scrub && rangeBase !== undefined ? scrub.v - rangeBase : change;
+  const shownPct =
+    scrub && rangeBase ? ((scrub.v - rangeBase) / rangeBase) * 100 : changePct;
+  const scrubStamp = scrub
+    ? new Intl.DateTimeFormat(locale, {
+        timeZone: series?.timezone,
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        ...(series?.interval.endsWith('m') ? { hour: 'numeric', minute: '2-digit' } : {}),
+      }).format(new Date(scrub.t))
+    : null;
+
   // Depends on the clock — resolved after mount so SSR markup stays stable.
   const [daysOut, setDaysOut] = useState(0);
   useEffect(() => {
@@ -124,7 +150,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
         <button
           key={r}
           type="button"
-          onClick={() => setRange(r)}
+          onClick={() => pickRange(r)}
           className={cn(
             'rounded-[20px] px-3 py-1.5 text-xs font-bold',
             r === range
@@ -360,13 +386,16 @@ export function StockScreen({ symbol }: { symbol: string }) {
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="flex items-center gap-0.5 self-start" dir="ltr">
-                    <span className="text-xl font-medium text-foreground tabular-nums">{fmtNum(price, nl)}</span>
-                    <ChangePill pct={changePct} numberLocale={nl} className="ms-0.5" />
+                    <span className="text-xl font-medium text-foreground tabular-nums">
+                      {fmtNum(shownPrice, nl)}
+                    </span>
+                    <ChangePill pct={shownPct} numberLocale={nl} className="ms-0.5" />
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {live?.asOf
-                      ? t('atClose', { time: new Date(live.asOf).toLocaleString(locale, { hour: '2-digit', minute: '2-digit' }) })
-                      : `${headline.exchange} · ${live?.currency ?? market.currency}`}
+                    {scrubStamp ??
+                      (live?.asOf
+                        ? t('atClose', { time: new Date(live.asOf).toLocaleString(locale, { hour: '2-digit', minute: '2-digit' }) })
+                        : `${headline.exchange} · ${live?.currency ?? market.currency}`)}
                   </span>
                 </div>
                 {live?.extended && (
@@ -397,6 +426,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                       price={range === '1D' ? live?.price : undefined}
                       priceAt={range === '1D' ? live?.asOf : undefined}
                       marketId={market.id}
+                      onScrub={setScrub}
                     />
                   ) : (
                     <LineChart points={stock.chart} up={up} height={182} viewH={250} gridlines={[233]} />
@@ -407,7 +437,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                     <button
                       key={r}
                       type="button"
-                      onClick={() => setRange(r)}
+                      onClick={() => pickRange(r)}
                       className={cn(
                         'flex-1 rounded-[20px] px-1 py-2.5 text-sm font-bold',
                         r === range ? 'bg-primary text-primary-foreground' : 'text-foreground/40',
@@ -544,11 +574,12 @@ export function StockScreen({ symbol }: { symbol: string }) {
               <div className="flex items-baseline gap-3.5" dir="ltr">
                 <span className="text-[28px] font-bold tracking-tight text-foreground">{stock.symbol}</span>
                 <span className="text-[28px] font-semibold text-foreground tabular-nums">
-                  {fmtNum(price, nl)}
+                  {fmtNum(shownPrice, nl)}
                 </span>
-                <span className={cn('text-[15px] tabular-nums', up ? 'text-gain' : 'text-loss')}>
-                  {fmtSigned(change, nl)} ({fmtPct(changePct, nl)})
+                <span className={cn('text-[15px] tabular-nums', shownPct >= 0 ? 'text-gain' : 'text-loss')}>
+                  {fmtSigned(shownChange, nl)} ({fmtPct(shownPct, nl)})
                 </span>
+                {scrubStamp && <span className="text-[13px] text-muted-foreground">{scrubStamp}</span>}
               </div>
               <SessionBadge marketId={market.id} />
             </div>
@@ -608,6 +639,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                       price={range === '1D' ? live?.price : undefined}
                       priceAt={range === '1D' ? live?.asOf : undefined}
                       marketId={market.id}
+                      onScrub={setScrub}
                     />
                   ) : (
                     <LineChart points={stock.chart} up={up} height={250} viewH={250} gridlines={[40, 120, 200]} />
