@@ -99,10 +99,11 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
                       href={`/stock/${s}`}
                       className="flex items-center justify-between gap-4 border-b border-border py-2.5"
                     >
-                      {/* Ticker alone: the day's mark is what the row is for,
-                          and the company name is what it would cost. */}
-                      <span className="text-[18px] font-bold text-foreground">
-                        {displaySymbol(s, sm)}
+                      <span className="flex min-w-0 flex-col">
+                        <span className="text-[18px] font-bold text-foreground">
+                          {displaySymbol(s, sm)}
+                        </span>
+                        <span className="truncate text-xs text-foreground">{q?.name ?? s}</span>
                       </span>
                       <span className="flex shrink-0 items-center gap-6">
                         {series && (
