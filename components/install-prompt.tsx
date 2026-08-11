@@ -68,7 +68,7 @@ export function InstallPrompt() {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center">
+    <div className="app-frame fixed inset-0 z-[60] flex items-end justify-center">
       <button
         type="button"
         aria-label={t('close')}

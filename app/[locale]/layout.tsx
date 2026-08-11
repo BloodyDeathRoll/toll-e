@@ -58,7 +58,7 @@ export default async function LocaleLayout({
             switch without React's script-tag error. */}
         <Script src="/init.js" strategy="beforeInteractive" />
         <NextIntlClientProvider>
-          {children}
+          <div className="app-frame flex min-h-full flex-1 flex-col">{children}</div>
           <InstallPrompt />
         </NextIntlClientProvider>
       </body>

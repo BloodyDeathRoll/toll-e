@@ -375,14 +375,8 @@
     "signInCta": "התחברות",
     "empty": "אין נתונים בשוק הזה עדיין — הוסיפו עסקה כדי להתחיל.",
     "emptyCta": "הוספת עסקה",
-    "realizedYtd": "מומש נטו · {year}",
     "unrealized": "לא ממומש",
     "fxNote": "הומר לפי דולר/שקל {rate} · {date}. הסכומים במטבע המקור הם הקובעים.",
-    "byPortfolio": "לפי תיק",
-    "portfolio": "תיק",
-    "realizedCol": "ממומש",
-    "unrealizedCol": "לא ממומש",
-    "shieldCol": "מגן",
     "combinedIn": "משולב ב-{currency}",
     "settings": "פרופיל והגדרות",
     "displayCurrency": "מטבע תצוגה",
@@ -392,7 +386,10 @@
     "shouldHavePaid": "היה צריך לשלם",
     "refundIn": "החזר ב-{year}",
     "paidCol": "שולם",
-    "owedCol": "חייב"
+    "realizedIn": "מומש ב-{year}",
+    "netAfterTax": "נטו אחרי מס",
+    "afterTax": "אחרי מס {amount}",
+    "unrealizedNote": "על פוזיציות פתוחות, נכון להיום"
   },
   "settings": {
     "title": "הגדרות",

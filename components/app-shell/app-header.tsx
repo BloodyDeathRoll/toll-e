@@ -99,7 +99,7 @@ export function AppHeader({
 
       {/* Full-screen menu (HP menu frame) */}
       {menuOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-background p-6">
+        <div className="app-frame fixed inset-0 z-50 flex flex-col bg-background p-6">
           <div className="flex items-center justify-between">
             <button type="button" aria-label={t('menu.close')} onClick={() => setMenuOpen(false)}>
               <X className="size-6 text-foreground" aria-hidden />
@@ -138,7 +138,7 @@ export function AppHeader({
 
     {/* Results stand in for the screen, as in the frame — not a dropdown. */}
     {searching && (
-      <div className="fixed inset-x-0 bottom-0 top-[91px] z-40 overflow-y-auto bg-background md:hidden">
+      <div className="app-frame fixed inset-x-0 bottom-0 top-[91px] z-40 overflow-y-auto bg-background md:hidden">
         <SearchResults
           results={results}
           marketId={marketId}

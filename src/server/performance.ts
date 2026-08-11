@@ -30,12 +30,29 @@ export interface PerformancePortfolio {
   converted: { realized: number; unrealized: number; taxPaid: number; taxOwed: number; taxRefund: number };
 }
 
+/** One sell action, in the display currency — a line in the month drill-down. */
+export interface PerformanceSale {
+  id: string;
+  symbol: string;
+  date: string;
+  shares: number;
+  /** Realized gain, negative for a loss. */
+  gain: number;
+  /** Withheld at source because of this sale. Zero on a loss or a shielded gain. */
+  tax: number;
+  /** gain − tax: what the sale actually left behind. */
+  net: number;
+  /** Which portfolio it came from — several can share a month. */
+  portfolio: string;
+}
+
 export interface PerformanceMonth {
   month: number;
   gains: number;
   losses: number;
   net: number;
   tax: number;
+  sales: PerformanceSale[];
 }
 
 export interface PerformancePayload {
@@ -127,11 +144,40 @@ export async function getPerformance(
     });
 
     for (const m of ledger?.months ?? []) {
-      const acc = monthAcc.get(m.month) ?? { month: m.month, gains: 0, losses: 0, net: 0, tax: 0 };
+      const acc = monthAcc.get(m.month) ?? {
+        month: m.month,
+        gains: 0,
+        losses: 0,
+        net: 0,
+        tax: 0,
+        sales: [],
+      };
       acc.gains += convert(m.gains, p.currency);
       acc.losses += convert(m.losses, p.currency);
       acc.net += convert(m.net, p.currency);
       acc.tax += convert(m.paid ?? 0, p.currency);
+
+      // Withholding happens per month, after the intra-year loss pool absorbs
+      // what it can — there is no per-sale figure in the engine. Splitting the
+      // month's withholding across its gaining sales pro-rata by gain is the
+      // only attribution that foots exactly to the cash that left.
+      const inMonth = ledger!.sales.filter((s) => Number(s.date.slice(5, 7)) === m.month);
+      const gainSum = inMonth.reduce((s, e) => s + Math.max(0, e.gain), 0);
+      for (const s of inMonth) {
+        const share = s.gain > 0 && gainSum > 0 ? s.gain / gainSum : 0;
+        const gain = round2(convert(s.gain, p.currency));
+        const tax = round2(convert((m.paid ?? 0) * share, p.currency));
+        acc.sales.push({
+          id: s.saleTxId,
+          symbol: s.symbol,
+          date: s.date,
+          shares: s.shares,
+          gain,
+          tax,
+          net: round2(gain - tax),
+          portfolio: p.name,
+        });
+      }
       monthAcc.set(m.month, acc);
     }
   }
@@ -143,6 +189,8 @@ export async function getPerformance(
       losses: round2(m.losses),
       net: round2(m.net),
       tax: round2(m.tax),
+      // Newest first, matching the month order the screen lists them in.
+      sales: [...m.sales].sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1)),
     }))
     .sort((a, b) => a.month - b.month);
 

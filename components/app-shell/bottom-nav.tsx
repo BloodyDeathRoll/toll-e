@@ -63,7 +63,7 @@ export function BottomNav() {
   };
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 bg-card md:hidden">
+    <nav className="app-frame fixed inset-x-0 bottom-0 z-40 bg-card md:hidden">
       <ul className="flex items-end gap-4 px-6 pt-4 pb-[max(24px,env(safe-area-inset-bottom))]">
         {leftTabs.map(renderTab)}
         {/* The centre slot is empty in the bar; the button floats over it. */}

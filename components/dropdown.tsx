@@ -1,0 +1,81 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { Check, ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+/**
+ * The app's one dropdown. Language, Market and the Performance year are all
+ * axes that grow by data rather than by design — a third language, a fourth
+ * market, another tax year is a new entry, not a new control. The trigger
+ * carries the identity alone (a flag, a currency symbol) unless `showName`
+ * spells it out; the menu always names every option.
+ */
+export function Dropdown({
+  options,
+  active,
+  onPick,
+  disabled,
+  showName,
+}: {
+  options: Array<{ value: string; badge?: React.ReactNode; name: string }>;
+  active: string;
+  onPick: (value: string) => void;
+  disabled?: boolean;
+  /** Spell the name out on the trigger, not just in the menu. */
+  showName?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, []);
+
+  const current = options.find((o) => o.value === active) ?? options[0];
+  // Badgeless options (years) would otherwise each reserve an empty gutter.
+  const hasBadges = options.some((o) => o.badge !== undefined);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        disabled={disabled}
+        aria-expanded={open}
+        aria-label={current?.name}
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          'flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-[13px] text-foreground',
+          disabled && 'opacity-50',
+        )}
+      >
+        {current?.badge}
+        {showName && <span>{current?.name}</span>}
+        <ChevronDown className="size-4 text-muted-foreground" aria-hidden />
+      </button>
+      {open && (
+        <div className="absolute end-0 top-full z-50 mt-1.5 flex max-h-[280px] min-w-[180px] flex-col gap-3 overflow-y-auto rounded-[20px] bg-well p-5 shadow-lg">
+          {options.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                if (o.value !== active) onPick(o.value);
+              }}
+              className="flex items-center gap-3 text-start text-[13px] whitespace-nowrap text-foreground"
+            >
+              {hasBadges && <span className="flex w-5 shrink-0 justify-center">{o.badge}</span>}
+              <span className="flex-1">{o.name}</span>
+              {o.value === active && <Check className="size-4" aria-hidden />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

@@ -375,14 +375,8 @@
     "signInCta": "Sign in",
     "empty": "No data for this market yet — add a transaction to get started.",
     "emptyCta": "Add a transaction",
-    "realizedYtd": "Net realized · {year}",
     "unrealized": "Unrealized",
     "fxNote": "Converted at USD/ILS {rate} · {date}. Native figures are authoritative.",
-    "byPortfolio": "By portfolio",
-    "portfolio": "Portfolio",
-    "realizedCol": "Realized",
-    "unrealizedCol": "Unrealized",
-    "shieldCol": "Shield",
     "combinedIn": "Combined in {currency}",
     "settings": "Profile & settings",
     "displayCurrency": "Display currency",
@@ -392,7 +386,10 @@
     "shouldHavePaid": "Should have paid",
     "refundIn": "Refund in {year}",
     "paidCol": "Paid",
-    "owedCol": "Owed"
+    "realizedIn": "Realized in {year}",
+    "netAfterTax": "Net after tax",
+    "afterTax": "after {amount} tax",
+    "unrealizedNote": "On open positions, as of today"
   },
   "settings": {
     "title": "Settings",

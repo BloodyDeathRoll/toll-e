@@ -170,6 +170,25 @@
   --color-gain-surface: var(--gain-surface);
   --color-loss-surface: var(--loss-surface);
   --color-moon: var(--moon);
+  /* Mobile-only, for now. toll-e ships two layouts (AGENTS.md), but the
+     desktop one is not being developed — so md: and up are pushed past any
+     real viewport and every screen renders its phone branch at every width.
+     The desktop code stays in the tree, dormant; restoring it is deleting
+     these four lines. Ascending values keep Tailwind's variant order intact. */
+  --breakpoint-md: 900rem;
+  --breakpoint-lg: 901rem;
+  --breakpoint-xl: 902rem;
+  --breakpoint-2xl: 903rem;
+}
+
+/* The phone the app pretends to be. On anything wider, the column centres and
+   the rest of the window is backdrop; `fixed` chrome (tab bar, sheets, search)
+   carries this too so it stays inside the phone instead of spanning the
+   monitor. */
+@utility app-frame {
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
 }
 
 @layer base {

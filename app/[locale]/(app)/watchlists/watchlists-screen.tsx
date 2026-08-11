@@ -502,7 +502,7 @@ function CreateList({
       </div>
 
       {/* Save FAB */}
-      <div className="fixed inset-x-0 bottom-[110px] flex flex-col items-center gap-1 md:absolute">
+      <div className="app-frame fixed inset-x-0 bottom-[110px] flex flex-col items-center gap-1 md:absolute">
         <button
           type="button"
           disabled={!name.trim() || busy}

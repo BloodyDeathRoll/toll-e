@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { useMarket } from '@/components/app-shell/market-context';
 import { getMarket, marketIds } from '@/src/markets/registry';
 import { InstallSettingsRow } from '@/components/install-prompt';
-import { Check, ChevronDown } from 'lucide-react';
+import { Dropdown } from '@/components/dropdown';
 import { routing } from '@/src/i18n/routing';
 import { authClient, signOut, useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -194,76 +194,3 @@ function Flag({ locale }: { locale: string }) {
 }
 
 const localeNames: Record<string, string> = { en: 'English', he: 'עברית' };
-
-/**
- * Language and Market are the app's two scaling axes, so both are dropdowns:
- * a third language or a fourth market is a registry entry, not a redesign.
- * The trigger carries the identity alone — flag for language, currency symbol
- * for market — with the full name spelled out in the menu.
- */
-function Dropdown({
-  options,
-  active,
-  onPick,
-  disabled,
-  showName,
-}: {
-  options: Array<{ value: string; badge: React.ReactNode; name: string }>;
-  active: string;
-  onPick: (value: string) => void;
-  disabled?: boolean;
-  /** Spell the name out on the trigger, not just in the menu. */
-  showName?: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, []);
-
-  const current = options.find((o) => o.value === active) ?? options[0];
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        disabled={disabled}
-        aria-expanded={open}
-        aria-label={current?.name}
-        onClick={() => setOpen((v) => !v)}
-        className={cn(
-          'flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-[13px] text-foreground',
-          disabled && 'opacity-50',
-        )}
-      >
-        {current?.badge}
-        {showName && <span>{current?.name}</span>}
-        <ChevronDown className="size-4 text-muted-foreground" aria-hidden />
-      </button>
-      {open && (
-        <div className="absolute end-0 top-full z-50 mt-1.5 flex min-w-[180px] flex-col gap-3 rounded-[20px] bg-well p-5 shadow-lg">
-          {options.map((o) => (
-            <button
-              key={o.value}
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                if (o.value !== active) onPick(o.value);
-              }}
-              className="flex items-center gap-3 text-start text-[13px] whitespace-nowrap text-foreground"
-            >
-              <span className="flex w-5 shrink-0 justify-center">{o.badge}</span>
-              <span className="flex-1">{o.name}</span>
-              {o.value === active && <Check className="size-4" aria-hidden />}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}

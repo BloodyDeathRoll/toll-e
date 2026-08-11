@@ -76,7 +76,7 @@ export function WatchlistSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end">
+    <div className="app-frame fixed inset-0 z-50 flex flex-col justify-end">
       <button
         type="button"
         aria-label={t('close')}
