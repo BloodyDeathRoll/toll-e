@@ -122,7 +122,7 @@ export function WatchlistSheet({
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder={t('listName')}
-            className="rounded-[20px] bg-well px-6 py-3.5 text-base text-foreground outline-none placeholder:text-muted-foreground"
+            className="h-[48px] rounded-[20px] border border-border bg-well px-6 text-base text-foreground outline-none placeholder:text-muted-foreground"
           />
         ) : (
           <button

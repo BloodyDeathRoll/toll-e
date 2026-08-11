@@ -67,8 +67,8 @@ export function LangCurrencyPicker({ compact = false }: { compact?: boolean }) {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         className={cn(
-          'flex items-center gap-2 rounded-[20px] bg-well px-4',
-          compact ? 'h-9 text-sm' : 'h-[43px] text-base',
+          'flex items-center gap-2 rounded-[20px] border border-border bg-well px-4',
+          compact ? 'h-9 text-sm' : 'h-[48px] text-base',
         )}
       >
         <Image src={flagSrc(locale)} alt="" width={16} height={15} aria-hidden />

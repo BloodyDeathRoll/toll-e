@@ -74,7 +74,7 @@ export function AppHeader({
             }
             if (e.key === 'Escape') setQuery('');
           }}
-          className="h-[43px] w-full rounded-[20px] bg-well ps-11 pe-3 text-base font-medium text-foreground outline-none placeholder:text-muted-foreground"
+          className="h-[48px] w-full rounded-[20px] border border-border bg-well ps-11 pe-3 text-base font-medium text-foreground outline-none placeholder:text-muted-foreground"
         />
       </div>
 

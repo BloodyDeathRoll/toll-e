@@ -333,7 +333,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
           </button>
           <SearchBox
             className="min-w-0 flex-1"
-            inputClassName="h-[43px] rounded-[20px] border-none bg-well ps-11 text-base font-medium"
+            inputClassName="h-[48px] rounded-[20px] border border-border bg-well ps-11 text-base font-medium"
             iconClassName="start-4 size-4"
           />
           <WatchlistStar wl={wl} symbol={symbol} className="size-6" />

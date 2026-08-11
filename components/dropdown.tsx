@@ -49,7 +49,7 @@ export function Dropdown({
         aria-label={current?.name}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          'flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-[13px] text-foreground',
+          'flex h-[48px] items-center gap-2 rounded-lg border border-border bg-background px-4 text-[13px] text-foreground',
           disabled && 'opacity-50',
         )}
       >

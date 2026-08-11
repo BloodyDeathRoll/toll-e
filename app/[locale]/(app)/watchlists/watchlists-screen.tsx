@@ -348,7 +348,7 @@ function EditList({
             value={query}
             placeholder={t('addTicker')}
             onChange={(e) => setQuery(e.target.value)}
-            className="rounded-[20px] bg-well px-4 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground"
+            className="h-[48px] rounded-[20px] border border-border bg-well px-4 text-base text-foreground outline-none placeholder:text-muted-foreground"
           />
           {query && results.length > 0 && (
             <ul className="overflow-hidden rounded-xl border border-border bg-popover">
@@ -462,7 +462,7 @@ function CreateList({
           id="wl-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="rounded-[20px] bg-well px-4 py-3 text-base text-foreground outline-none"
+          className="h-[48px] rounded-[20px] border border-border bg-well px-4 text-base text-foreground outline-none"
         />
       </div>
 
@@ -473,7 +473,7 @@ function CreateList({
             value={query}
             placeholder={t('addTicker')}
             onChange={(e) => setQuery(e.target.value)}
-            className="rounded-[20px] bg-well px-4 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground"
+            className="h-[48px] rounded-[20px] border border-border bg-well px-4 text-base text-foreground outline-none placeholder:text-muted-foreground"
           />
           {query && results.length > 0 && (
             <ul className="overflow-hidden rounded-xl border border-border bg-popover">
