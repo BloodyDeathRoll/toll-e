@@ -1,4 +1,5 @@
 import type { TradingCalendar } from './calendar';
+import { taseCalendarDays } from './hebrew-calendar';
 
 // Markets are data, not code. Adding a market = adding an entry here
 // (+ verifying provider symbol coverage). UI, search, formatting, and
@@ -56,11 +57,24 @@ const usCalendar: TradingCalendar = {
     '2027-09-06',
     '2027-11-25',
     '2027-12-24', // Christmas (observed)
+    // 2028 — New Year's Day falls on a Saturday, and the NYSE alone among
+    // US holidays does not observe that one on the Friday before.
+    '2028-01-17',
+    '2028-02-21',
+    '2028-04-14', // Good Friday
+    '2028-05-29',
+    '2028-06-19',
+    '2028-07-04',
+    '2028-09-04',
+    '2028-11-23',
+    '2028-12-25',
   ],
   specialHours: {
     '2026-11-27': usHalfDay, // day after Thanksgiving
     '2026-12-24': usHalfDay, // Christmas Eve
     '2027-11-26': usHalfDay, // day after Thanksgiving
+    '2028-07-03': usHalfDay, // day before Independence Day
+    '2028-11-24': usHalfDay, // day after Thanksgiving
   },
 };
 
@@ -72,6 +86,16 @@ const usCalendar: TradingCalendar = {
 // TODO(verify): pre-open start and Friday auction times against TASE.
 const ilDay = { preOpen: h(9, 0), open: h(9, 59), close: h(17, 25) };
 const ilFri = { preOpen: h(9, 0), open: h(9, 59), close: h(13, 45) };
+// Holiday eves trade a shortened session. Assumed to close with the Friday
+// bell at 13:45 — one number to change here if TASE's pre-holiday close
+// differs. TODO(verify) against TASE's published trading calendar.
+const ilEve = ilFri;
+
+// Derived from the Hebrew calendar, not transcribed — see hebrew-calendar.ts.
+// Extend the span as the app's horizon moves; a year outside it simply has no
+// holidays, which the "no prints today" fallback survives.
+const ilDays = taseCalendarDays(2024, 2032);
+
 const ilCalendar: TradingCalendar = {
   timezone: 'Asia/Jerusalem',
   schedules: [
@@ -85,10 +109,10 @@ const ilCalendar: TradingCalendar = {
       hours: { 1: ilDay, 2: ilDay, 3: ilDay, 4: ilDay, 5: ilFri },
     },
   ],
-  // TODO(verify): TASE closures follow the Hebrew calendar and are not
-  // encoded yet. Charts survive an unlisted one — a session with no prints of
-  // its own falls back to the last finished session, drawn full width.
-  holidays: [],
+  // Festivals close the exchange; their eves shorten it. Election days shut
+  // TASE too and follow no calendar — add them here when one is called.
+  holidays: ilDays.holidays,
+  specialHours: Object.fromEntries(ilDays.shortDays.map((iso) => [iso, ilEve])),
 };
 
 export const markets: Record<string, MarketDef> = {
