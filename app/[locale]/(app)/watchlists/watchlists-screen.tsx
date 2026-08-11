@@ -2,20 +2,12 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  ArrowLeft,
-  Check,
-  ChevronDown,
-  GripVertical,
-  Pencil,
-  Plus,
-  Star,
-  Trash2,
-} from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, Pencil, Plus, Star, Trash2 } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
 import { ListInfo, ListMenu } from '@/components/list-menu';
+import { ReorderList } from '@/components/reorder-list';
 import { RowLink } from '@/components/row-link';
 import { ChangePill } from '@/components/quote-bits';
 import { useQuotes, useSearch } from '@/components/use-market-data';
@@ -306,7 +298,6 @@ function EditList({
   const market = getMarket(marketId);
   const { quotes } = useQuotes(list.symbols, 60_000);
   const [name, setName] = useState(list.name);
-  const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [searchOpen, setSearchOpen] = useState(addOpen);
   const [query, setQuery] = useState('');
   const results = useSearch(query, marketId)
@@ -398,37 +389,30 @@ function EditList({
             <Trash2 className="size-5 text-muted-foreground" aria-hidden />
           </button>
         </div>
-        {list.symbols.map((s, i) => (
-          <div
-            key={s}
-            draggable
-            onDragStart={() => setDragIdx(i)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={() => {
-              if (dragIdx !== null) void reorder(dragIdx, i);
-              setDragIdx(null);
-            }}
-            className={cn(
-              'flex items-center gap-3 py-3',
-              i > 0 && 'border-t border-border',
-              dragIdx === i && 'opacity-50',
-            )}
-          >
-            <GripVertical className="size-4 cursor-grab text-faint" aria-hidden />
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="text-base font-bold text-foreground">{displaySymbol(s, market)}</span>
-              <span className="truncate text-xs text-foreground">{quotes[s]?.name ?? s}</span>
-              <span className="text-xs text-muted-foreground">{t('equity')}</span>
-            </span>
-            <button
-              type="button"
-              aria-label={t('removeFromList')}
-              onClick={() => void onPatch(list.id, { symbols: list.symbols.filter((x) => x !== s) })}
-            >
-              <Trash2 className="size-5 text-muted-foreground" aria-hidden />
-            </button>
-          </div>
-        ))}
+        <ReorderList
+          items={list.symbols}
+          keyOf={(s) => s}
+          onReorder={(from, to) => void reorder(from, to)}
+          handleLabel={(s) => t('reorder', { name: displaySymbol(s, market) })}
+          rowClassName={(i) => cn('flex items-center gap-3 py-3', i > 0 && 'border-t border-border')}
+        >
+          {(s) => (
+            <>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="text-base font-bold text-foreground">{displaySymbol(s, market)}</span>
+                <span className="truncate text-xs text-foreground">{quotes[s]?.name ?? s}</span>
+                <span className="text-xs text-muted-foreground">{t('equity')}</span>
+              </span>
+              <button
+                type="button"
+                aria-label={t('removeFromList')}
+                onClick={() => void onPatch(list.id, { symbols: list.symbols.filter((x) => x !== s) })}
+              >
+                <Trash2 className="size-5 text-muted-foreground" aria-hidden />
+              </button>
+            </>
+          )}
+        </ReorderList>
       </section>
     </main>
   );

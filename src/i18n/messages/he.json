@@ -328,6 +328,7 @@
     "createNewList": "יצירת רשימה חדשה",
     "deleteList": "מחיקת רשימת מעקב",
     "removeFromList": "הסרה מהרשימה",
+    "reorder": "שינוי מיקום {name}",
     "back": "חזרה",
     "editWatchlist": "עריכת רשימת מעקב",
     "createWatchlist": "יצירת רשימת מעקב",

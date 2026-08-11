@@ -328,6 +328,7 @@
     "createNewList": "Create new list",
     "deleteList": "Delete watchlist",
     "removeFromList": "Remove from list",
+    "reorder": "Reorder {name}",
     "back": "Back",
     "editWatchlist": "Edit watchlist",
     "createWatchlist": "Create watchlist",
