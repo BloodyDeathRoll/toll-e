@@ -12,6 +12,7 @@ import { LineChart } from '@/components/charts';
 import { ChangePill, AfterHours } from '@/components/quote-bits';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { InfoDot } from '@/components/info-dot';
+import { useOnDeviceTranslation } from '@/components/use-translation';
 import { PriceChart, type ScrubPoint } from '@/components/price-chart';
 import {
   useAnalysis,
@@ -69,6 +70,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
   };
   const [finPeriod, setFinPeriod] = useState<'annual' | 'quarterly'>('annual');
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false);
 
   // Deep-linkable tabs (?tab=news) — read after mount so SSR markup stays stable.
   useEffect(() => {
@@ -115,6 +117,11 @@ export function StockScreen({ symbol }: { symbol: string }) {
     exchange: summary?.exchange ?? stock.exchange,
     sector: summary?.sector ?? stock.sector,
   };
+  // The description arrives in English whatever locale asked for it, so a
+  // Hebrew reader gets it translated on the device where that is possible.
+  const about = useOnDeviceTranslation(summary?.description, locale);
+  const aboutText =
+    about.state === 'done' && !showOriginal ? about.translated : summary?.description;
   const eventDate = summary?.nextEarningsDate ?? stock.nextEvent.date;
   const up = changePct >= 0;
 
@@ -232,20 +239,48 @@ export function StockScreen({ symbol }: { symbol: string }) {
   const aboutCard = (summary?.description || summary?.sector || summary?.industry) && (
     <section className="flex flex-col gap-3 border-t border-border p-6">
       <h2 className="text-xs uppercase text-muted-foreground">{t('about')}</h2>
-      {summary?.description && (
-        <p className={cn('text-sm leading-relaxed text-foreground', !aboutOpen && 'line-clamp-4')}>
-          {summary.description}
+      {aboutText && (
+        // dir="auto" rather than a fixed direction: the same paragraph is
+        // English before it is translated and Hebrew after, and the first
+        // strong character is a more reliable judge than we are.
+        <p
+          dir="auto"
+          className={cn('text-sm leading-relaxed text-foreground', !aboutOpen && 'line-clamp-4')}
+        >
+          {aboutText}
         </p>
       )}
-      {summary?.description && summary.description.length > 220 && (
-        <button
-          type="button"
-          onClick={() => setAboutOpen((v) => !v)}
-          className="self-start text-sm font-semibold text-primary"
-        >
-          {aboutOpen ? t('readLess') : t('readMore')}
-        </button>
-      )}
+      <div className="flex items-center gap-4">
+        {aboutText && aboutText.length > 220 && (
+          <button
+            type="button"
+            onClick={() => setAboutOpen((v) => !v)}
+            className="text-sm font-semibold text-primary"
+          >
+            {aboutOpen ? t('readLess') : t('readMore')}
+          </button>
+        )}
+        {/* The provider writes in English only. Chrome can translate on the
+            device; where it cannot, this whole control is absent and the
+            original stands. */}
+        {about.state === 'idle' && (
+          <button type="button" onClick={() => void about.translate()} className="text-sm font-semibold text-primary">
+            {t('translate')}
+          </button>
+        )}
+        {about.state === 'working' && (
+          <span className="text-sm text-muted-foreground">{t('translating')}</span>
+        )}
+        {about.state === 'done' && (
+          <button
+            type="button"
+            onClick={() => setShowOriginal((v) => !v)}
+            className="text-sm font-semibold text-primary"
+          >
+            {showOriginal ? t('showTranslation') : t('showOriginal')}
+          </button>
+        )}
+      </div>
       <div className="flex flex-wrap gap-2 pt-1">
         {([['sector', summary?.sector], ['industry', summary?.industry]] as const).map(
           ([kind, name]) =>
@@ -784,7 +819,12 @@ function StatCell({
   end?: boolean;
 }) {
   return (
-    <span className={cn('flex flex-col gap-2', end && 'items-end')}>
+    // `items-start`, not the default stretch: the value is a dir="ltr" island,
+    // so its text sits at the *left* of whatever box it is given. Stretched to
+    // a wide label's width that reads as an indent — in Hebrew, "33.3" drifting
+    // off the start edge under a long label like מכפיל רווח. Shrink-wrapping
+    // each child puts both on the same edge, whichever edge the locale starts at.
+    <span className={cn('flex flex-col gap-2', end ? 'items-end' : 'items-start')}>
       <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
         {label}
         {note && <InfoDot label={label} note={note} align={end ? 'end' : 'start'} />}
