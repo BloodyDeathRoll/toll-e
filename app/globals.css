@@ -201,6 +201,11 @@
   html {
     @apply font-sans antialiased;
     font-feature-settings: "ss01", "cv01", "cv02", "cv03", "cv04";
+    /* The app's base size, and the root every rem in the type scale and the
+       spacing scale is measured from: text-base is 18px, text-sm 15.75px,
+       text-xs 13.5px. Sizes written in px (text-[16px] and friends) are
+       deliberate exceptions and do not move with it. */
+    font-size: 18px;
   }
 }
 

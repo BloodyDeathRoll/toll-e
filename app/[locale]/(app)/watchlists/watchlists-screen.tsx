@@ -242,7 +242,7 @@ export function WatchlistsScreen({
                         className="flex min-w-0 flex-1 items-center justify-between gap-4"
                       >
                         <span className="flex min-w-0 flex-col">
-                          <span className="text-base font-bold text-foreground">
+                          <span className="text-[18px] font-bold text-foreground">
                             {displaySymbol(s, sm)}
                           </span>
                           <span className="truncate text-xs text-foreground">
@@ -252,12 +252,12 @@ export function WatchlistsScreen({
                         </span>
                         <span className="flex shrink-0 flex-col items-end gap-0.5">
                           {price !== undefined && (
-                            <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
+                            <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
                               {sm.currencySymbol}
                               {fmtNum(price, sm.numberLocale)}
                             </span>
                           )}
-                          <ChangePill pct={pct} numberLocale={nl} variant="soft" />
+                          <ChangePill pct={pct} numberLocale={nl} variant="soft" className="text-[16px]" />
                         </span>
                       </RowLink>
                       <button

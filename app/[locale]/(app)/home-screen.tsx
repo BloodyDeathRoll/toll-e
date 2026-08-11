@@ -335,7 +335,7 @@ export function HomeScreen() {
                   className="flex items-center justify-between gap-4 border-b border-border py-2.5"
                 >
                   <span className="flex min-w-0 flex-col">
-                    <span className="text-base font-bold text-foreground">{h.symbol}</span>
+                    <span className="text-[18px] font-bold text-foreground">{h.symbol}</span>
                     <span className="truncate text-xs text-foreground">
                       {name({ name: h.name ?? h.symbol, nameHe: (h as { nameHe?: string }).nameHe })}
                     </span>
@@ -354,10 +354,10 @@ export function HomeScreen() {
                       />
                     )}
                     <span className="private flex flex-col items-end gap-0.5">
-                      <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
+                      <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
                         {fmtNum(quote?.price ?? h.price, nl)}
                       </span>
-                      <ChangePill pct={dayPct} numberLocale={nl} />
+                      <ChangePill pct={dayPct} numberLocale={nl} className="text-[16px]" />
                       <AfterHours quote={quote} numberLocale={nl} />
                     </span>
                   </span>

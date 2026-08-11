@@ -98,19 +98,19 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
                       className="flex items-center justify-between gap-4 border-b border-border py-2.5"
                     >
                       <span className="flex min-w-0 flex-col">
-                        <span className="text-base font-bold text-foreground">
+                        <span className="text-[18px] font-bold text-foreground">
                           {displaySymbol(s, sm)}
                         </span>
                         <span className="truncate text-xs text-foreground">{q?.name ?? s}</span>
                       </span>
                       <span className="flex shrink-0 flex-col items-end gap-0.5">
                         {q && (
-                          <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
+                          <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
                             {sm.currencySymbol}
                             {fmtNum(q.price, sm.numberLocale)}
                           </span>
                         )}
-                        <ChangePill pct={q?.changePct ?? 0} numberLocale={nl} />
+                        <ChangePill pct={q?.changePct ?? 0} numberLocale={nl} className="text-[16px]" />
                       </span>
                     </RowLink>
                   );

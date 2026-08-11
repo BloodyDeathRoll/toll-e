@@ -56,7 +56,7 @@ export function AfterHours({
       <Moon className="size-4 text-moon" fill="currentColor" aria-hidden />
       <span
         dir="ltr"
-        className={cn('text-[11px] tabular-nums', ext.changePct >= 0 ? 'text-gain' : 'text-loss')}
+        className={cn('text-[14px] tabular-nums', ext.changePct >= 0 ? 'text-gain' : 'text-loss')}
       >
         {fmtPct(ext.changePct, numberLocale)}
       </span>
