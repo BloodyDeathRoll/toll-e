@@ -321,7 +321,10 @@
     "noListsFound": "No lists found.",
     "equity": "Equity",
     "listMenu": "List options",
+    "listInfo": "About this list",
     "edit": "Edit",
+    "addTickers": "Add tickers",
+    "createNewList": "Create new list",
     "deleteList": "Delete watchlist",
     "removeFromList": "Remove from list",
     "back": "Back",
@@ -335,7 +338,7 @@
     "emptyInMarket": "Nothing in this market — switch markets to see the rest.",
     "includeIn": "Include in watchlists:",
     "close": "Close",
-    "managedNote": "Filled in from your transactions"
+    "managedNote": "Locked. Only reflect your transactions"
   },
   "portfolio": {
     "title": "Holdings",

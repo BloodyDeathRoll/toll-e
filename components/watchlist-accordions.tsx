@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ChevronDown, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
-import { Link, useRouter } from '@/src/i18n/navigation';
+import { ChevronDown } from 'lucide-react';
+import { useRouter } from '@/src/i18n/navigation';
+import { ListMenu } from '@/components/list-menu';
+import { RowLink } from '@/components/row-link';
 import { ChangePill } from '@/components/quote-bits';
 import { useQuotes } from '@/components/use-market-data';
 import { useWatchlists } from '@/components/use-watchlists';
@@ -25,16 +27,6 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
   const nl = market.numberLocale;
   const { state, deleteList } = useWatchlists();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [menuFor, setMenuFor] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      if (!menuRef.current?.contains(e.target as Node)) setMenuFor(null);
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, []);
 
   // A list can hold tickers from several markets; the selected market decides
   // which of them are on screen, so ₪ never shows a dollar position.
@@ -63,41 +55,12 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
                 {l.name}
               </h2>
               <span className="flex items-center gap-3">
-                <div className="relative" ref={menuFor === l.id ? menuRef : undefined}>
-                  <button
-                    type="button"
-                    aria-label={t('listMenu')}
-                    onClick={() => setMenuFor(menuFor === l.id ? null : l.id)}
-                  >
-                    <MoreHorizontal className="size-5 text-muted-foreground" aria-hidden />
-                  </button>
-                  {menuFor === l.id && (
-                    <div className="absolute end-0 top-full z-50 mt-1 flex w-56 flex-col gap-4 rounded-[20px] bg-well p-6 shadow-lg">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMenuFor(null);
-                          router.push('/watchlists');
-                        }}
-                        className="flex items-center gap-3 text-base text-foreground"
-                      >
-                        <Pencil className="size-4" aria-hidden />
-                        {t('edit')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMenuFor(null);
-                          void deleteList(l.id);
-                        }}
-                        className="flex items-center gap-3 text-base text-foreground"
-                      >
-                        <Trash2 className="size-4" aria-hidden />
-                        {t('deleteList')}
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <ListMenu
+                  onEdit={() => router.push(`/watchlists/${l.id}/edit`)}
+                  onAddTickers={() => router.push(`/watchlists/${l.id}/add`)}
+                  onDelete={() => void deleteList(l.id)}
+                  onCreateList={() => router.push('/watchlists/new')}
+                />
                 <button
                   type="button"
                   aria-label={l.name}
@@ -129,7 +92,7 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
                   const q = quotes[s];
                   const sm = marketForSymbol(s);
                   return (
-                    <Link
+                    <RowLink
                       key={s}
                       href={`/stock/${s}`}
                       className="flex items-center justify-between gap-4 border-b border-border py-2.5"
@@ -149,7 +112,7 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
                         )}
                         <ChangePill pct={q?.changePct ?? 0} numberLocale={nl} />
                       </span>
-                    </Link>
+                    </RowLink>
                   );
                 })
               ))}

@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronDown, MoreHorizontal, Plus } from 'lucide-react';
-import { Link } from '@/src/i18n/navigation';
+import { ChevronDown, Plus } from 'lucide-react';
+import { Link, useRouter } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
+import { ListInfo, ListMenu } from '@/components/list-menu';
+import { RowLink } from '@/components/row-link';
 import { MoreLink } from '@/components/more-link';
 import { HoldingsTable, positionRows } from '@/components/holdings-table';
 import { PerformanceChart, type OverlayRow } from '@/components/performance-chart';
@@ -20,6 +22,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SessionSparkline, Sparkline } from '@/components/charts';
 import { WatchlistAccordions } from '@/components/watchlist-accordions';
 import { WatchlistCard } from '@/components/watchlist-card';
+import { useWatchlists } from '@/components/use-watchlists';
+import { HOLDINGS_LIST } from '@/src/watchlists/constants';
 import type { ChartRange } from '@/src/market-data/types';
 import { useCharts, useIndexQuotes, useQuotes } from '@/components/use-market-data';
 import { usePortfolioPositions } from '@/components/use-portfolio';
@@ -51,15 +55,13 @@ export function HomeScreen() {
   const [range, setRange] = useState<(typeof ranges)[number]>('1D');
   const [mobileRange, setMobileRange] = useState<RangeOption>('1D');
   const [holdingsOpen, setHoldingsOpen] = useState(true);
-  const [holdingsMenu, setHoldingsMenu] = useState(false);
-  const holdingsMenuRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      if (!holdingsMenuRef.current?.contains(e.target as Node)) setHoldingsMenu(false);
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, []);
+  const router = useRouter();
+  // Holdings is a real (managed) watchlist, so its menu acts on that list.
+  const { state: listsState, deleteList } = useWatchlists();
+  const holdingsListId =
+    listsState.status === 'data'
+      ? listsState.lists.find((l) => l.name === HOLDINGS_LIST)?.id
+      : undefined;
   // Stocks toggled OFF the performance chart (default: all overlaid).
   const [hiddenOverlays, setHiddenOverlays] = useState<Set<string>>(new Set());
   const toggleOverlay = (symbol: string) =>
@@ -274,25 +276,25 @@ export function HomeScreen() {
           <section className="px-6 pb-6">
             {/* Holdings is a watchlist too, so it carries the same controls —
                 but it is filled in from transactions, so both are inert. */}
-            <div className="flex items-center justify-between gap-3 pb-2.5">
-              <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-                {t('home.holdings')}
-              </h2>
+            <div className="flex items-center gap-3 pb-2.5">
+              {/* Title and its info dot are one unit — 4px apart, top-aligned. */}
+              <span className="flex items-start">
+                <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+                  {t('home.holdings')}
+                </h2>
+                <ListInfo note={t('lists.managedNote')} />
+              </span>
+              <span className="flex-1" aria-hidden />
               <span className="flex items-center gap-3">
-                <div className="relative" ref={holdingsMenuRef}>
-                  <button
-                    type="button"
-                    aria-label={t('lists.listMenu')}
-                    onClick={() => setHoldingsMenu((v) => !v)}
-                  >
-                    <MoreHorizontal className="size-5 text-muted-foreground" aria-hidden />
-                  </button>
-                  {holdingsMenu && (
-                    <div className="absolute end-0 top-full z-50 mt-1 w-56 rounded-[20px] bg-well p-6 shadow-lg">
-                      <p className="text-sm text-muted-foreground">{t('lists.managedNote')}</p>
-                    </div>
-                  )}
-                </div>
+                {/* Holdings is a watchlist too, so it carries the same menu —
+                    every action shown, all but the last one disabled. */}
+                <ListMenu
+                  locked
+                  onEdit={() => holdingsListId && router.push(`/watchlists/${holdingsListId}/edit`)}
+                  onAddTickers={() => holdingsListId && router.push(`/watchlists/${holdingsListId}/add`)}
+                  onDelete={() => holdingsListId && void deleteList(holdingsListId)}
+                  onCreateList={() => router.push('/watchlists/new')}
+                />
                 <button
                   type="button"
                   aria-label={t('home.holdings')}
@@ -314,7 +316,7 @@ export function HomeScreen() {
               const hSeries = holdingCharts[h.symbol];
               const dayPct = quote?.changePct ?? h.dayChangePct;
               return (
-                <Link
+                <RowLink
                   key={h.symbol}
                   href={`/stock/${h.symbol}`}
                   className="flex items-center justify-between gap-4 border-b border-border py-2.5"
@@ -346,7 +348,7 @@ export function HomeScreen() {
                       <AfterHours quote={quote} numberLocale={nl} />
                     </span>
                   </span>
-                </Link>
+                </RowLink>
               );
             })}
           </section>

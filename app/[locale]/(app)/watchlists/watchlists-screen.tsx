@@ -1,21 +1,22 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   ArrowLeft,
   Check,
   ChevronDown,
   GripVertical,
-  MoreHorizontal,
   Pencil,
   Plus,
   Star,
   Trash2,
 } from 'lucide-react';
-import { Link, useRouter } from '@/src/i18n/navigation';
+import { useRouter } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
+import { ListInfo, ListMenu } from '@/components/list-menu';
+import { RowLink } from '@/components/row-link';
 import { ChangePill } from '@/components/quote-bits';
 import { useQuotes, useSearch } from '@/components/use-market-data';
 import { useWatchlists, type WatchlistData } from '@/components/use-watchlists';
@@ -27,32 +28,38 @@ import { cn } from '@/lib/utils';
 
 type Mode =
   | { kind: 'browse' }
-  | { kind: 'edit'; listId: string }
+  | { kind: 'edit'; listId: string; addOpen: boolean }
   | { kind: 'create' };
 
-export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {}) {
+export function WatchlistsScreen({
+  initialMode,
+  listId,
+}: { initialMode?: 'create' | 'edit' | 'add'; listId?: string } = {}) {
   const t = useTranslations('lists');
   const { marketId } = useMarket();
   const market = getMarket(marketId);
   const nl = market.numberLocale;
   const { state, createList, patchList, deleteList } = useWatchlists();
   const router = useRouter();
-  // /watchlists/new is how the tab bar's plus asks for the create screen.
+  // /watchlists/new is how the tab bar's plus asks for the create screen;
+  // /watchlists/<id>/edit and /<id>/add are how the home screen's list menu
+  // reaches the same flows without a query param.
   const wantsNew = initialMode === 'create';
+  const deepLinked = (initialMode === 'edit' || initialMode === 'add') && Boolean(listId);
 
   const real = state.status === 'data' ? state.lists : null;
-  const [mode, setMode] = useState<Mode>({ kind: 'browse' });
+  const [mode, setMode] = useState<Mode>(
+    deepLinked && listId
+      ? { kind: 'edit', listId, addOpen: initialMode === 'add' }
+      : { kind: 'browse' },
+  );
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [menuFor, setMenuFor] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      if (!menuRef.current?.contains(e.target as Node)) setMenuFor(null);
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, []);
+  /** Leaving a flow: back to the list when deep-linked, in place otherwise. */
+  const toBrowse = () => {
+    setMode({ kind: 'browse' });
+    if (deepLinked || wantsNew) router.replace('/watchlists');
+  };
 
   // Demo showcase for signed-out visitors; real lists otherwise. "Holdings"
   // is filled in from transactions but is an ordinary container otherwise.
@@ -99,11 +106,12 @@ export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {
       <EditList
         list={editingList}
         marketId={marketId}
-        onBack={() => setMode({ kind: 'browse' })}
+        addOpen={mode.addOpen}
+        onBack={toBrowse}
         onPatch={patchList}
         onDelete={async (id) => {
           await deleteList(id);
-          setMode({ kind: 'browse' });
+          toBrowse();
         }}
       />
     );
@@ -113,15 +121,11 @@ export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {
     return (
       <CreateList
         marketId={marketId}
-        onBack={() => {
-          setMode({ kind: 'browse' });
-          if (wantsNew) router.replace('/watchlists');
-        }}
+        onBack={toBrowse}
         onSave={async (listName, symbols) => {
           const created = await createList(listName);
           if (created && symbols.length) await patchList(created.id, { symbols });
-          setMode({ kind: 'browse' });
-          if (wantsNew) router.replace('/watchlists');
+          toBrowse();
           if (created) setCollapsed(new Set());
         }}
       />
@@ -137,9 +141,9 @@ export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {
               type="button"
               aria-label={t('newList')}
               onClick={() => router.push('/watchlists/new')}
-              className="flex size-[43px] items-center justify-center rounded-full bg-primary text-primary-foreground"
+              className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground"
             >
-              <Plus className="size-6" aria-hidden />
+              <Plus className="size-5" aria-hidden />
             </button>
           ) : undefined
         }
@@ -181,50 +185,27 @@ export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {
           return (
             <section key={l.id} className="rounded-xl bg-card px-4 py-1">
               <div className="flex items-center gap-3 py-3">
-                <button
-                  type="button"
-                  onClick={() => toggleOpen(l.id)}
-                  aria-expanded={open}
-                  className="flex flex-1 items-center justify-between text-start"
-                >
-                  <span className="text-base text-muted-foreground">{l.name}</span>
-                </button>
-                {!l.demo && !l.managed && (
-                  <div className="relative" ref={menuFor === l.id ? menuRef : undefined}>
-                    <button
-                      type="button"
-                      aria-label={t('listMenu')}
-                      onClick={() => setMenuFor(menuFor === l.id ? null : l.id)}
-                    >
-                      <MoreHorizontal className="size-5 text-muted-foreground" aria-hidden />
-                    </button>
-                    {menuFor === l.id && (
-                      <div className="absolute end-0 top-full z-50 mt-1 flex w-56 flex-col gap-4 rounded-[20px] bg-well p-6 shadow-lg">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMenuFor(null);
-                            setMode({ kind: 'edit', listId: l.id });
-                          }}
-                          className="flex items-center gap-3 text-base text-foreground"
-                        >
-                          <Pencil className="size-4" aria-hidden />
-                          {t('edit')}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMenuFor(null);
-                            void deleteList(l.id);
-                          }}
-                          className="flex items-center gap-3 text-base text-foreground"
-                        >
-                          <Trash2 className="size-4" aria-hidden />
-                          {t('deleteList')}
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                {/* Title and its info dot are one unit — 4px apart, top-aligned. */}
+                <span className="flex items-start">
+                  <button
+                    type="button"
+                    onClick={() => toggleOpen(l.id)}
+                    aria-expanded={open}
+                    className="text-start text-base text-muted-foreground"
+                  >
+                    {l.name}
+                  </button>
+                  {l.managed && <ListInfo note={t('managedNote')} />}
+                </span>
+                <span className="flex-1" aria-hidden />
+                {!l.demo && (
+                  <ListMenu
+                    locked={l.managed}
+                    onEdit={() => setMode({ kind: 'edit', listId: l.id, addOpen: false })}
+                    onAddTickers={() => setMode({ kind: 'edit', listId: l.id, addOpen: true })}
+                    onDelete={() => void deleteList(l.id)}
+                    onCreateList={() => router.push('/watchlists/new')}
+                  />
                 )}
                 <button
                   type="button"
@@ -253,18 +234,23 @@ export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {
                   const pct = q?.changePct ?? demoQuote?.changePct ?? 0;
                   const sm = marketForSymbol(s); // a list may span markets
                   return (
-                    <div key={s} className="flex items-center justify-between gap-4 border-t border-border py-3">
-                      <Link href={`/stock/${s}`} className="flex min-w-0 flex-col">
-                        <span className="text-base font-bold text-foreground">
-                          {displaySymbol(s, sm)}
+                    <div key={s} className="flex items-center gap-4 border-t border-border py-3">
+                      {/* The whole row opens the stock view; only the star,
+                          which does something else, is left out of it. */}
+                      <RowLink
+                        href={`/stock/${s}`}
+                        className="flex min-w-0 flex-1 items-center justify-between gap-4"
+                      >
+                        <span className="flex min-w-0 flex-col">
+                          <span className="text-base font-bold text-foreground">
+                            {displaySymbol(s, sm)}
+                          </span>
+                          <span className="truncate text-xs text-foreground">
+                            {q?.name ?? demoQuote?.name ?? s}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{t('equity')}</span>
                         </span>
-                        <span className="truncate text-xs text-foreground">
-                          {q?.name ?? demoQuote?.name ?? s}
-                        </span>
-                        <span className="text-xs text-muted-foreground">{t('equity')}</span>
-                      </Link>
-                      <span className="flex shrink-0 items-center gap-4">
-                        <span className="flex flex-col items-end gap-0.5">
+                        <span className="flex shrink-0 flex-col items-end gap-0.5">
                           {price !== undefined && (
                             <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
                               {sm.currencySymbol}
@@ -273,17 +259,17 @@ export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {
                           )}
                           <ChangePill pct={pct} numberLocale={nl} variant="soft" />
                         </span>
-                        <button
-                          type="button"
-                          aria-label={t('removeFromList')}
-                          disabled={Boolean(l.demo || l.managed)}
-                          onClick={() =>
-                            patchList(l.id, { symbols: l.symbols.filter((x) => x !== s) })
-                          }
-                        >
-                          <Star className="size-5 fill-primary text-primary" aria-hidden />
-                        </button>
-                      </span>
+                      </RowLink>
+                      <button
+                        type="button"
+                        aria-label={t('removeFromList')}
+                        disabled={Boolean(l.demo || l.managed)}
+                        onClick={() =>
+                          patchList(l.id, { symbols: l.symbols.filter((x) => x !== s) })
+                        }
+                      >
+                        <Star className="size-5 fill-primary text-primary" aria-hidden />
+                      </button>
                     </div>
                   );
                 })}
@@ -299,16 +285,19 @@ export function WatchlistsScreen({ initialMode }: { initialMode?: 'create' } = {
   );
 }
 
-/** Edit watchlist (design frame): rename, drag-reorder, per-row + list delete. */
+/** Edit watchlist (design frame): rename, add, drag-reorder, per-row + list delete. */
 function EditList({
   list,
   marketId,
+  addOpen = false,
   onBack,
   onPatch,
   onDelete,
 }: {
   list: WatchlistData;
   marketId: string;
+  /** Opened straight from "Add tickers": the search is already waiting. */
+  addOpen?: boolean;
   onBack: () => void;
   onPatch: (id: string, patch: { name?: string; symbols?: string[] }) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
@@ -318,6 +307,11 @@ function EditList({
   const { quotes } = useQuotes(list.symbols, 60_000);
   const [name, setName] = useState(list.name);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [searchOpen, setSearchOpen] = useState(addOpen);
+  const [query, setQuery] = useState('');
+  const results = useSearch(query, marketId)
+    .filter((r) => !list.symbols.includes(r.symbol))
+    .slice(0, 6);
 
   const reorder = async (from: number, to: number) => {
     if (from === to) return;
@@ -344,8 +338,51 @@ function EditList({
         >
           <ArrowLeft className="size-6 text-foreground rtl:-scale-x-100" aria-hidden />
         </button>
-        <h1 className="text-base font-semibold text-foreground">{t('editWatchlist')}</h1>
+        <h1 className="flex-1 text-base font-semibold text-foreground">{t('editWatchlist')}</h1>
+        <button
+          type="button"
+          aria-label={t('addTickers')}
+          aria-expanded={searchOpen}
+          onClick={() => setSearchOpen((v) => !v)}
+          className="text-foreground"
+        >
+          <Plus className="size-6 rounded-full border border-foreground p-0.5" aria-hidden />
+        </button>
       </div>
+
+      {searchOpen && (
+        <div className="flex flex-col gap-2 px-4 pb-4">
+          <input
+            autoFocus
+            value={query}
+            placeholder={t('addTicker')}
+            onChange={(e) => setQuery(e.target.value)}
+            className="rounded-[20px] bg-well px-4 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground"
+          />
+          {query && results.length > 0 && (
+            <ul className="overflow-hidden rounded-xl border border-border bg-popover">
+              {results.map((r, i) => (
+                <li key={r.symbol}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void onPatch(list.id, { symbols: [...list.symbols, r.symbol] });
+                      setQuery('');
+                    }}
+                    className={cn(
+                      'flex w-full items-center gap-2 px-4 py-2.5 text-start hover:bg-accent',
+                      i > 0 && 'border-t border-border',
+                    )}
+                  >
+                    <span className="text-[13px] font-semibold text-foreground">{r.symbol}</span>
+                    <span className="flex-1 truncate text-xs text-muted-foreground">{r.name}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       <section className="mx-4 rounded-xl bg-card px-4 py-1">
         <div className="flex items-center gap-3 border-b border-border py-3">

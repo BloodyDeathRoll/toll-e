@@ -321,7 +321,10 @@
     "noListsFound": "לא נמצאו רשימות.",
     "equity": "מניה",
     "listMenu": "אפשרויות רשימה",
+    "listInfo": "על הרשימה הזו",
     "edit": "עריכה",
+    "addTickers": "הוספת ניירות",
+    "createNewList": "יצירת רשימה חדשה",
     "deleteList": "מחיקת רשימת מעקב",
     "removeFromList": "הסרה מהרשימה",
     "back": "חזרה",
@@ -335,7 +338,7 @@
     "emptyInMarket": "אין ניירות בשוק הזה — החליפו שוק כדי לראות את השאר.",
     "includeIn": "הוספה לרשימות מעקב:",
     "close": "סגירה",
-    "managedNote": "מתמלאת מהעסקאות שלכם"
+    "managedNote": "נעולה. משקפת רק את העסקאות שלכם"
   },
   "portfolio": {
     "title": "החזקות",
