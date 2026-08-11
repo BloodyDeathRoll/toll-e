@@ -64,9 +64,9 @@
 
 /* Dark palette — Figma "#DesignDark" frame variables. */
 .dark {
-  --background: #1b1b1b;
+  --background:  /*rgb(20,28,28)*/ rgb(12,16,16);
   --foreground: #ffffff;
-  --card: #272727;
+  --card: /*rgb(28,38,40)*/ rgb(20,28,28);
   --card-foreground: #ffffff;
   --popover: #272727;
   --popover-foreground: #ffffff;
@@ -79,7 +79,7 @@
   --accent: #383838;
   --accent-foreground: #ffffff;
   --destructive: #ff6666;
-  --border: #2e2e2e; /* border/default */
+  --border: #1b291f; /* border/default */
   --input: #2e2e2e;
   --ring: #faab00;
   --chart-1: #faab00;
@@ -95,7 +95,7 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #2e2e2e;
   --sidebar-ring: #faab00;
-  --well: #000000; /* surface/muted in dark: search pills, inputs */
+  --well: rgb(0, 0, 0); /* surface/muted in dark: search pills, inputs */
   --brand: #f0b90b; /* accent/warning — links & active nav in dark */
   --subtle: rgba(255, 255, 255, 0.72);
   --faint: rgba(255, 255, 255, 0.4);
