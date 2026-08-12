@@ -26,6 +26,8 @@ export interface PerformancePortfolio {
   /** taxPaid − taxOwed, back in next year's filing. */
   taxRefund: number;
   shieldRemaining: number;
+  /** Realized losses still in this year's at-source pool, native currency. */
+  poolLeft: number;
   /** Same figures in the display currency. */
   converted: { realized: number; unrealized: number; taxPaid: number; taxOwed: number; taxRefund: number };
 }
@@ -60,8 +62,23 @@ export interface PerformancePayload {
   fx: { pair: string; rate: number; asOf: string };
   year: number;
   years: number[];
-  /** Combined totals in the display currency. */
-  totals: { realized: number; unrealized: number; taxPaid: number; taxOwed: number; taxRefund: number };
+  /**
+   * Combined totals in the display currency.
+   *
+   * The two shields are not one thing: `pool` is what the broker will offset
+   * at source before the year is out, `shield` is what the tax authority has
+   * registered and settles at filing. See the mechanic at the top of
+   * src/engine/tax/index.ts.
+   */
+  totals: {
+    realized: number;
+    unrealized: number;
+    taxPaid: number;
+    taxOwed: number;
+    taxRefund: number;
+    pool: number;
+    shield: number;
+  };
   portfolios: PerformancePortfolio[];
   /** Combined month rows in the display currency. */
   months: PerformanceMonth[];
@@ -143,6 +160,9 @@ export async function getPerformance(
       taxOwed: round2(taxOwed),
       taxRefund: round2(taxRefund),
       shieldRemaining: tax.shieldRemaining,
+      // The pool as the year's last active month left it — the same reading
+      // previewSell reports as `poolAfter`.
+      poolLeft: ledger && ledger.months.length > 0 ? ledger.months[ledger.months.length - 1].poolOut : 0,
       converted: {
         realized: round2(convert(realized, p.currency)),
         unrealized: round2(convert(unrealized, p.currency)),
@@ -214,6 +234,12 @@ export async function getPerformance(
       taxPaid: round2(perPortfolio.reduce((s, p) => s + p.converted.taxPaid, 0)),
       taxOwed: round2(perPortfolio.reduce((s, p) => s + p.converted.taxOwed, 0)),
       taxRefund: round2(perPortfolio.reduce((s, p) => s + p.converted.taxRefund, 0)),
+      pool: round2(
+        perPortfolio.reduce((s, p) => s + convert(p.poolLeft, p.currency), 0),
+      ),
+      shield: round2(
+        perPortfolio.reduce((s, p) => s + convert(p.shieldRemaining, p.currency), 0),
+      ),
     },
     portfolios: perPortfolio,
     months,

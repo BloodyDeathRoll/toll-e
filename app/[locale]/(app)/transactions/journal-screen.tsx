@@ -4,7 +4,6 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Check, ChevronDown, Trash2 } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
-import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMarket } from '@/src/markets/registry';
@@ -37,7 +36,12 @@ const sorters: Record<SortKey, (a: TxRow, b: TxRow) => number> = {
   action: (a, b) => a.type.localeCompare(b.type) || b.tradeDate.localeCompare(a.tradeDate),
 };
 
-export function JournalScreen() {
+/**
+ * The Transactions tab: every buy and sell, newest first. It is a pane now
+ * rather than a page — the screen's header, its summary card and the tab strip
+ * above it belong to transactions-screen.tsx, which shows this beside the P&L.
+ */
+export function JournalPane() {
   const t = useTranslations('journal');
   const locale = useLocale();
   const { marketId } = useMarket();
@@ -122,10 +126,7 @@ export function JournalScreen() {
     );
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
-      <AppHeader />
-      <h1 className="sr-only">{t('title')}</h1>
-
+    <div className="flex flex-col pt-4">
       {/* Sort by */}
       {state.status === 'data' && (
         <div className="flex items-center justify-end gap-2 px-6 pb-2">
@@ -250,6 +251,6 @@ export function JournalScreen() {
           })}
         </section>
       )}
-    </main>
+    </div>
   );
 }

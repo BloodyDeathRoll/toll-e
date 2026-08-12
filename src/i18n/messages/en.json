@@ -15,7 +15,7 @@
     "addTransaction": "Add transaction",
     "back": "Back",
     "performance": "Performance",
-    "transactions": "Transactions",
+    "transactions": "Activity",
     "account": "Account",
     "new": "New",
     "searchNoResults": "No matches."
@@ -302,7 +302,7 @@
     "withheldNote": "Withheld month by month across {year}, as each sale settled."
   },
   "journal": {
-    "title": "Transactions",
+    "title": "Activity",
     "buy": "Buy",
     "sell": "Sell",
     "delete": "Delete",
@@ -312,6 +312,10 @@
     "signIn": "Sign in to track your portfolio.",
     "signInCta": "Sign in",
     "sortBy": "Sort by",
+    "tabs": {
+      "pnl": "P&L",
+      "list": "Transactions"
+    },
     "sort": {
       "date": "Date",
       "name": "Name",
@@ -410,6 +414,7 @@
     "realizedIn": "Realized in {year}",
     "netAfterTax": "Net after tax",
     "afterTax": "after {amount} tax",
+    "noSalesYear": "No sales in this year.",
     "unrealizedNote": "On open positions, as of today"
   },
   "settings": {

@@ -15,7 +15,7 @@
     "addTransaction": "הוספת עסקה",
     "back": "חזרה",
     "performance": "ביצועים",
-    "transactions": "עסקאות",
+    "transactions": "פעילות",
     "account": "חשבון",
     "new": "חדש",
     "searchNoResults": "אין תוצאות."
@@ -302,7 +302,7 @@
     "withheldNote": "נוכה חודש אחר חודש במהלך {year}, עם הסדרת כל מכירה."
   },
   "journal": {
-    "title": "עסקאות",
+    "title": "פעילות",
     "buy": "קנייה",
     "sell": "מכירה",
     "delete": "מחיקה",
@@ -312,6 +312,10 @@
     "signIn": "התחברו כדי לעקוב אחר התיק שלכם.",
     "signInCta": "התחברות",
     "sortBy": "מיון לפי",
+    "tabs": {
+      "pnl": "רווח והפסד",
+      "list": "עסקאות"
+    },
     "sort": {
       "date": "תאריך",
       "name": "שם",
@@ -410,6 +414,7 @@
     "realizedIn": "מומש ב-{year}",
     "netAfterTax": "נטו אחרי מס",
     "afterTax": "אחרי מס {amount}",
+    "noSalesYear": "אין מכירות בשנה הזו.",
     "unrealizedNote": "על פוזיציות פתוחות, נכון להיום"
   },
   "settings": {

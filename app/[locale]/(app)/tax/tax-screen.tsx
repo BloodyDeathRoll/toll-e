@@ -6,7 +6,7 @@ import { ChevronDown, Shield } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { UnderlineTabs } from '@/components/underline-tabs';
-import { InfoDot } from '@/components/info-dot';
+import { ShieldRows } from '@/components/shield-rows';
 import { useMarket } from '@/components/app-shell/market-context';
 import { MoreLink, MoreButton } from '@/components/more-link';
 import { ReserveBar } from '@/components/reserve-bar';
@@ -379,16 +379,7 @@ export function TaxScreen() {
             source, the tax authority's crosses years and settles at filing.
             Each carries the one sentence that tells them apart. */}
         <section className="mx-6 mt-6 mb-5 flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
-          <ShieldRow
-            label={t('brokerageShield')}
-            note={t('brokerageShieldInfo')}
-            value={`${sym}${fmtNum(view.poolLeft, nl, 0)}`}
-          />
-          <ShieldRow
-            label={t('irsShield')}
-            note={t('irsShieldInfo')}
-            value={`${sym}${fmtNum(view.shieldLeft, nl, 0)}`}
-          />
+          <ShieldRows pool={view.poolLeft} shield={view.shieldLeft} sym={sym} numberLocale={nl} />
         </section>
 
         <UnderlineTabs
@@ -743,29 +734,6 @@ export function TaxScreen() {
         </div>
       </div>
     </main>
-  );
-}
-
-/**
- * A shield, its figure, and the dot that explains which shield it is.
- *
- * The row is the positioned ancestor and the dot is deliberately `static`, so
- * the bubble hangs from the row's start edge instead of from the dot itself.
- * A dot sitting after a label is two-thirds of the way across, and a 14rem
- * bubble — 252px at this root size, not the 224 the class name suggests —
- * would run off the card from there.
- */
-function ShieldRow({ label, note, value }: { label: string; note: string; value: string }) {
-  return (
-    <div className="relative flex items-start justify-between gap-3">
-      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        {label}
-        <InfoDot label={label} note={note} className="static" />
-      </span>
-      <span dir="ltr" className="private text-base font-semibold text-foreground tabular-nums">
-        {value}
-      </span>
-    </div>
   );
 }
 

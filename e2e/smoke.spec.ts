@@ -187,9 +187,11 @@ test.describe('auth', () => {
     await page.goto('/en');
     await expect(seen(page, /Holdings|No holdings yet/)).toBeVisible();
     await expect(page.getByRole('button', { name: /Continue with Google/ })).toHaveCount(0);
-    // The tab bar is back, and Tax replaced Watchlists on it.
+    // The tab bar is back, and Tax replaced Watchlists on it. "Activity" is
+    // the transactions tab: performance and the journal are two tabs of one
+    // screen now, and neither name covered both.
     await page.setViewportSize({ width: 390, height: 844 });
-    await expect(seen(page, 'Transactions')).toBeVisible();
+    await expect(seen(page, 'Activity')).toBeVisible();
     await expect(seen(page, 'Tax')).toBeVisible();
   });
 });
