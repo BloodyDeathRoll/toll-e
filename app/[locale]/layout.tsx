@@ -58,8 +58,17 @@ export default async function LocaleLayout({
             switch without React's script-tag error. */}
         <Script src="/init.js" strategy="beforeInteractive" />
         <NextIntlClientProvider>
-          <div className="app-frame flex min-h-full flex-1 flex-col">{children}</div>
-          <InstallPrompt />
+          {/* On a phone these two wrappers are `display: contents` and this
+              is the same tree it has always been; on a wide screen they are
+              the backdrop and the device. See app/globals.css. */}
+          <div className="app-stage">
+            <div className="app-device">
+              <div className="app-frame app-scroll flex min-h-full flex-1 flex-col">{children}</div>
+              {/* Inside the device, so the sheet rises from the phone's own
+                  bottom edge rather than the window's. */}
+              <InstallPrompt />
+            </div>
+          </div>
         </NextIntlClientProvider>
       </body>
     </html>

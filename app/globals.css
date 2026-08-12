@@ -53,6 +53,11 @@
   --loss-surface: #ff6666;
   /* After-hours crescent. */
   --moon: #faab00;
+  /* The desk the phone lies on, and the hairline around the phone itself —
+     only ever seen on a wide screen. Not `--border`: this edge is drawn
+     against the backdrop, not against the app's own surfaces. */
+  --backdrop: #dcdfe6;
+  --device-edge: rgb(0 0 0 / 0.08);
   /* Categorical series (chart overlays) — dataviz-validated fixed order;
      never cycled, never reused for gain/loss/status. */
   --series-1: #2a78d6;
@@ -106,6 +111,10 @@
   --gain-surface: #179a72;
   --loss-surface: #ff6666;
   --moon: #9a9a9a;
+  /* Black desk: the shadow does nothing here, so the hairline is the only
+     thing separating the phone from it. */
+  --backdrop: #000000;
+  --device-edge: rgb(255 255 255 / 0.1);
   --series-1: #3987e5;
   --series-2: #d95926;
   --series-3: #199e70;
@@ -189,6 +198,71 @@
   width: 100%;
   max-width: 480px;
   margin-inline: auto;
+}
+
+/* ── The phone, drawn as a phone ──────────────────────────────────────────
+   Wide enough to see the column's edges and the window stops pretending to
+   be a handset: the app becomes a device-shaped card lying on a backdrop,
+   the way ~/Projects/wtw presents itself. Nothing about the app changes —
+   this is a frame around the same mobile layout, not a second one.
+
+   Below the threshold the two wrappers are `display: contents`, so they are
+   not in the layout at all and the phone keeps the exact box tree it has
+   always had: document scrolling, `fixed` chrome against the viewport,
+   edge to edge.
+
+   Above it, three things have to be true together, and each needs the one
+   before it:
+     1. the card is a fixed-height box that clips, so its rounded corners
+        actually cut the content;
+     2. the card carries a transform, which makes it the containing block
+        for `position: fixed` — that is what pulls the tab bar, the search
+        overlay and the sheets inside the phone instead of leaving them
+        spanning the monitor;
+     3. scrolling therefore has to move to an inner element, because a
+        clipped card cannot scroll and the fixed chrome must not scroll with
+        it. Hence `.app-scroll` — the same element, only now the viewport. */
+.app-stage,
+.app-device {
+  display: contents;
+}
+
+@media (min-width: 540px) {
+  body {
+    background: var(--backdrop);
+  }
+  .app-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 16px;
+    background: var(--backdrop);
+  }
+  .app-device {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 480px;
+    height: min(900px, calc(100dvh - 32px));
+    overflow: hidden;
+    background: var(--background);
+    border: 1px solid var(--device-edge);
+    border-radius: 32px;
+    box-shadow: 0 40px 100px rgb(0 0 0 / 0.35);
+    /* Not decoration: this is (2) above. */
+    transform: translateZ(0);
+  }
+  .app-scroll {
+    /* Beats the `min-h-full` it also carries — a flex child will not shrink
+       below its min-height, and a scroller that cannot shrink cannot
+       scroll. */
+    min-height: 0;
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
 }
 
 @layer base {
