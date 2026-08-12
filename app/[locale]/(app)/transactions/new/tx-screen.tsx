@@ -213,22 +213,33 @@ export function TxScreen() {
   };
 
   /**
-   * Every field is wrapped in this, and every field scrolls itself to the top
-   * of the screen when it takes focus. The form is taller than the phone and
+   * Every field is wrapped in this, and moving to a *different* field scrolls
+   * that field to the top of the screen. The form is taller than the phone and
    * the keyboard eats half of what is left, so the field you are filling can
    * otherwise sit under the keyboard with everything you have not answered yet
    * hidden above it. Putting it at the top puts the rest of the form under it,
    * where it can still be seen.
    *
+   * The move is what triggers it, not the focus event. A field owns more than
+   * one focusable thing — a stepper's chevrons, the ticker's result list — and
+   * the keyboard itself hands focus back as it opens and closes, so scrolling
+   * on every focus meant the page jumped out from under a finger that had
+   * never left the field. Anything focused outside a field is ignored
+   * entirely: it leaves the last field set, so coming back to it is not a move
+   * either.
+   *
    * `scroll-mt-4` is the breathing room: `scrollIntoView` honours
    * scroll-margin, which is the only way to land a little below the edge
    * rather than flush against it.
    */
+  const focusedField = useRef<string | null>(null);
   const fieldShell = (label: string, children: React.ReactNode) => (
     <div
-      onFocusCapture={(e) =>
-        e.currentTarget.scrollIntoView({ block: 'start', behavior: 'smooth' })
-      }
+      onFocusCapture={(e) => {
+        if (focusedField.current === label) return;
+        focusedField.current = label;
+        e.currentTarget.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      }}
       className="flex scroll-mt-4 flex-col gap-2 px-6 py-4"
     >
       <span className="text-xs text-muted-foreground">{label}</span>
