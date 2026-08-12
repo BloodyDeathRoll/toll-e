@@ -252,7 +252,11 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 480px;
+    /* Narrower than the 480px content column `.app-frame` caps at, and
+       deliberately so: that number is the widest the app is allowed to get on
+       a real handset, while this one is a handset's own width. 480 read as a
+       slab on a monitor. */
+    max-width: 420px;
     height: min(900px, calc(100dvh - 32px));
     overflow: hidden;
     background: var(--background);
