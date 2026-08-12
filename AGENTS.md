@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # toll-e
 
-Investment tracking web app for Israeli investors: Yahoo-Finance-grade portfolio tracker (dual-market US + TASE, EN + HE with RTL) with a tax engine underneath. `toll-e-plan.md` is the authoritative product & technical plan — read it before non-trivial work. `ref/` holds the 22 Yahoo Finance UX reference screenshots.
+Investment tracking web app for Israeli investors: Yahoo-Finance-grade portfolio tracker (dual-market US + TASE, EN + HE with RTL) with a tax engine underneath. `toll-e-plan.md` is the authoritative product & technical plan — read it before non-trivial work. `docs/` holds the specs and plans for work in flight.
 
 ## Commands
 
