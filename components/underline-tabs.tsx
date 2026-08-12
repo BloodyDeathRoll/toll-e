@@ -27,8 +27,13 @@ export function UnderlineTabs<T extends string>({
           type="button"
           onClick={() => onChange(t)}
           className={cn(
-            'border-b-2 px-3 pb-[5px] text-[15px] font-medium',
-            grow && 'flex-1',
+            'border-b-2 pb-[5px] text-[15px] font-medium',
+            // A stretched strip shares the row out evenly regardless, so its
+            // padding only decides the width below which the row stops
+            // fitting — four tabs at px-3 overflowed a 360px phone. A
+            // hug-content strip (Markets) is spaced by that padding, so it
+            // keeps it.
+            grow ? 'flex-1 px-2' : 'px-3',
             t === value
               ? 'border-primary text-primary'
               : 'border-border text-muted-foreground',

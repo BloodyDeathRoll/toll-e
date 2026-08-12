@@ -33,7 +33,12 @@ export function RangePills({
           type="button"
           onClick={() => onChange(r)}
           className={cn(
-            'flex-1 rounded-[20px] px-3 py-2.5 text-sm font-bold',
+            // px-2, not px-3: `flex-1` shares the row out evenly whatever the
+            // padding is, so on a 390px design frame these render identically
+            // — but padding sets each pill's *minimum* width, and six pills at
+            // px-3 cannot fit a 360px phone. The row then widened the whole
+            // document and the browser asked the reader to pinch out.
+            'flex-1 rounded-[20px] px-2 py-2.5 text-sm font-bold',
             r === value
               ? 'bg-primary text-primary-foreground'
               : 'text-foreground/40',
