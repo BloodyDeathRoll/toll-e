@@ -378,7 +378,7 @@ export function TaxScreen() {
             taken for one: the broker's runs inside the year and settles at
             source, the tax authority's crosses years and settles at filing.
             Each carries the one sentence that tells them apart. */}
-        <section className="mx-6 mt-6 mb-5 flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
+        <section className="mx-6 mb-5 flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
           <ShieldRows pool={view.poolLeft} shield={view.shieldLeft} sym={sym} numberLocale={nl} />
         </section>
 
