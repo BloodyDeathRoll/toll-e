@@ -6,6 +6,7 @@ import { Link } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
 import { Dropdown } from '@/components/dropdown';
+import { InfoDot } from '@/components/info-dot';
 import { ShieldRows } from '@/components/shield-rows';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -138,49 +139,55 @@ export function TransactionsScreen() {
           <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
             {/* Realized leads and unrealized answers it across the row: one is
                 money that has happened, the other money that has not, and
-                reading them apart is most of what this screen is for. The
-                smaller type says which is which without a word. */}
+                reading them apart is most of what this screen is for. Both
+                labels sit on one line so the figures under them share a
+                baseline — a wrapped label on one side drops its number below
+                the other's and the pair stops reading as a pair. */}
             <div className="flex items-start justify-between gap-4">
-              <div className="flex flex-col gap-1">
-                {/* Both labels at 11px and on one line each, so the two
-                    figures under them share a baseline: a wrapped label on one
-                    side drops its number below the other's and the pair stops
-                    reading as a pair. */}
+              <div className="flex flex-col gap-0.5">
                 <h2 className="text-[11px] font-semibold whitespace-nowrap tracking-[0.06em] uppercase text-muted-foreground">
                   {t('realizedIn', { year: data.year })}
                 </h2>
                 <p
                   dir="ltr"
                   className={cn(
-                    'private self-start text-[28px] font-bold tracking-tight tabular-nums',
+                    'private self-start text-[26px] font-bold tracking-tight tabular-nums',
                     yearTotals.net >= 0 ? 'text-gain' : 'text-loss',
                   )}
                 >
                   {signed(yearTotals.net, data.displayCurrency)}
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-1">
-                <h2 className="text-[11px] font-semibold whitespace-nowrap tracking-[0.06em] uppercase text-muted-foreground">
+              <div className="flex flex-col items-end gap-0.5">
+                {/* The qualifier is a dot rather than a line of small print:
+                    "as of today" is worth saying once, when asked, not every
+                    time the card is read. */}
+                <h2 className="flex items-center gap-1.5 text-[11px] font-semibold whitespace-nowrap tracking-[0.06em] uppercase text-muted-foreground">
                   {t('unrealized')}
+                  <InfoDot label={t('unrealized')} note={t('unrealizedNote')} align="end" />
                 </h2>
                 <p
                   dir="ltr"
                   className={cn(
-                    'private text-lg font-bold tracking-tight tabular-nums',
+                    'private text-[22px] font-bold tracking-tight tabular-nums',
                     data.totals.unrealized >= 0 ? 'text-gain' : 'text-loss',
                   )}
                 >
                   {signed(data.totals.unrealized, data.displayCurrency)}
                 </p>
-                <p className="max-w-[140px] text-end text-[11px] leading-snug text-muted-foreground">
-                  {t('unrealizedNote')}
-                </p>
               </div>
             </div>
 
-            <div className="flex flex-col gap-[7px] text-sm tabular-nums">
-              <Row label={tt('gains')} value={money(yearTotals.gains, data.displayCurrency)} />
-              <Row label={tt('losses')} value={money(neg(yearTotals.losses), data.displayCurrency)} />
+            {/* The two halves of the realized figure, and the only rows on the
+                card that explain another one — so they carry the weight of an
+                answer rather than a footnote. */}
+            <div className="flex flex-col gap-1.5 tabular-nums">
+              <Row label={tt('gains')} value={money(yearTotals.gains, data.displayCurrency)} strong />
+              <Row
+                label={tt('losses')}
+                value={money(neg(yearTotals.losses), data.displayCurrency)}
+                strong
+              />
             </div>
 
             <div className="h-px bg-border" />

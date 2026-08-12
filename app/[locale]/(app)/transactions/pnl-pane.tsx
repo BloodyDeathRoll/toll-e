@@ -169,18 +169,35 @@ export function Row({
   value,
   bold,
   big,
+  strong,
 }: {
   label: string;
   value: string;
+  /** Both sides carry weight — a total. */
   bold?: boolean;
   big?: boolean;
+  /** Only the figure carries weight: the label is still the quieter half. */
+  strong?: boolean;
 }) {
   return (
     <div className="flex justify-between gap-3">
-      <span className={cn(bold ? 'font-semibold text-foreground' : 'text-muted-foreground')}>
+      <span
+        className={cn(
+          bold ? 'font-semibold text-foreground' : 'text-muted-foreground',
+          strong && 'text-sm',
+        )}
+      >
         {label}
       </span>
-      <span dir="ltr" className={cn('private text-foreground', bold && 'font-semibold', big && 'text-base')}>
+      <span
+        dir="ltr"
+        className={cn(
+          'private text-foreground',
+          bold && 'font-semibold',
+          big && 'text-base',
+          strong && 'text-base font-semibold',
+        )}
+      >
         {value}
       </span>
     </div>
