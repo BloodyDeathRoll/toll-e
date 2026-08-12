@@ -3,6 +3,7 @@ import 'server-only';
 import { and, desc, eq, gte } from 'drizzle-orm';
 import { db } from '@/src/db';
 import { priceHistory } from '@/src/db/schema';
+import { marketForSymbol } from '@/src/markets/registry';
 import type { ChartRange, ChartSeries, FxRate, Quote } from './types';
 
 // Degraded-mode sources for when Yahoo is unreachable (toll-e-plan.md §10):
@@ -87,7 +88,12 @@ export async function getChartFromDb(symbol: string, range: ChartRange): Promise
   if (rows.length === 0) throw new Error(`no persisted closes for ${symbol}`);
   return {
     symbol,
-    currency: '', // unknown here; display layers already know the market
+    // The symbol names its market and the market names its currency, so
+    // there is nothing to be unknown about. An empty string here does not
+    // read as "absent" to a `??` downstream — it reaches the UI and renders
+    // the price with no currency sign at all, which is the one thing a
+    // degraded mode must not do to a number.
+    currency: marketForSymbol(symbol).currency,
     range,
     interval: '1d',
     timezone: 'UTC',
@@ -119,7 +125,7 @@ export async function getQuotesFromDb(symbols: string[]): Promise<Quote[]> {
     quotes.push({
       symbol,
       name: symbol,
-      currency: '',
+      currency: marketForSymbol(symbol).currency,
       price: last,
       change: prev !== undefined ? last - prev : 0,
       changePct: prev !== undefined && prev !== 0 ? ((last - prev) / prev) * 100 : 0,
