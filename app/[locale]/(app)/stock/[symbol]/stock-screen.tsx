@@ -288,7 +288,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
               <Link
                 key={kind}
                 href={`/screen/${kind}/${encodeURIComponent(name)}`}
-                className="rounded-full border border-border bg-well px-3 py-1.5 text-[13px] text-foreground"
+                className="rounded-full border border-field bg-well px-3 py-1.5 text-[13px] text-foreground"
               >
                 {name}
               </Link>
@@ -433,7 +433,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
           </button>
           <SearchBox
             className="min-w-0 flex-1"
-            inputClassName="h-[48px] rounded-[20px] border border-border bg-well ps-11 text-base font-medium"
+            inputClassName="h-[48px] rounded-[20px] border border-field bg-well ps-11 text-base font-medium"
             iconClassName="start-4 size-4"
           />
           <WatchlistStar wl={wl} symbol={symbol} className="size-6" />

@@ -65,7 +65,7 @@ export function SearchBox({
           if (e.key === 'Escape') setOpen(false);
         }}
         className={cn(
-          'h-[48px] w-full rounded-lg border border-border bg-well ps-9 pe-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20',
+          'h-[48px] w-full rounded-lg border border-field bg-well ps-9 pe-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20',
           inputClassName,
         )}
       />

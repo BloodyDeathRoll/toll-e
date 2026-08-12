@@ -67,7 +67,7 @@ export function LangCurrencyPicker({ compact = false }: { compact?: boolean }) {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         className={cn(
-          'flex items-center gap-2 rounded-[20px] border border-border bg-well px-4',
+          'flex items-center gap-2 rounded-[20px] border border-field bg-well px-4',
           compact ? 'h-9 text-sm' : 'h-[48px] text-base',
         )}
       >

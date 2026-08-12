@@ -54,14 +54,14 @@ export function DevLogin() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="email"
-        className="rounded-lg border border-border bg-well px-3.5 py-2.5 text-sm text-foreground outline-none"
+        className="rounded-lg border border-field bg-well px-3.5 py-2.5 text-sm text-foreground outline-none"
       />
       <input
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         placeholder="password"
-        className="rounded-lg border border-border bg-well px-3.5 py-2.5 text-sm text-foreground outline-none"
+        className="rounded-lg border border-field bg-well px-3.5 py-2.5 text-sm text-foreground outline-none"
       />
       <button
         type="button"

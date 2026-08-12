@@ -40,6 +40,10 @@
   --sidebar-ring: #faab00;
   /* Design extras */
   --well: #eff0f4; /* surface/muted: search pills, inputs, inset surfaces */
+  /* The edge of an inset surface. It cannot be `--border`, which is the same
+     grey as `--well` itself — a field drawn that way outlines its own fill in
+     its own colour and simply has no visible edge in light mode. */
+  --field: rgb(30 30 30 / 0.14);
   --brand: #df9101; /* Brand/OJ — links & active nav labels in light */
   --subtle: rgba(30, 30, 30, 0.72); /* secondary text, slightly stronger */
   --faint: rgba(30, 30, 30, 0.4); /* tertiary text */
@@ -101,6 +105,9 @@
   --sidebar-border: #2e2e2e;
   --sidebar-ring: #faab00;
   --well: rgb(0, 0, 0); /* surface/muted in dark: search pills, inputs */
+  /* Dark never had the problem — a field on black already stood out from the
+     card behind it. Same value `--border` carries, so nothing moves here. */
+  --field: #1b291f;
   --brand: #f0b90b; /* accent/warning — links & active nav in dark */
   --subtle: rgba(255, 255, 255, 0.72);
   --faint: rgba(255, 255, 255, 0.4);
@@ -168,6 +175,7 @@
   --radius-4xl: 2.5rem;
   /* Design extras */
   --color-well: var(--well);
+  --color-field: var(--field);
   --color-brand: var(--brand);
   --color-subtle: var(--subtle);
   --color-faint: var(--faint);

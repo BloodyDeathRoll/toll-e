@@ -224,7 +224,7 @@ export function TxScreen() {
   ) =>
     fieldShell(
       label,
-      <div className="flex h-[48px] items-center gap-4 rounded-[20px] border border-border bg-well px-4">
+      <div className="flex h-[48px] items-center gap-4 rounded-[20px] border border-field bg-well px-4">
         <input
           dir="ltr"
           type="number"
@@ -270,7 +270,7 @@ export function TxScreen() {
       {fieldShell(
         t('ticker'),
         <div ref={pickerRef} className="relative">
-          <div className="flex h-[48px] items-center gap-4 rounded-[20px] border border-border bg-well px-4">
+          <div className="flex h-[48px] items-center gap-4 rounded-[20px] border border-field bg-well px-4">
             <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
             <input
               dir="ltr"
@@ -313,7 +313,7 @@ export function TxScreen() {
       {/* Type: full-width segmented pill */}
       {fieldShell(
         t('type'),
-        <div className="flex h-[48px] rounded-[20px] border border-border bg-well">
+        <div className="flex h-[48px] rounded-[20px] border border-field bg-well">
           {(['buy', 'sell'] as const).map((k) => (
             <button
               key={k}
@@ -333,7 +333,7 @@ export function TxScreen() {
       {/* Date */}
       {fieldShell(
         t('date'),
-        <div className="flex h-[48px] items-center gap-4 rounded-[20px] border border-border bg-well px-4">
+        <div className="flex h-[48px] items-center gap-4 rounded-[20px] border border-field bg-well px-4">
           <CalendarDays className="size-4 shrink-0 text-foreground" aria-hidden />
           <input
             dir="ltr"
