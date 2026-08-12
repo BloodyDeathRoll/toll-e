@@ -77,6 +77,10 @@ export function TaxScreen() {
   const market = getMarket(marketId);
   const nl = market.numberLocale;
   const sym = market.currencySymbol;
+  // Flip a positive magnitude to its negative, leaving zero alone — `-0`
+  // formats as "-0.00", and a year with no losses should read as a plain
+  // zero. Same guard as the performance screen.
+  const neg = (v: number) => (v > 0 ? -v : 0);
   const { state } = useTax(marketId);
   const [pickedYear, setPickedYear] = useState<number | null>(null);
   const [openSale, setOpenSale] = useState<string | null>(null);
@@ -280,7 +284,7 @@ export function TaxScreen() {
   const howCalculated = (
     <div className="flex flex-col gap-[7px] text-sm tabular-nums">
       <Row label={t('realizedGains')} value={fmtNum(view.realizedGains, nl)} />
-      <Row label={t('realizedLosses')} value={fmtNum(-view.realizedLosses, nl)} />
+      <Row label={t('realizedLosses')} value={fmtNum(neg(view.realizedLosses), nl)} />
       <div className="h-px bg-border" />
       <Row label={t('taxable')} value={fmtNum(view.taxable, nl)} bold />
       <Row label={t('rate')} value={`${view.ratePct}%`} />
@@ -401,7 +405,12 @@ export function TaxScreen() {
                       </p>
                       <div className="flex flex-col gap-[7px] text-sm tabular-nums">
                         <Row label={t('realizedGains')} value={`${sym}${fmtNum(m.gains ?? 0, nl)}`} />
-                        <Row label={t('realizedLosses')} value={`${sym}${fmtNum(-(m.losses ?? 0), nl)}`} />
+                        {/* MonthRow.losses is stored already-negated (or null
+                            for a month with none), so negating it again both
+                            printed "-0.00" on a quiet month and showed a real
+                            loss as a positive number — the one place in the
+                            app that did. */}
+                        <Row label={t('realizedLosses')} value={`${sym}${fmtNum(m.losses ?? 0, nl)}`} />
                         <div className="h-px bg-border" />
                         <Row label={t('taxable')} value={`${sym}${fmtNum(m.net, nl)}`} bold />
                         <div className="flex justify-end">
