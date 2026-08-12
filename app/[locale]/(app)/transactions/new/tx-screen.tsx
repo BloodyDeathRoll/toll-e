@@ -133,10 +133,22 @@ export function TxScreen() {
     ratePct: number;
   }
   const [serverPreview, setServerPreview] = useState<Preview | null>(null);
+  /** A preview is on its way and the card's numbers are a keystroke behind. */
+  const [previewStale, setPreviewStale] = useState(false);
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- clear stale preview on input change
-    setServerPreview(null);
-    if (type !== 'sell' || !portfolioId || !symbol || !(shares > 0) || !(price >= 0)) return;
+    // The card stays mounted while the next preview is in flight. Dropping it
+    // on each keystroke shortened the document, and a browser that can no
+    // longer honour your scroll position clamps it — so a backspace threw the
+    // page upward and the reply, 300ms later, threw it back. Nothing was
+    // scrolling anything; the ground was moving.
+    const possible = type === 'sell' && portfolioId && symbol && shares > 0 && price >= 0;
+    if (!possible) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- no sale to price, so no card
+      setServerPreview(null);
+      setPreviewStale(false);
+      return;
+    }
+    setPreviewStale(true);
     let alive = true;
     const id = setTimeout(async () => {
       const res = await fetch(`/api/portfolios/${portfolioId}/tax/preview`, {
@@ -144,7 +156,11 @@ export function TxScreen() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbol, shares, pricePerShare: price, tradeDate }),
       });
-      if (res.ok && alive) setServerPreview(await res.json());
+      if (!alive) return;
+      // A refusal (overselling, most often) is the one case that does take the
+      // card away — there is no sale to price, and the error says why.
+      setServerPreview(res.ok ? await res.json() : null);
+      setPreviewStale(false);
     }, 300);
     return () => {
       alive = false;
@@ -410,9 +426,17 @@ export function TxScreen() {
         </span>
       </div>
 
-      {/* Sell-time tax preview — shown only once the engine has answered. */}
+      {/* Sell-time tax preview — shown only once the engine has answered, and
+          held on screen while the next answer is fetched. Dimmed meanwhile,
+          because the figures are a keystroke behind and saying so is cheaper
+          than either lying for 300ms or moving the page. */}
       {type === 'sell' && serverPreview && (
-        <section className="mx-6 flex flex-col gap-4 rounded-xl bg-card p-5">
+        <section
+          className={cn(
+            'mx-6 flex flex-col gap-4 rounded-xl bg-card p-5 transition-opacity',
+            previewStale && 'opacity-40',
+          )}
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-xs uppercase text-muted-foreground">{t('taxEvent')}</h2>
             <span className="rounded-full bg-background px-2.5 py-1 text-[11px] font-semibold text-subtle">
