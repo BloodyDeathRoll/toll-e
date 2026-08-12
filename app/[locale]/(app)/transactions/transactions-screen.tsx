@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
+import { AllocationDonut } from '@/components/allocation-donut';
 import { Dropdown } from '@/components/dropdown';
 import { InfoDot } from '@/components/info-dot';
 import { ShieldRows } from '@/components/shield-rows';
@@ -14,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getMarket } from '@/src/markets/registry';
 import { fmtMoney, fmtMoneySigned } from '@/lib/format';
 import type { PerformancePayload } from '@/src/server/performance';
+import { OTHER_SLICE } from '@/src/allocation';
 import { cn } from '@/lib/utils';
 import { JournalPane } from './journal-screen';
 import { PnlPane, Row } from './pnl-pane';
@@ -104,6 +106,11 @@ export function TransactionsScreen() {
   // Flip a positive magnitude to its negative, leaving zero alone — `-0`
   // formats as "-$0.00".
   const neg = (v: number) => (v > 0 ? -v : 0);
+  // The server groups by the provider's own industry names and cannot
+  // translate the one label it invents.
+  const slices = (data?.allocation ?? []).map((a) =>
+    a.label === OTHER_SLICE ? { ...a, label: t('otherSlice') } : a,
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col">
@@ -148,21 +155,11 @@ export function TransactionsScreen() {
             type="button"
             onClick={() => setCardOpen(true)}
             aria-expanded={false}
-            className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5 text-start"
+            className="flex items-center gap-3 rounded-2xl border border-border bg-card p-5 text-start"
           >
-            <span className="flex flex-col gap-0.5">
-              <span className="text-[11px] font-semibold whitespace-nowrap tracking-[0.06em] uppercase text-muted-foreground">
-                {t('realizedIn', { year: data.year })}
-              </span>
-              <span
-                dir="ltr"
-                className={cn(
-                  'private text-[26px] font-bold tracking-tight tabular-nums',
-                  yearTotals.net >= 0 ? 'text-gain' : 'text-loss',
-                )}
-              >
-                {signed(yearTotals.net, data.displayCurrency)}
-              </span>
+            <AllocationDonut slices={slices} numberLocale={nl} size={26} />
+            <span className="flex-1 text-[11px] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+              {t('title')}
             </span>
             <ChevronDown className="size-5 shrink-0 text-muted-foreground" aria-hidden />
           </button>
@@ -170,6 +167,24 @@ export function TransactionsScreen() {
 
         {data && cardOpen && (
           <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
+            {/* The chevron is the way back now — it is where the closed card
+                left it, so opening and closing happen in one place instead of
+                one at the top and one at the foot. */}
+            <button
+              type="button"
+              onClick={() => setCardOpen(false)}
+              aria-expanded
+              className="flex items-center gap-3 text-start"
+            >
+              <span className="flex-1 text-[11px] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+                {t('title')}
+              </span>
+              <ChevronUp className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+            </button>
+
+            {/* Where the money is, before what it did with itself. */}
+            {slices.length > 0 && <AllocationDonut slices={slices} numberLocale={nl} />}
+
             {/* Realized leads and unrealized answers it across the row: one is
                 money that has happened, the other money that has not, and
                 reading them apart is most of what this screen is for. Both
@@ -253,27 +268,17 @@ export function TransactionsScreen() {
               )}
             </div>
 
-            {/* The way back, and the year everything above reports on. Words
-                rather than a chevron: the card is a page of figures by now,
-                and a glyph in the corner of one reads as decoration. */}
-            <div className="flex items-center justify-end gap-4">
-              {data.years.length > 1 && (
+            {/* The year everything above reports on. */}
+            {data.years.length > 1 && (
+              <div className="flex justify-end">
                 <Dropdown
                   options={data.years.map((y) => ({ value: String(y), name: String(y) }))}
                   active={String(data.year)}
                   onPick={(y) => setYear(Number(y))}
                   showName
                 />
-              )}
-              <button
-                type="button"
-                onClick={() => setCardOpen(false)}
-                aria-expanded
-                className="text-sm font-medium text-brand"
-              >
-                {t('minimize')}
-              </button>
-            </div>
+              </div>
+            )}
           </section>
         )}
       </div>

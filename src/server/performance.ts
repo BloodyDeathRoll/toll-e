@@ -4,7 +4,8 @@ import { and, asc, eq } from 'drizzle-orm';
 import { db } from '@/src/db';
 import { portfolios } from '@/src/db/schema';
 import { computeTax } from '@/src/engine/tax';
-import { getFx } from '@/src/market-data';
+import { getFx, getSummary } from '@/src/market-data';
+import { OTHER_SLICE } from '@/src/allocation';
 import { getPositions, listTransactions, toEngineTx } from './portfolios';
 
 // The combined picture (§3.4): native amounts are authoritative; conversion
@@ -57,6 +58,13 @@ export interface PerformanceMonth {
   sales: PerformanceSale[];
 }
 
+/** A slice of the holdings, by the provider's industry classification. */
+export interface AllocationSlice {
+  label: string;
+  /** Percent units (80, not 0.8), rounded to whole numbers for display. */
+  pct: number;
+}
+
 export interface PerformancePayload {
   displayCurrency: string;
   fx: { pair: string; rate: number; asOf: string };
@@ -82,6 +90,13 @@ export interface PerformancePayload {
   portfolios: PerformancePortfolio[];
   /** Combined month rows in the display currency. */
   months: PerformanceMonth[];
+  /**
+   * Where the money is now, by industry, largest first — the donut on the
+   * Activity card. Unlike everything else here this is about the holdings as
+   * they stand, not the selected year, because that is the only sense a
+   * breakdown of a portfolio can have.
+   */
+  allocation: AllocationSlice[];
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -136,9 +151,15 @@ export async function getPerformance(
   const years = [...yearSet].sort((a, b) => b - a);
   const selectedYear = year && yearSet.has(year) ? year : (years[0] ?? new Date().getFullYear());
 
+  /** Symbol → market value in the display currency, for the allocation. */
+  const heldValue = new Map<string, number>();
+
   for (const { p, txs, tax } of computed) {
     const ledger = tax.years.find((y) => y.year === selectedYear);
     const positions = await getPositions(p, txs);
+    for (const pos of positions.positions) {
+      heldValue.set(pos.symbol, (heldValue.get(pos.symbol) ?? 0) + convert(pos.marketValue, p.currency));
+    }
 
     const realized = ledger?.net ?? 0;
     const unrealized = positions.totals.totalGain;
@@ -224,6 +245,7 @@ export async function getPerformance(
     .sort((a, b) => a.month - b.month);
 
   return {
+    allocation: await allocate(heldValue),
     displayCurrency,
     fx: { pair: fx.pair, rate: fx.rate, asOf: fx.asOf },
     year: selectedYear,
@@ -244,4 +266,49 @@ export async function getPerformance(
     portfolios: perPortfolio,
     months,
   };
+}
+
+/**
+ * Group the holdings by industry and turn them into donut slices.
+ *
+ * The classification is one cached `getSummary` per symbol (24h), fetched
+ * concurrently and individually forgiving: a symbol the provider cannot
+ * classify falls into "Other" rather than taking the chart down with it.
+ *
+ * Five named slices at most, because five is where the categorical ramp ends
+ * and well past where a donut stops being readable. The rest is "Other",
+ * which therefore means both "small" and "unclassified" — a distinction
+ * nobody reading a pie chart is asking for.
+ */
+const MAX_SLICES = 4;
+
+async function allocate(heldValue: Map<string, number>): Promise<AllocationSlice[]> {
+  const total = [...heldValue.values()].reduce((s, v) => s + v, 0);
+  if (total <= 0) return [];
+
+  const classified = await Promise.all(
+    [...heldValue].map(async ([symbol, value]) => {
+      const industry = await getSummary(symbol)
+        .then((s) => s.industry ?? s.sector)
+        .catch(() => undefined);
+      return { industry, value };
+    }),
+  );
+
+  const byIndustry = new Map<string, number>();
+  let other = 0;
+  for (const { industry, value } of classified) {
+    if (industry) byIndustry.set(industry, (byIndustry.get(industry) ?? 0) + value);
+    else other += value;
+  }
+
+  const ranked = [...byIndustry].sort((a, b) => b[1] - a[1]);
+  for (const [, value] of ranked.slice(MAX_SLICES)) other += value;
+
+  const slices = ranked.slice(0, MAX_SLICES).map(([label, value]) => ({
+    label,
+    pct: Math.round((value / total) * 100),
+  }));
+  if (other > 0) slices.push({ label: OTHER_SLICE, pct: Math.round((other / total) * 100) });
+  return slices;
 }
