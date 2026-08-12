@@ -6,6 +6,7 @@ import { ChevronDown, Shield } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { UnderlineTabs } from '@/components/underline-tabs';
+import { InfoDot } from '@/components/info-dot';
 import { useMarket } from '@/components/app-shell/market-context';
 import { MoreLink, MoreButton } from '@/components/more-link';
 import { ReserveBar } from '@/components/reserve-bar';
@@ -63,6 +64,12 @@ interface TaxView {
   /** Registered shield left: money primary, underlying loss secondary. */
   shieldLeft: number;
   shieldLossLeft: number;
+  /**
+   * Realized losses still sitting in this year's at-source pool, waiting to
+   * absorb the next gain. Intra-year only — it never crosses December, which
+   * is exactly what separates it from the registered shield above.
+   */
+  poolLeft: number;
   months: MonthRow[];
   sales: SaleRow[];
   filingDue: string;
@@ -190,6 +197,9 @@ export function TaxScreen() {
       carriedFromYear: null,
       shieldLeft: ledger.shieldOut,
       shieldLossLeft: ledger.shieldLossOut,
+      // The pool as the year's last month with activity left it — the same
+      // reading `previewSell` reports as `poolAfter`.
+      poolLeft: ledger.months.length > 0 ? ledger.months[ledger.months.length - 1].poolOut : 0,
       months: ledger.months.map((m) => ({
         month: m.month,
         gains: m.gains > 0 ? m.gains : null,
@@ -229,6 +239,7 @@ export function TaxScreen() {
       carriedFromYear: demoTax.carriedFromYear,
       shieldLeft: 0,
       shieldLossLeft: 0,
+      poolLeft: 0,
       months: demoTax.months.map((m) => ({ ...m, paid: m.tax })),
       sales: demoTax.sales.map((s, i) => ({
         id: `demo-${i}`,
@@ -362,6 +373,24 @@ export function TaxScreen() {
       <div className="flex flex-col md:hidden">
         <AppHeader />
         <h1 className="sr-only">{t('title')}</h1>
+
+        {/* The two shields, which are not the same thing and are routinely
+            taken for one: the broker's runs inside the year and settles at
+            source, the tax authority's crosses years and settles at filing.
+            Each carries the one sentence that tells them apart. */}
+        <section className="mx-6 mt-6 mb-5 flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
+          <ShieldRow
+            label={t('brokerageShield')}
+            note={t('brokerageShieldInfo')}
+            value={`${sym}${fmtNum(view.poolLeft, nl, 0)}`}
+          />
+          <ShieldRow
+            label={t('irsShield')}
+            note={t('irsShieldInfo')}
+            value={`${sym}${fmtNum(view.shieldLeft, nl, 0)}`}
+          />
+        </section>
+
         <UnderlineTabs
           tabs={mobileTabs}
           value={mobileTab}
@@ -714,6 +743,29 @@ export function TaxScreen() {
         </div>
       </div>
     </main>
+  );
+}
+
+/**
+ * A shield, its figure, and the dot that explains which shield it is.
+ *
+ * The row is the positioned ancestor and the dot is deliberately `static`, so
+ * the bubble hangs from the row's start edge instead of from the dot itself.
+ * A dot sitting after a label is two-thirds of the way across, and a 14rem
+ * bubble — 252px at this root size, not the 224 the class name suggests —
+ * would run off the card from there.
+ */
+function ShieldRow({ label, note, value }: { label: string; note: string; value: string }) {
+  return (
+    <div className="relative flex items-start justify-between gap-3">
+      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        {label}
+        <InfoDot label={label} note={note} className="static" />
+      </span>
+      <span dir="ltr" className="private text-base font-semibold text-foreground tabular-nums">
+        {value}
+      </span>
+    </div>
   );
 }
 
