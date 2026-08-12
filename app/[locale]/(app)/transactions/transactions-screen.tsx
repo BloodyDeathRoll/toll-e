@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { ChevronDown } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
@@ -47,6 +48,13 @@ export function TransactionsScreen() {
   const [state, setState] = useState<State>({ status: 'loading' });
   const [year, setYear] = useState<number | null>(null);
   const [tab, setTab] = useState<(typeof tabs)[number]>('pnl');
+  /**
+   * The card opens closed. What the year has realized is the one figure worth
+   * a permanent place at the top of this screen; the gains behind it, the
+   * shields and the tax are answers to questions you have to ask first, and
+   * asking costs one tap. Not persisted — every visit starts from the summary.
+   */
+  const [cardOpen, setCardOpen] = useState(false);
   const nl = locale === 'he' ? 'he-IL' : 'en-US';
   // Only the newest request may write state: the lens hydrates a beat after
   // mount, so the previous market's request is often still in flight.
@@ -135,7 +143,32 @@ export function TransactionsScreen() {
           </section>
         )}
 
-        {data && (
+        {data && !cardOpen && (
+          <button
+            type="button"
+            onClick={() => setCardOpen(true)}
+            aria-expanded={false}
+            className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5 text-start"
+          >
+            <span className="flex flex-col gap-0.5">
+              <span className="text-[11px] font-semibold whitespace-nowrap tracking-[0.06em] uppercase text-muted-foreground">
+                {t('realizedIn', { year: data.year })}
+              </span>
+              <span
+                dir="ltr"
+                className={cn(
+                  'private text-[26px] font-bold tracking-tight tabular-nums',
+                  yearTotals.net >= 0 ? 'text-gain' : 'text-loss',
+                )}
+              >
+                {signed(yearTotals.net, data.displayCurrency)}
+              </span>
+            </span>
+            <ChevronDown className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+          </button>
+        )}
+
+        {data && cardOpen && (
           <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
             {/* Realized leads and unrealized answers it across the row: one is
                 money that has happened, the other money that has not, and
@@ -220,18 +253,27 @@ export function TransactionsScreen() {
               )}
             </div>
 
-            {/* One year at a time — the card and the P&L below both report the
-                year picked here. */}
-            {data.years.length > 1 && (
-              <div className="flex justify-end">
+            {/* The way back, and the year everything above reports on. Words
+                rather than a chevron: the card is a page of figures by now,
+                and a glyph in the corner of one reads as decoration. */}
+            <div className="flex items-center justify-end gap-4">
+              {data.years.length > 1 && (
                 <Dropdown
                   options={data.years.map((y) => ({ value: String(y), name: String(y) }))}
                   active={String(data.year)}
                   onPick={(y) => setYear(Number(y))}
                   showName
                 />
-              </div>
-            )}
+              )}
+              <button
+                type="button"
+                onClick={() => setCardOpen(false)}
+                aria-expanded
+                className="text-sm font-medium text-brand"
+              >
+                {t('minimize')}
+              </button>
+            </div>
           </section>
         )}
       </div>

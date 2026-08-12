@@ -415,6 +415,7 @@
     "netAfterTax": "נטו אחרי מס",
     "afterTax": "אחרי מס {amount}",
     "noSalesYear": "אין מכירות בשנה הזו.",
+    "minimize": "מזער",
     "unrealizedNote": "על פוזיציות פתוחות, נכון להיום"
   },
   "settings": {
