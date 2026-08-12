@@ -11,11 +11,36 @@ interface Entry<T> {
 
 const store = new Map<string, Entry<unknown>>();
 
+/**
+ * Hard ceiling on retained keys. The keys are minted from user input on
+ * unauthenticated routes — `search:${q}` from any query string, `quote:${set}`
+ * from any combination of symbols — so an uncapped map is a memory-exhaustion
+ * vector, not just untidy. Well above every real working set: the index strip,
+ * a user's watchlists and holdings, and the charts behind them are a few
+ * hundred keys per process.
+ */
+const MAX_ENTRIES = 5_000;
+
+/** Map iterates in insertion order, so re-inserting on use makes this LRU. */
+function touch(key: string, entry: Entry<unknown>): void {
+  store.delete(key);
+  store.set(key, entry);
+  for (const oldest of store.keys()) {
+    if (store.size <= MAX_ENTRIES) break;
+    // Never evict a fetch other callers are already waiting on.
+    if (store.get(oldest)?.pending) continue;
+    store.delete(oldest);
+  }
+}
+
 export async function cached<T>(key: string, ttlMs: number, fetch: () => Promise<T>): Promise<T> {
   const now = Date.now();
   const entry = (store.get(key) ?? { expires: 0 }) as Entry<T>;
 
-  if (entry.value !== undefined && entry.expires > now) return entry.value;
+  if (entry.value !== undefined && entry.expires > now) {
+    touch(key, entry as Entry<unknown>);
+    return entry.value;
+  }
   if (entry.pending) return entry.pending;
 
   entry.pending = fetch()
@@ -31,6 +56,6 @@ export async function cached<T>(key: string, ttlMs: number, fetch: () => Promise
       if (entry.value !== undefined) return entry.value;
       throw err;
     });
-  store.set(key, entry);
+  touch(key, entry as Entry<unknown>);
   return entry.pending;
 }
