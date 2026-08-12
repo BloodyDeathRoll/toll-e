@@ -23,8 +23,9 @@ import {
   useSummary,
 } from '@/components/use-market-data';
 import type { ChartRange, StockAnalysis, StockFinancials } from '@/src/market-data/types';
+import { usePortfolioPositions } from '@/components/use-portfolio';
 import { marketForSymbol } from '@/src/markets/registry';
-import { getDemoHolding, getDemoStock } from '@/src/demo/data';
+import { demo, getDemoHolding, getDemoStock } from '@/src/demo/data';
 import { fmtCompact, fmtDate, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -57,7 +58,15 @@ export function StockScreen({ symbol }: { symbol: string }) {
   const nl = market.numberLocale;
   const sym = market.currencySymbol;
   const stock = getDemoStock(symbol);
-  const holding = getDemoHolding(marketId, symbol) ?? getDemoHolding(marketId === 'US' ? 'IL' : 'US', symbol);
+  // Your position comes from the portfolio of the market this instrument
+  // trades in — not the browsed lens, which would answer for the wrong book.
+  const { state: portfolioState } = usePortfolioPositions(market.id);
+  const realPosition =
+    portfolioState.status === 'data'
+      ? portfolioState.data.positions.find((p) => p.symbol === symbol)
+      : undefined;
+  const demoHolding =
+    getDemoHolding(marketId, symbol) ?? getDemoHolding(marketId === 'US' ? 'IL' : 'US', symbol);
   const [tab, setTab] = useState<Tab>('summary');
   const [range, setRange] = useState('1D');
   // The point under a scrubbing finger. The headline reads it out in place of
@@ -151,6 +160,39 @@ export function StockScreen({ symbol }: { symbol: string }) {
     setDaysOut(Math.max(0, Math.ceil((target - Date.now()) / 86_400_000)));
   }, [eventDate]);
   const eventTitle = locale === 'he' ? stock.nextEvent.titleHe : stock.nextEvent.title;
+  // Your position, at the portfolio's own tax rate. Demo numbers are for a
+  // visitor with no account — once the real book has answered it is the only
+  // source, so a reader who does not hold this symbol gets no card rather
+  // than someone else's shares.
+  const taxRatePct =
+    portfolioState.status === 'data'
+      ? portfolioState.data.portfolio.taxRatePct
+      : (demo[market.id]?.tax.ratePct ?? 25);
+  // Value the position at the price this page is showing, so the card cannot
+  // disagree with the headline above it; the server's figure stands in when
+  // there is no live quote (it was struck against the same shares).
+  const positionValue = realPosition
+    ? live
+      ? realPosition.shares * price
+      : realPosition.marketValue
+    : 0;
+  const positionGain = realPosition ? positionValue - realPosition.totalCost : 0;
+  const holding = realPosition
+    ? {
+        shares: realPosition.shares,
+        avgCost: realPosition.avgCost,
+        totalCost: realPosition.totalCost,
+        marketValue: positionValue,
+        totalGain: positionGain,
+        totalGainPct:
+          realPosition.totalCost > 0 ? (positionGain / realPosition.totalCost) * 100 : 0,
+        // Unrealized estimate at the portfolio rate, as on Home, until the
+        // tax engine owns this number.
+        taxIfSold: Math.max(0, positionGain) * (taxRatePct / 100),
+      }
+    : portfolioState.status === 'signed-out' && demoHolding
+      ? { ...demoHolding, totalCost: demoHolding.shares * demoHolding.avgCost }
+      : undefined;
   const daysGain = holding ? holding.shares * change : 0;
 
   const rangePills = (list: readonly string[]) => (
@@ -186,23 +228,27 @@ export function StockScreen({ symbol }: { symbol: string }) {
         <PositionCell label={t('shares')} value={fmtNum(holding.shares, nl, 1)} />
         <PositionCell label={t('avgCost')} value={fmtNum(holding.avgCost, nl)} />
         <PositionCell label={t('marketValue')} value={fmtNum(holding.marketValue, nl)} />
-        <PositionCell label={t('totalCost')} value={fmtNum(holding.shares * holding.avgCost, nl)} />
+        <PositionCell label={t('totalCost')} value={fmtNum(holding.totalCost, nl)} />
         <PositionCell label={t('totalGain')} value={fmtSigned(holding.totalGain, nl)} gain={holding.totalGain >= 0} loss={holding.totalGain < 0} />
         <PositionCell label={t('daysGain')} value={fmtSigned(daysGain, nl)} gain={daysGain >= 0} loss={daysGain < 0} />
       </div>
-      <div className="h-px bg-border" />
-      <div className="flex items-end justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <span className="text-[13px] text-muted-foreground">{t('taxIfSoldAll')}</span>
-          <span dir="ltr" className="private text-xl font-semibold text-foreground tabular-nums">
-            {sym}
-            {fmtNum(holding.taxIfSold, nl)}
-          </span>
-        </div>
-        <span className="max-w-[150px] text-end text-xs leading-snug text-faint">
-          {t('taxIfSoldNote', { rate: 25, gain: fmtNum(holding.totalGain, nl) })}
-        </span>
-      </div>
+      {taxRatePct > 0 && (
+        <>
+          <div className="h-px bg-border" />
+          <div className="flex items-end justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-[13px] text-muted-foreground">{t('taxIfSoldAll')}</span>
+              <span dir="ltr" className="private text-xl font-semibold text-foreground tabular-nums">
+                {sym}
+                {fmtNum(holding.taxIfSold, nl)}
+              </span>
+            </div>
+            <span className="max-w-[150px] text-end text-xs leading-snug text-faint">
+              {t('taxIfSoldNote', { rate: taxRatePct, gain: fmtNum(holding.totalGain, nl) })}
+            </span>
+          </div>
+        </>
+      )}
     </section>
   );
 
@@ -568,13 +614,15 @@ export function StockScreen({ symbol }: { symbol: string }) {
                       <span dir="ltr" className="private text-base font-medium text-foreground">{fmtNum(holding.marketValue, nl)}</span>
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">{t('taxIfSoldAll')}</span>
-                    <span dir="ltr" className="private text-base font-medium text-foreground tabular-nums">
-                      {sym}
-                      {fmtNum(holding.taxIfSold, nl)}
-                    </span>
-                  </div>
+                  {taxRatePct > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">{t('taxIfSoldAll')}</span>
+                      <span dir="ltr" className="private text-base font-medium text-foreground tabular-nums">
+                        {sym}
+                        {fmtNum(holding.taxIfSold, nl)}
+                      </span>
+                    </div>
+                  )}
                 </section>
               )}
 
