@@ -100,19 +100,28 @@ export async function getPerformance(
   const monthAcc = new Map<number, PerformanceMonth>();
   const yearSet = new Set<number>();
 
-  for (const p of rows) {
-    const txs = (await listTransactions(p.id)).map(toEngineTx);
-    const tax = computeTax(txs, { ratePct: Number(p.taxRatePct) });
+  // One read and one tax run per portfolio, held for both passes. The two
+  // passes are still necessary — `selectedYear` cannot be picked until every
+  // year that exists is known — but the work behind them is not: the engine
+  // is pure, so a second run answers exactly what the first one did. Reading
+  // the portfolios concurrently rather than one after another is the larger
+  // win once there is more than one.
+  const computed = await Promise.all(
+    rows.map(async (p) => {
+      const txs = (await listTransactions(p.id)).map(toEngineTx);
+      return { p, txs, tax: computeTax(txs, { ratePct: Number(p.taxRatePct) }) };
+    }),
+  );
+
+  for (const { tax } of computed) {
     for (const y of tax.years) yearSet.add(y.year);
   }
   const years = [...yearSet].sort((a, b) => b - a);
   const selectedYear = year && yearSet.has(year) ? year : (years[0] ?? new Date().getFullYear());
 
-  for (const p of rows) {
-    const txs = (await listTransactions(p.id)).map(toEngineTx);
-    const tax = computeTax(txs, { ratePct: Number(p.taxRatePct) });
+  for (const { p, txs, tax } of computed) {
     const ledger = tax.years.find((y) => y.year === selectedYear);
-    const positions = await getPositions(p);
+    const positions = await getPositions(p, txs);
 
     const realized = ledger?.net ?? 0;
     const unrealized = positions.totals.totalGain;

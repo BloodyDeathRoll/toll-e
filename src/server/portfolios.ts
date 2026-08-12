@@ -75,9 +75,18 @@ export interface PositionsPayload {
   };
 }
 
-/** Computed holdings + performance for a portfolio (plan §8 positions). */
-export async function getPositions(portfolio: PortfolioRow): Promise<PositionsPayload> {
-  const txs = (await listTransactions(portfolio.id)).map(toEngineTx);
+/**
+ * Computed holdings + performance for a portfolio (plan §8 positions).
+ *
+ * `txs` lets a caller that has already read this portfolio's transactions
+ * hand them over instead of paying for the same SELECT again — see
+ * `getPerformance`, which needs them for the tax engine regardless.
+ */
+export async function getPositions(
+  portfolio: PortfolioRow,
+  txs?: EngineTx[],
+): Promise<PositionsPayload> {
+  txs ??= (await listTransactions(portfolio.id)).map(toEngineTx);
   const { holdings } = computePortfolio(txs);
 
   const symbols = holdings.map((h) => h.symbol);
