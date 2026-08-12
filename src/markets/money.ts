@@ -1,26 +1,14 @@
 // Money always travels as (amount, currency) — never a bare number.
+//
+// The shape only. Formatting lives in `lib/format.ts` (`fmtMoney`, `fmtPct`),
+// which is what the app actually calls; the formatters that used to live here
+// were a second, unreachable layer, and one of them read percent units the
+// other way round — `style: 'percent'` multiplies by 100, while every producer
+// in this codebase (`positionView`'s `totalGainPct`, `Quote.changePct`) already
+// emits percent, so the first caller to reach for it would have rendered 368%
+// for a 3.68% day.
 
 export interface Money {
   amount: number;
   currency: string; // ISO 4217
-}
-
-export const money = (amount: number, currency: string): Money => ({ amount, currency });
-
-export function formatMoney(m: Money, locale: string, opts?: Intl.NumberFormatOptions): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: m.currency,
-    ...opts,
-  }).format(m.amount);
-}
-
-/** Signed percent like '+1.23%' — sign redundancy for color-blind users. */
-export function formatPercent(value: number, locale: string): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'percent',
-    signDisplay: 'exceptZero',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
 }
