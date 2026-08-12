@@ -33,20 +33,24 @@ export function PnlPane({ data }: { data: PerformancePayload }) {
   const showPortfolio = data.portfolios.length > 1;
 
   return (
-    <div className="flex flex-col gap-3.5 px-4 pt-4">
+    // No card. The two tabs are one list seen two ways — the months here and
+    // the trades that made them next door — so they are laid out the same:
+    // rows on the page, ruled off from each other, rather than a panel of
+    // months floating on a panel of screen.
+    <div className="flex flex-col px-6 pt-4">
       {/* Only worth saying when a portfolio's own currency is not the one on
           screen — otherwise nothing was converted. */}
       {data.portfolios.some((p) => p.currency !== data.displayCurrency) && (
-        <p className="px-1 text-xs text-muted-foreground">
+        <p className="pb-2 text-xs text-muted-foreground">
           {t('fxNote', { rate: fmtNum(data.fx.rate, nl, 3), date: fmtDate(data.fx.asOf, locale) })}
         </p>
       )}
 
       {data.months.length === 0 ? (
-        <p className="px-1 py-6 text-sm text-muted-foreground">{t('noSalesYear')}</p>
+        <p className="py-6 text-sm text-muted-foreground">{t('noSalesYear')}</p>
       ) : (
-        <section className="overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="flex items-center justify-between gap-3 px-5 pt-[18px] pb-3">
+        <section className="flex flex-col">
+          <div className="flex items-center justify-between gap-3 pb-2">
             <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
               {tt('monthByMonth')}
             </h2>
@@ -59,7 +63,7 @@ export function PnlPane({ data }: { data: PerformancePayload }) {
             const open = openMonth === m.month;
             const afterTax = m.net - m.tax;
             return (
-              <div key={m.month} className="border-t border-border px-5 py-4">
+              <div key={m.month} className="border-b border-border py-4">
                 <button
                   type="button"
                   onClick={() => setOpenMonth(open ? null : m.month)}

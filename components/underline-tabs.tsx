@@ -27,7 +27,10 @@ export function UnderlineTabs<T extends string>({
           type="button"
           onClick={() => onChange(t)}
           className={cn(
-            'border-b-2 pb-[5px] text-[15px] font-medium',
+            // Room above the label and below it before the rule: a tab strip
+            // is a place you aim at, and 5px of it read as a caption stuck to
+            // a line.
+            'border-b-2 pt-2 pb-2.5 text-[15px] font-medium',
             // A stretched strip shares the row out evenly regardless, so its
             // padding only decides the width below which the row stops
             // fitting — four tabs at px-3 overflowed a 360px phone. A
