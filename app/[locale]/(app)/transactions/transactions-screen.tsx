@@ -119,7 +119,7 @@ export function TransactionsScreen() {
         onChange={setTab}
         label={(k) => tj(`tabs.${k}`)}
         grow
-        className="mx-4 mt-4"
+        className="mx-4"
       />
 
       {tab === 'pnl' ? (
