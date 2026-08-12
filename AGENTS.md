@@ -35,4 +35,6 @@ Investment tracking web app for Israeli investors: Yahoo-Finance-grade portfolio
 
 ## Scope discipline
 
-Out of v1 (`toll-e-plan.md` §2.4): short selling, options, cash/wallet tracking, dividend *tax*, broker linking/CSV import, price alerts, social, allocation analytics, streaming quotes. §3.3 tax refinements (indexation, surtax, Form 867) are architected-for via `TaxRuleSet`, not built.
+Out of v1 (`toll-e-plan.md` §2.4): short selling, options, cash/wallet tracking, dividend *tax*, broker linking/CSV import, price alerts, social, streaming quotes. §3.3 tax refinements (indexation, surtax, Form 867) are architected-for via `TaxRuleSet`, not built.
+
+**Allocation analytics is in**, against §2.4's original "v1.5" — pulled forward 2026-08-12 and shipped as the donut at the top of the Activity card (`components/allocation-donut.tsx`, `allocation` on the performance payload). Holdings by provider industry, weighted by market value. Read that as the ceiling, not a licence: a breakdown of what is held is v1, while the analytics §2.4 still defers — performance attribution, benchmark comparison, risk or correlation measures — is not.
