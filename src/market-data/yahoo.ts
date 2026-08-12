@@ -61,24 +61,53 @@ export function screenerName(name: string): string {
   return name.replace(/ - /g, '—');
 }
 
-function toQuote(q: YQuote): Quote {
-  const extended =
-    q.marketState === 'PRE' && q.preMarketPrice !== undefined
-      ? {
-          phase: 'pre' as const,
-          price: q.preMarketPrice,
-          change: q.preMarketChange ?? 0,
-          changePct: q.preMarketChangePercent ?? 0,
-        }
-      : (q.marketState === 'POST' || q.marketState === 'POSTPOST') && q.postMarketPrice !== undefined
-        ? {
-            phase: 'post' as const,
-            price: q.postMarketPrice,
-            change: q.postMarketChange ?? 0,
-            changePct: q.postMarketChangePercent ?? 0,
-          }
-        : undefined;
+const ms = (t: Date | number | string | undefined): number | undefined =>
+  t === undefined ? undefined : new Date(t).getTime();
 
+/**
+ * The extended-session print, when there is one newer than the regular close.
+ *
+ * The stamp decides this, never `marketState`, whatever the state names
+ * suggest. From the after-hours bell until 04:00 ET the state reads `PREPRE`
+ * while the figure is still sitting in the `postMarket*` fields — the whole
+ * Israeli morning, which is when this app is most likely to be open. And in
+ * the other direction, a `REGULAR` quote still carries last night's
+ * `postMarket*` unchanged, so a state that merely *permits* a phase would
+ * print an hours-stale price beside a live one.
+ *
+ * A price therefore counts only when it was printed after the regular close
+ * it is measured against, and the newest candidate wins: during pre-market
+ * both fields are populated, and the morning's print supersedes last night's.
+ */
+export function extendedOf(q: YQuote): Quote['extended'] {
+  const regularAt = ms(q.regularMarketTime) ?? 0;
+  const candidates = [
+    {
+      phase: 'pre' as const,
+      price: q.preMarketPrice,
+      change: q.preMarketChange ?? 0,
+      changePct: q.preMarketChangePercent ?? 0,
+      asOf: ms(q.preMarketTime),
+    },
+    {
+      phase: 'post' as const,
+      price: q.postMarketPrice,
+      change: q.postMarketChange ?? 0,
+      changePct: q.postMarketChangePercent ?? 0,
+      asOf: ms(q.postMarketTime),
+    },
+  ].filter(
+    (c): c is typeof c & { price: number; asOf: number } =>
+      c.price !== undefined && c.asOf !== undefined && c.asOf > regularAt,
+  );
+
+  // An unstamped price is dropped rather than shown: the row is labelled by
+  // its stamp ("After hours: 8:00 PM EDT"), and an extended figure that
+  // cannot say when it was struck is exactly the one nobody should trade on.
+  return candidates.sort((a, b) => b.asOf - a.asOf)[0];
+}
+
+function toQuote(q: YQuote): Quote {
   return {
     symbol: q.symbol,
     name: q.shortName ?? q.longName ?? q.symbol,
@@ -97,8 +126,8 @@ function toQuote(q: YQuote): Quote {
     avgVolume: q.averageDailyVolume3Month,
     marketCap: q.marketCap,
     marketState: q.marketState ? (phaseMap[q.marketState] ?? 'closed') : undefined,
-    extended,
-    asOf: q.regularMarketTime ? new Date(q.regularMarketTime).getTime() : undefined,
+    extended: extendedOf(q),
+    asOf: ms(q.regularMarketTime),
   };
 }
 

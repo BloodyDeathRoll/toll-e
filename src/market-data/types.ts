@@ -24,8 +24,18 @@ export interface Quote {
   marketCap?: number;
   /** Provider's session flag, normalized to our phase vocabulary. */
   marketState?: SessionPhase;
-  /** Extended-session trade, when the provider reports one. */
-  extended?: { phase: 'pre' | 'post'; price: number; change: number; changePct: number };
+  /**
+   * Extended-session trade, when the provider reports one newer than the
+   * regular close. `asOf` (epoch ms) is what the UI labels it with — an
+   * after-hours price is only meaningful next to the moment it was struck.
+   */
+  extended?: {
+    phase: 'pre' | 'post';
+    price: number;
+    change: number;
+    changePct: number;
+    asOf: number;
+  };
   /** Epoch ms of the quote's last trade — powers "As of HH:MM, delayed". */
   asOf?: number;
 }

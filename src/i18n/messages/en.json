@@ -183,6 +183,8 @@
     "addTransaction": "Add transaction",
     "share": "Share",
     "atClose": "At close: {time}",
+    "preMarket": "Pre-market: {time}",
+    "afterHours": "After hours: {time}",
     "wk52Range": "52 Weeks Range",
     "prevClose": "Previous Close",
     "avgVol": "Avg Volume",

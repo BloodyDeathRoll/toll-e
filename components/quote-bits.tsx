@@ -74,3 +74,18 @@ export function AfterHours({
     </span>
   );
 }
+
+/**
+ * Crescent + which extended session the price beside it came from, and when.
+ * Rows can get away with the bare percent above; a headline price cannot,
+ * because the figure it sits under is a *closed* market's and the two only
+ * make sense together once the later one says how much later it is.
+ */
+export function ExtendedStamp({ label, className }: { label: string; className?: string }) {
+  return (
+    <span className={cn('flex items-center gap-1', className)}>
+      <Moon className="size-4 text-moon" fill="currentColor" aria-hidden />
+      <span className="text-xs text-muted-foreground">{label}</span>
+    </span>
+  );
+}

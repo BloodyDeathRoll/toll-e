@@ -9,7 +9,7 @@ import { useMarket } from '@/components/app-shell/market-context';
 import { SearchBox } from '@/components/app-shell/search-box';
 import { SessionBadge } from '@/components/session-indicator';
 import { LineChart } from '@/components/charts';
-import { ChangePill, AfterHours } from '@/components/quote-bits';
+import { ChangePill, ExtendedStamp } from '@/components/quote-bits';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { InfoDot } from '@/components/info-dot';
 import { useOnDeviceTranslation } from '@/components/use-translation';
@@ -480,7 +480,19 @@ export function StockScreen({ symbol }: { symbol: string }) {
                       </span>
                       <ChangePill pct={live.extended.changePct} numberLocale={nl} className="ms-0.5" />
                     </span>
-                    <AfterHours quote={live} numberLocale={nl} />
+                    <ExtendedStamp
+                      label={t(live.extended.phase === 'pre' ? 'preMarket' : 'afterHours', {
+                        // The exchange's clock, like the chart's axis: an
+                        // after-hours print reads as 8:00 PM where it was
+                        // struck, not as 3:00 AM where it is being read.
+                        time: new Date(live.extended.asOf).toLocaleTimeString(locale, {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          timeZone: market.calendar.timezone,
+                          timeZoneName: 'short',
+                        }),
+                      })}
+                    />
                   </div>
                 )}
               </section>

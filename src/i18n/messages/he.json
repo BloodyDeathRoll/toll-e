@@ -183,6 +183,8 @@
     "addTransaction": "הוספת עסקה",
     "share": "שיתוף",
     "atClose": "בסגירה: {time}",
+    "preMarket": "לפני הפתיחה: {time}",
+    "afterHours": "אחרי הנעילה: {time}",
     "wk52Range": "טווח 52 שבועות",
     "prevClose": "סגירה קודמת",
     "avgVol": "מחזור ממוצע",
