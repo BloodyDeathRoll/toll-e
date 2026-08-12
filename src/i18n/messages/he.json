@@ -221,15 +221,12 @@
     "proceeds": "תמורה · {qty} × {price}",
     "costBasis": "בסיס עלות · {qty} × {price}",
     "realizedGain": "רווח ממומש",
-    "offsetByCarried": "קוזז בהפסד מועבר מ-{year}",
-    "submitSell": "הוספת מכירה · מס {tax}",
     "submitBuy": "הוספת קנייה",
     "total": "סה״כ",
     "save": "שמירה",
     "offsetByPool": "קוזז בהפסדים קודמים השנה",
-    "withheldAt": "ינוכה כעת ב-{rate}%",
-    "poolNote": "ההפסדים הניתנים לקיזוז השנה יירדו ל-{amount} אחרי מכירה זו. הערכה בלבד — יש לאשר מול רואה החשבון.",
-    "shieldAtFilingNote": "המגן הרשום משנים קודמות אינו מקטין את הניכוי הזה — הוא חוזר בהגשת הדוח."
+    "taxRow": "מס",
+    "cannotSell": "אי אפשר למכור יותר ממה שברשותך — יש לך {shares} מניות"
   },
   "taxPage": {
     "title": "מס",

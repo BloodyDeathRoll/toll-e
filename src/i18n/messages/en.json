@@ -221,15 +221,12 @@
     "proceeds": "Proceeds · {qty} × {price}",
     "costBasis": "Cost basis · {qty} × {price}",
     "realizedGain": "Realized gain",
-    "offsetByCarried": "Offset by {year} carried loss",
-    "submitSell": "Add sell · {tax} tax",
     "submitBuy": "Add buy",
     "total": "Total",
     "save": "Save",
     "offsetByPool": "Offset by earlier losses this year",
-    "withheldAt": "Withheld now at {rate}%",
-    "poolNote": "This year’s offsettable losses drop to {amount} after this sale. Estimate — confirm with your accountant.",
-    "shieldAtFilingNote": "Your registered shield from earlier years does not reduce this — it comes back at filing."
+    "taxRow": "Tax",
+    "cannotSell": "You cannot sell more than you hold — you have {shares} shares"
   },
   "taxPage": {
     "title": "Tax",

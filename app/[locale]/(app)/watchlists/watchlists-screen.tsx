@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ArrowLeft, Check, ChevronDown, Pencil, Plus, Star, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Pencil, Plus, Star, Trash2 } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
+import { ActionBar } from '@/components/app-shell/action-bar';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
 import { ListInfo, ListMenu } from '@/components/list-menu';
@@ -552,22 +553,14 @@ function CreateList({
         )}
       </div>
 
-      {/* Save FAB */}
-      <div className="app-frame fixed inset-x-0 bottom-[110px] flex flex-col items-center gap-1 md:absolute">
-        <button
-          type="button"
-          disabled={!name.trim() || busy}
-          onClick={async () => {
-            setBusy(true);
-            await onSave(name.trim(), symbols);
-          }}
-          aria-label={t('save')}
-          className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50"
-        >
-          <Check className="size-6" aria-hidden />
-        </button>
-        <span className="text-xs text-foreground">{t('save')}</span>
-      </div>
+      <ActionBar
+        label={t('save')}
+        disabled={!name.trim() || busy}
+        onClick={async () => {
+          setBusy(true);
+          await onSave(name.trim(), symbols);
+        }}
+      />
     </main>
   );
 }

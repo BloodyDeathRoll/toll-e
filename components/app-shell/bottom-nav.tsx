@@ -21,11 +21,12 @@ const rightTabs = [
 /**
  * Full-page flows: each ends in its own single action — Save a transaction,
  * Save a list — and the bar has no business competing with it, or offering a
- * way out of a half-filled form. The tab bar is for the app's four screens.
+ * way out of a half-filled form. The tab bar is for the app's four screens;
+ * these get an ActionBar in the same place instead.
  */
 const OWN_ACTION = ['/transactions/new', '/watchlists/new'];
 
-/** Does this screen show the tab bar? Also decides whether to reserve room. */
+/** Does this screen show the tab bar, rather than its own action bar? */
 export function reservesBottomNav(pathname: string): boolean {
   return !OWN_ACTION.some((p) => pathname.startsWith(p));
 }

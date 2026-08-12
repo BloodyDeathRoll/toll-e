@@ -1,27 +1,25 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, CalendarDays, Check, ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { ArrowLeft, CalendarDays, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
+import { ActionBar } from '@/components/app-shell/action-bar';
 import { useMarket } from '@/components/app-shell/market-context';
 import { useQuotes, useSearch } from '@/components/use-market-data';
 import { ensurePortfolioId, usePortfolioPositions } from '@/components/use-portfolio';
 import { getMarket } from '@/src/markets/registry';
-import { demo } from '@/src/demo/data';
-import { fmtDate, fmtNum, fmtSigned } from '@/lib/format';
+import { fmtNum, fmtSigned } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 export function TxScreen() {
   const t = useTranslations('tx');
-  const locale = useLocale();
   const router = useRouter();
   const { marketId } = useMarket();
   const market = getMarket(marketId);
   const nl = market.numberLocale;
   const sym = market.currencySymbol;
-  const tax = demo[marketId].tax; // carried-loss preview goes real in Phase 3
 
   const params = useSearchParams();
   const editTxId = params.get('edit');
@@ -115,8 +113,14 @@ export function TxScreen() {
     setPrice(n);
   };
 
-  // Sell-time tax preview: the real FIFO engine via /tax/preview when signed
-  // in; a demo average-cost estimate otherwise.
+  // Sell-time tax preview, and only ever the real FIFO engine via /tax/preview.
+  // There used to be a local estimate behind it, built from the demo frames'
+  // static carried loss — so a sale the server had refused still drew a
+  // confident tax event, and it credited a *prior* year's loss against what
+  // the broker withholds now, which is precisely what the engine says cannot
+  // happen (a registered shield returns as next year's refund, it never
+  // reduces `paid`). No preview, no card: an estimate nobody can act on is
+  // worse than the blank it replaced.
   const portfolioId = state.status === 'data' ? state.data.portfolio.id : null;
   interface Preview {
     proceeds: number;
@@ -148,30 +152,29 @@ export function TxScreen() {
     };
   }, [type, portfolioId, symbol, shares, price, tradeDate]);
 
-  const avgCost = serverPreview
-    ? serverPreview.costBasis / shares
-    : position?.avgCost;
-  const proceeds = serverPreview?.proceeds ?? shares * price;
-  const costBasis = serverPreview?.costBasis ?? (avgCost !== undefined ? shares * avgCost : undefined);
-  const gain = serverPreview?.gain ?? (costBasis !== undefined ? proceeds - costBasis : undefined);
+  const avgCost = serverPreview ? serverPreview.costBasis / shares : undefined;
   // Only this year's earlier losses reduce what the broker withholds now; a
-  // registered shield from an earlier year comes back at filing instead.
-  const offset = serverPreview
-    ? serverPreview.poolUsed
-    : gain !== undefined && gain > 0
-      ? Math.min(gain, tax.carriedLoss)
-      : 0;
-  const ratePct = serverPreview?.ratePct ?? tax.ratePct;
-  const due = serverPreview
-    ? serverPreview.taxDelta
-    : gain !== undefined
-      ? Math.max(0, gain - offset) * (tax.ratePct / 100)
-      : undefined;
-  const poolAfter = serverPreview ? serverPreview.poolAfter : tax.carriedLoss - offset;
-  const shieldAfter = serverPreview?.shieldAfter ?? 0;
+  // registered shield from an earlier year comes back at filing instead. Both
+  // readings come from the engine, which is the only thing that knows which
+  // pot a loss is in.
+  const offset = serverPreview?.poolUsed ?? 0;
+
+  /**
+   * Selling more than you currently hold can never be valid, whatever the
+   * trade date: the running balance would end negative, and the server refuses
+   * it on exactly that ground. So the form can say so immediately rather than
+   * letting someone fill the whole thing in and submit into a 422.
+   *
+   * Only once the positions have actually loaded — `position` is equally
+   * undefined for "holds none" and "not fetched yet", and blocking on the
+   * second would be wrong. Edit mode sits this out: the transaction being
+   * edited is already folded into the position it would be checked against.
+   */
+  const held = position?.shares ?? 0;
+  const oversell = type === 'sell' && !editTxId && state.status === 'data' && shares > held;
 
   const submit = async () => {
-    if (!symbol || shares <= 0 || price < 0 || busy) return;
+    if (!symbol || shares <= 0 || price < 0 || busy || oversell) return;
     setBusy(true);
     setError(null);
     try {
@@ -209,8 +212,25 @@ export function TxScreen() {
     }
   };
 
+  /**
+   * Every field is wrapped in this, and every field scrolls itself to the top
+   * of the screen when it takes focus. The form is taller than the phone and
+   * the keyboard eats half of what is left, so the field you are filling can
+   * otherwise sit under the keyboard with everything you have not answered yet
+   * hidden above it. Putting it at the top puts the rest of the form under it,
+   * where it can still be seen.
+   *
+   * `scroll-mt-4` is the breathing room: `scrollIntoView` honours
+   * scroll-margin, which is the only way to land a little below the edge
+   * rather than flush against it.
+   */
   const fieldShell = (label: string, children: React.ReactNode) => (
-    <div className="flex flex-col gap-2 px-6 py-4">
+    <div
+      onFocusCapture={(e) =>
+        e.currentTarget.scrollIntoView({ block: 'start', behavior: 'smooth' })
+      }
+      className="flex scroll-mt-4 flex-col gap-2 px-6 py-4"
+    >
       <span className="text-xs text-muted-foreground">{label}</span>
       {children}
     </div>
@@ -330,6 +350,12 @@ export function TxScreen() {
         </div>,
       )}
 
+      {/* Everything past the ticker is *about* an instrument, so none of it
+          means anything until one is named — a date, a quantity and a price
+          with no subject are four fields of noise on first open. Type stays,
+          because buy-or-sell frames the search itself. */}
+      {symbol && (
+        <>
       {/* Date */}
       {fieldShell(
         t('date'),
@@ -348,10 +374,19 @@ export function TxScreen() {
       )}
 
       {stepper(t('shares'), shares, (n) => setShares(n), 1)}
-      {position && (
-        <p className="px-6 text-xs text-muted-foreground">
-          {t('youHold', { shares: fmtNum(position.shares, nl, 0) })}
+      {/* The holding line doubles as the error: it is already the sentence
+          that answers "how many may I sell", so an oversell only has to
+          change what it says and the colour it says it in. */}
+      {oversell ? (
+        <p role="alert" className="px-6 text-xs text-loss">
+          {t('cannotSell', { shares: fmtNum(held, nl, 0) })}
         </p>
+      ) : (
+        position && (
+          <p className="px-6 text-xs text-muted-foreground">
+            {t('youHold', { shares: fmtNum(position.shares, nl, 0) })}
+          </p>
+        )
       )}
       {stepper(t('pricePerShare'), price, onPriceEdit, 0.1)}
 
@@ -364,8 +399,8 @@ export function TxScreen() {
         </span>
       </div>
 
-      {/* Sell-time tax preview */}
-      {type === 'sell' && gain !== undefined && costBasis !== undefined && due !== undefined && (
+      {/* Sell-time tax preview — shown only once the engine has answered. */}
+      {type === 'sell' && serverPreview && (
         <section className="mx-6 flex flex-col gap-4 rounded-xl bg-card p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-xs uppercase text-muted-foreground">{t('taxEvent')}</h2>
@@ -378,66 +413,50 @@ export function TxScreen() {
               <span className="text-muted-foreground">
                 {t('proceeds', { qty: fmtNum(shares, nl, 0), price: fmtNum(price, nl) })}
               </span>
-              <span dir="ltr" className="text-foreground">{fmtNum(proceeds, nl)}</span>
+              <span dir="ltr" className="text-foreground">{fmtNum(serverPreview.proceeds, nl)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">
                 {t('costBasis', { qty: fmtNum(shares, nl, 0), price: fmtNum(avgCost ?? 0, nl) })}
               </span>
-              <span dir="ltr" className="text-foreground">{fmtNum(-costBasis, nl)}</span>
+              <span dir="ltr" className="text-foreground">{fmtNum(-serverPreview.costBasis, nl)}</span>
             </div>
             <div className="h-px bg-border" />
             <div className="flex justify-between font-semibold">
               <span className="text-foreground">{t('realizedGain')}</span>
-              <span dir="ltr" className={cn(gain >= 0 ? 'text-gain' : 'text-loss')}>
-                {fmtSigned(gain, nl)}
+              <span dir="ltr" className={cn(serverPreview.gain >= 0 ? 'text-gain' : 'text-loss')}>
+                {fmtSigned(serverPreview.gain, nl)}
               </span>
             </div>
             {offset > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">
-                  {serverPreview ? t('offsetByPool') : t('offsetByCarried', { year: tax.carriedFromYear })}
+                  {t('offsetByPool')}
                 </span>
                 <span dir="ltr" className="text-foreground">{fmtNum(-offset, nl)}</span>
               </div>
             )}
             <div className="flex justify-between font-semibold">
-              <span className="text-foreground">{t('withheldAt', { rate: ratePct })}</span>
+              <span className="text-foreground">{t('taxRow')}</span>
               <span dir="ltr" className="text-[15px] text-foreground">
                 {sym}
-                {fmtNum(due, nl)}
+                {fmtNum(serverPreview.taxDelta, nl)}
               </span>
             </div>
           </div>
-          <p className="rounded-lg bg-well p-3.5 text-xs leading-relaxed text-muted-foreground">
-            {t('poolNote', { amount: `${sym}${fmtNum(poolAfter, nl)}` })}
-            {shieldAfter > 0 && ` ${t('shieldAtFilingNote')}`}
-          </p>
         </section>
+      )}
+
+        </>
       )}
 
       {error && <p className="px-6 pt-3 text-[13px] text-loss">{error}</p>}
 
-      {/* Save */}
-      <div className="mt-auto flex flex-col items-center gap-1 pt-6">
-        <button
-          type="button"
-          onClick={submit}
-          disabled={busy || !symbol || !(shares > 0)}
-          aria-label={t('save')}
-          className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50"
-        >
-          <Check className="size-6" aria-hidden />
-        </button>
-        <span className="text-xs text-foreground">
-          {type === 'sell' && due !== undefined
-            ? t('submitSell', { tax: `${sym}${fmtNum(due, nl)}` })
-            : t('save')}
-        </span>
-        <p className="text-center text-xs text-muted-foreground">
-          {fmtDate(tradeDate, locale)} · {symbol || '—'}
-        </p>
-      </div>
+      <ActionBar
+        label={t('save')}
+        disabled={busy || !symbol || !(shares > 0) || !(price >= 0) || oversell}
+        onClick={submit}
+      />
     </main>
   );
 }
