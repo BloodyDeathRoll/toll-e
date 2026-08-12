@@ -58,7 +58,7 @@ export interface PerformanceMonth {
   sales: PerformanceSale[];
 }
 
-/** A slice of the holdings, by the provider's industry classification. */
+/** A slice of the holdings, by the provider's sector classification. */
 export interface AllocationSlice {
   label: string;
   /** Percent units (80, not 0.8), rounded to whole numbers for display. */
@@ -91,10 +91,10 @@ export interface PerformancePayload {
   /** Combined month rows in the display currency. */
   months: PerformanceMonth[];
   /**
-   * Where the money is now, by industry, largest first — the donut on the
-   * Activity card. Unlike everything else here this is about the holdings as
-   * they stand, not the selected year, because that is the only sense a
-   * breakdown of a portfolio can have.
+   * Where the money is now, by sector, largest first — the donut on the
+   * Performance screen. Unlike everything else here this is about the
+   * holdings as they stand, not the selected year, because that is the only
+   * sense a breakdown of a portfolio can have.
    */
   allocation: AllocationSlice[];
 }
@@ -269,7 +269,7 @@ export async function getPerformance(
 }
 
 /**
- * Group the holdings by industry and turn them into donut slices.
+ * Group the holdings by sector and turn them into donut slices.
  *
  * The classification is one cached `getSummary` per symbol (24h), fetched
  * concurrently and individually forgiving: a symbol the provider cannot
@@ -288,21 +288,21 @@ async function allocate(heldValue: Map<string, number>): Promise<AllocationSlice
 
   const classified = await Promise.all(
     [...heldValue].map(async ([symbol, value]) => {
-      const industry = await getSummary(symbol)
-        .then((s) => s.industry ?? s.sector)
+      const sector = await getSummary(symbol)
+        .then((s) => s.sector ?? s.industry)
         .catch(() => undefined);
-      return { industry, value };
+      return { sector, value };
     }),
   );
 
-  const byIndustry = new Map<string, number>();
+  const bySector = new Map<string, number>();
   let other = 0;
-  for (const { industry, value } of classified) {
-    if (industry) byIndustry.set(industry, (byIndustry.get(industry) ?? 0) + value);
+  for (const { sector, value } of classified) {
+    if (sector) bySector.set(sector, (bySector.get(sector) ?? 0) + value);
     else other += value;
   }
 
-  const ranked = [...byIndustry].sort((a, b) => b[1] - a[1]);
+  const ranked = [...bySector].sort((a, b) => b[1] - a[1]);
   for (const [, value] of ranked.slice(MAX_SLICES)) other += value;
 
   const slices = ranked.slice(0, MAX_SLICES).map(([label, value]) => ({

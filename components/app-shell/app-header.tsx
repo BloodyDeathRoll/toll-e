@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ChartLine, FileText, List, Menu, Search, Shield, X } from 'lucide-react';
+import { ChartLine, Gauge, FileText, List, Menu, Search, Shield, X } from 'lucide-react';
 import { Link, useRouter } from '@/src/i18n/navigation';
 import { LangCurrencyPicker } from './lang-currency';
 import { useMarket } from './market-context';
@@ -37,11 +37,12 @@ export function AppHeader({
   const expanded = focused || searching;
   const results = useSearch(query, marketId).slice(0, 12);
 
-  // Tax lives on the tab bar now, so the menu carries what the bar dropped.
-  // Performance is not here either: it is the P&L tab of Transactions, which
-  // the bar already reaches.
+  // Tax lives on the tab bar now, so the menu carries what the bar dropped —
+  // including Performance, which is a screen of its own again: the two cards
+  // that used to sit above Activity's tabs.
   const menuItems = [
     { key: 'watchlists', href: '/watchlists', icon: List },
+    { key: 'performance', href: '/performance', icon: Gauge },
     { key: 'markets', href: '/markets', icon: ChartLine },
   ] as const;
   const legalItems = [

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
 import { useMarket } from '@/components/app-shell/market-context';
+import { Dropdown } from '@/components/dropdown';
 import { displaySymbol, getMarket } from '@/src/markets/registry';
 import { fmtDate, fmtMoney, fmtMoneySigned, fmtMonth, fmtNum } from '@/lib/format';
 import type { PerformancePayload } from '@/src/server/performance';
@@ -14,7 +15,16 @@ import { cn } from '@/lib/utils';
  * the sells behind it. Was the body of the Performance screen before that page
  * and the transaction journal became two tabs of one.
  */
-export function PnlPane({ data }: { data: PerformancePayload }) {
+export function PnlPane({
+  data,
+  year,
+  onYear,
+}: {
+  data: PerformancePayload;
+  /** null = whichever year the server picked. */
+  year: number | null;
+  onYear: (y: number) => void;
+}) {
   const t = useTranslations('perf');
   const tt = useTranslations('taxPage');
   const locale = useLocale();
@@ -50,13 +60,24 @@ export function PnlPane({ data }: { data: PerformancePayload }) {
         <p className="py-6 text-sm text-muted-foreground">{t('noSalesYear')}</p>
       ) : (
         <section className="flex flex-col">
+          {/* The year picker lives here now: it scopes these months, and the
+              card that used to hold it has moved to its own screen. */}
           <div className="flex items-center justify-between gap-3 pb-2">
             <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
               {tt('monthByMonth')}
             </h2>
-            <span className="text-xs text-muted-foreground">
-              {t('combinedIn', { currency: data.displayCurrency })}
-            </span>
+            {data.years.length > 1 ? (
+              <Dropdown
+                options={data.years.map((y) => ({ value: String(y), name: String(y) }))}
+                active={String(year ?? data.year)}
+                onPick={(y) => onYear(Number(y))}
+                showName
+              />
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                {t('combinedIn', { currency: data.displayCurrency })}
+              </span>
+            )}
           </div>
 
           {monthRows.map((m) => {

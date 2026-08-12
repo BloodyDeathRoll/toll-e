@@ -415,6 +415,7 @@
     "netAfterTax": "Net after tax",
     "afterTax": "after {amount} tax",
     "noSalesYear": "No sales in this year.",
+    "sectors": "Sectors",
     "otherSlice": "Other",
     "unrealizedNote": "On open positions, as of today"
   },
