@@ -235,6 +235,13 @@ export function HomeScreen() {
                 </span>
                 <span className="text-xs text-muted-foreground">{t('home.allTimeWord')}</span>
               </p>
+              {/* The way from the two numbers to what is behind them: what is
+                  realized against what is not, the sectors it sits in, and the
+                  tax already withheld. Between the figures and the chart
+                  because it belongs to the figures, not to the chart. */}
+              <MoreLink href="/performance" className="pt-1">
+                {t('home.openPerformance')}
+              </MoreLink>
             </section>
 
             {/* Full-bleed chart + range pills */}

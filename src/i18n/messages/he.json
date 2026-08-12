@@ -83,6 +83,7 @@
     "short": "חסר {amount}",
     "realizedNet": "מומש נטו",
     "taxableAt": "חייב במס {rate}%",
+    "openPerformance": "למסך הביצועים",
     "openTaxView": "למסך המס",
     "earnings": "דוחות {company}",
     "chg": "% שינוי",

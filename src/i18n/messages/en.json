@@ -83,6 +83,7 @@
     "short": "{amount} short",
     "realizedNet": "Realized net",
     "taxableAt": "Taxable at {rate}%",
+    "openPerformance": "Performance view",
     "openTaxView": "Open tax view",
     "earnings": "{company} earnings",
     "chg": "Chg %",
