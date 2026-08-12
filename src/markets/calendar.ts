@@ -50,18 +50,33 @@ export interface ExchangeLocalTime {
   minuteOfDay: MinuteOfDay;
 }
 
+// Building an Intl.DateTimeFormat is ~25µs — a hundred times the cost of using
+// one. Every bar of an over-fetched intraday payload is projected through here
+// (see pickSession), so the formatter is built once per exchange timezone and
+// reused. The set of timezones is the market registry: two, today.
+const formatters = new Map<string, Intl.DateTimeFormat>();
+
+function formatterFor(timezone: string): Intl.DateTimeFormat {
+  let fmt = formatters.get(timezone);
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      weekday: 'short',
+      hour12: false,
+    });
+    formatters.set(timezone, fmt);
+  }
+  return fmt;
+}
+
 /** Project an absolute instant into the exchange's local wall clock. */
 export function toExchangeLocal(cal: TradingCalendar, now: Date): ExchangeLocalTime {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: cal.timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    weekday: 'short',
-    hour12: false,
-  }).formatToParts(now);
+  const parts = formatterFor(cal.timezone).formatToParts(now);
 
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
   const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -85,8 +100,17 @@ export function scheduleFor(cal: TradingCalendar, isoDate: string): SessionSched
 
 /**
  * The hours in force on an exchange-local date: a holiday is shut, a special
- * day (early close, late open) overrides its weekday, everything else follows
- * the schedule. `undefined` = the exchange does not trade that day.
+ * day (early close, late open) overrides its weekday's *hours*, everything
+ * else follows the schedule. `undefined` = the exchange does not trade at all.
+ *
+ * A special day cannot open a day the trading week has shut. The entry says
+ * "this session runs to a different bell", not "the exchange trades today":
+ * TASE's short days are derived from the Hebrew calendar (registry.ts), and an
+ * eve lands on Shabbat — or, under the Mon–Fri week, on a Sunday — often
+ * enough that reading them unconditionally had the app announcing an open
+ * exchange on 17 shut days between 2024 and 2032. A genuine one-off session on
+ * a normally-dark day belongs in an effective-dated `schedules` entry, where
+ * the trading week itself is the thing being changed.
  */
 export function hoursFor(
   cal: TradingCalendar,
@@ -94,7 +118,9 @@ export function hoursFor(
   weekday: Weekday,
 ): SessionHours | undefined {
   if (cal.holidays.includes(isoDate)) return undefined;
-  return cal.specialHours?.[isoDate] ?? scheduleFor(cal, isoDate).hours[weekday];
+  const scheduled = scheduleFor(cal, isoDate).hours[weekday];
+  if (!scheduled) return undefined;
+  return cal.specialHours?.[isoDate] ?? scheduled;
 }
 
 export interface MarketState {
@@ -103,9 +129,42 @@ export interface MarketState {
   minutesToChange?: number;
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Absolute ms of exchange-local midnight for the day containing `at`. */
+function localMidnight(at: number, minuteOfDay: MinuteOfDay): number {
+  return Math.floor(at / 60_000) * 60_000 - minuteOfDay * 60_000;
+}
+
+/**
+ * The absolute instant at which the exchange-local day containing `at` reads
+ * `minute` on its wall clock. Midnight + minute is only right when no offset
+ * change sits between the two, so the guess is projected back and corrected —
+ * an offset change is at most an hour, and one pass closes it.
+ */
+function instantAtLocalMinute(cal: TradingCalendar, at: Date, minute: MinuteOfDay): number {
+  const local = toExchangeLocal(cal, at);
+  let guess = localMidnight(at.getTime(), local.minuteOfDay) + minute * 60_000;
+  for (let i = 0; i < 2; i++) {
+    const seen = toExchangeLocal(cal, new Date(guess));
+    if (seen.isoDate === local.isoDate && seen.minuteOfDay === minute) break;
+    // Whole days out means the correction crossed midnight; minutes out is the
+    // offset change itself.
+    const dayShift = seen.isoDate < local.isoDate ? 1 : seen.isoDate > local.isoDate ? -1 : 0;
+    guess += dayShift * DAY_MS + (minute - seen.minuteOfDay) * 60_000;
+  }
+  return guess;
+}
+
 /**
  * Is the market open at `now`, and how long until it opens/closes?
  * Holiday-aware for "is open"; the countdown scans forward day by day.
+ *
+ * The scan walks exchange-local *dates* and measures the gap in absolute time.
+ * Stepping the instant by 24h instead drops or repeats a local day across a
+ * DST boundary — Israel switches on a Friday morning, so a Thursday-evening
+ * probe skipped a whole trading session — and d×24×60 minute arithmetic misses
+ * the offset change even when it lands on the right day.
  */
 export function getMarketState(cal: TradingCalendar, now: Date): MarketState {
   const local = toExchangeLocal(cal, now);
@@ -116,17 +175,18 @@ export function getMarketState(cal: TradingCalendar, now: Date): MarketState {
   }
 
   // Closed — scan forward (up to 14 days) for the next opening bell.
+  const t = now.getTime();
+  const midnight = localMidnight(t, local.minuteOfDay);
   for (let d = 0; d < 14; d++) {
-    const probe = new Date(now.getTime() + d * 24 * 60 * 60 * 1000);
+    // Anchored at local noon: an offset change is at most an hour, so noon
+    // never slides onto the neighbouring date and every day is probed once.
+    const probe = new Date(midnight + d * DAY_MS + 12 * 60 * 60_000);
     const p = toExchangeLocal(cal, probe);
     const h = hoursFor(cal, p.isoDate, p.weekday);
     if (!h) continue;
-    if (d === 0 && local.minuteOfDay >= h.open) continue; // today's session already over
-    const minutes =
-      d === 0
-        ? h.open - local.minuteOfDay
-        : d * 24 * 60 - local.minuteOfDay + h.open;
-    return { open: false, minutesToChange: minutes };
+    const openAt = instantAtLocalMinute(cal, probe, h.open);
+    if (openAt <= t) continue; // that bell has already rung
+    return { open: false, minutesToChange: Math.round((openAt - t) / 60_000) };
   }
   return { open: false };
 }
