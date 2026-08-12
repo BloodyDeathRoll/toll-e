@@ -216,6 +216,7 @@
     "shares": "Shares",
     "pricePerShare": "Price / share",
     "youHold": "You hold {shares} shares",
+    "noSharesOwned": "Could not find any shares registered as owned",
     "taxEvent": "Tax event",
     "averageCost": "Average cost",
     "proceeds": "Proceeds · {qty} × {price}",

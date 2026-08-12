@@ -216,6 +216,7 @@
     "shares": "מניות",
     "pricePerShare": "מחיר ליחידה",
     "youHold": "ברשותך {shares} מניות",
+    "noSharesOwned": "לא נמצאו מניות הרשומות בבעלותך",
     "taxEvent": "אירוע מס",
     "averageCost": "עלות ממוצעת",
     "proceeds": "תמורה · {qty} × {price}",

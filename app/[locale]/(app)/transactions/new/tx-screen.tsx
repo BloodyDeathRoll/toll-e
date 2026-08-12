@@ -113,6 +113,33 @@ export function TxScreen() {
     setPrice(n);
   };
 
+  /**
+   * A sell opens on the whole position. Selling out is the common case and
+   * every other quantity is a subtraction from this one, so it is the only
+   * default that starts nearer the answer than zero does — and it can never
+   * be an oversell.
+   *
+   * Claimed per (symbol, sell) exactly like the price prefill, so switching
+   * ticker re-fills, an edit is never overwritten, and edit mode — which
+   * loads its own quantity — is left alone.
+   */
+  const sellFillKey = `${symbol}@sell`;
+  const [sharesFilledFor, setSharesFilledFor] = useState<string | null>(null);
+  const onSharesEdit = (n: number) => {
+    setSharesFilledFor(sellFillKey);
+    setShares(n);
+  };
+  useEffect(() => {
+    if (editTxId || type !== 'sell' || !symbol || sharesFilledFor === sellFillKey) return;
+    const owned = state.status === 'data'
+      ? state.data.positions.find((p) => p.symbol === symbol)?.shares
+      : undefined;
+    if (!owned || owned <= 0) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot fill per ticker
+    setShares(owned);
+    setSharesFilledFor(sellFillKey);
+  }, [editTxId, type, symbol, sellFillKey, sharesFilledFor, state]);
+
   // Sell-time tax preview, and only ever the real FIFO engine via /tax/preview.
   // There used to be a local estimate behind it, built from the demo frames'
   // static carried loss — so a sale the server had refused still drew a
@@ -189,6 +216,17 @@ export function TxScreen() {
   const held = position?.shares ?? 0;
   const oversell = type === 'sell' && !editTxId && state.status === 'data' && shares > held;
 
+  /**
+   * Selling something you hold none of is not a quantity problem, so it is not
+   * asked as one: there is no amount to type, no price to put on it and no tax
+   * to work out. The form stops at the ticker and says so.
+   *
+   * Positions must have loaded first, for the same reason the oversell guard
+   * waits — "holds none" and "not fetched yet" look identical from here.
+   */
+  const ownsNone =
+    type === 'sell' && !editTxId && Boolean(symbol) && state.status === 'data' && held === 0;
+
   const submit = async () => {
     if (!symbol || shares <= 0 || price < 0 || busy || oversell) return;
     setBusy(true);
@@ -263,11 +301,19 @@ export function TxScreen() {
     </div>
   );
 
+  /**
+   * `max` caps the chevron, not the field: you may still type any number and
+   * be told why it is wrong. It exists because a sell now opens on the whole
+   * position, which puts the very first tap of `+` one share past what you
+   * hold — an impossible sale, reached by the most casual gesture on the
+   * screen, that would take the tax card away and move the page with it.
+   */
   const stepper = (
     label: string,
     value: number,
     onChange: (n: number) => void,
     step: number,
+    max?: number,
   ) =>
     fieldShell(
       label,
@@ -287,7 +333,10 @@ export function TxScreen() {
           <button
             type="button"
             aria-label={`${label} +`}
-            onClick={() => onChange(Number(((value || 0) + step).toFixed(4)))}
+            onClick={() => {
+              const next = Number(((value || 0) + step).toFixed(4));
+              onChange(max === undefined ? next : Math.min(max, next));
+            }}
           >
             <ChevronUp className="size-4 text-foreground" aria-hidden />
           </button>
@@ -400,7 +449,19 @@ export function TxScreen() {
         </div>,
       )}
 
-      {stepper(t('shares'), shares, (n) => setShares(n), 1)}
+      {ownsNone ? (
+        <p role="status" className="px-6 py-4 text-sm text-muted-foreground">
+          {t('noSharesOwned')}
+        </p>
+      ) : (
+        <>
+      {stepper(
+        t('shares'),
+        shares,
+        onSharesEdit,
+        1,
+        type === 'sell' && !editTxId && state.status === 'data' ? held : undefined,
+      )}
       {/* The holding line doubles as the error: it is already the sentence
           that answers "how many may I sell", so an oversell only has to
           change what it says and the colour it says it in. */}
@@ -481,6 +542,8 @@ export function TxScreen() {
           </div>
         </section>
       )}
+        </>
+      )}
 
         </>
       )}
@@ -489,7 +552,7 @@ export function TxScreen() {
 
       <ActionBar
         label={t('save')}
-        disabled={busy || !symbol || !(shares > 0) || !(price >= 0) || oversell}
+        disabled={busy || !symbol || !(shares > 0) || !(price >= 0) || oversell || ownsNone}
         onClick={submit}
       />
     </main>
