@@ -426,6 +426,7 @@
     "theme": "Theme",
     "dark": "Dark",
     "light": "Light",
+    "system": "System",
     "language": "Language",
     "preferences": "Preferences",
     "defaultMarket": "Market",

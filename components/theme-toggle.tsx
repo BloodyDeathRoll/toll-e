@@ -2,16 +2,18 @@
 
 import { useTranslations } from 'next-intl';
 import { Moon, Sun } from 'lucide-react';
+import { setTheme } from '@/lib/theme';
 
-// Dark is the default; the choice persists in localStorage and is applied
+// System is the default; a choice persists in localStorage and is applied
 // pre-paint by the inline script in app/[locale]/layout.tsx.
 export function ThemeToggle({ className }: { className?: string }) {
   const t = useTranslations('common');
 
+  // A one-tap switch can only mean the palette you are not looking at, so it
+  // always lands on an explicit choice — leaving 'system' to Settings, where
+  // there is room to name it.
   const toggle = () => {
-    const root = document.documentElement;
-    const dark = root.classList.toggle('dark');
-    localStorage.setItem('toll-e.theme', dark ? 'dark' : 'light');
+    setTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark');
   };
 
   return (

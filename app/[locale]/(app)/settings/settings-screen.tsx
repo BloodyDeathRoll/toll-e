@@ -11,6 +11,7 @@ import { InstallSettingsRow } from '@/components/install-prompt';
 import { Dropdown } from '@/components/dropdown';
 import { routing } from '@/src/i18n/routing';
 import { authClient, signOut, useSession } from '@/lib/auth-client';
+import { setTheme, themeChoice, type ThemeChoice } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 
 export function SettingsScreen() {
@@ -23,17 +24,17 @@ export function SettingsScreen() {
   const { data: session, isPending } = useSession();
   const { setMarketId } = useMarket();
 
-  // Theme state mirrors the html class (set pre-paint by the layout script).
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  // The stored *choice*, not the html class: 'system' and 'dark' can both be
+  // showing the dark palette, and the segment has to say which one is on.
+  const [theme, setThemeState] = useState<ThemeChoice>('system');
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- read DOM state after mount
-    setTheme(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- read stored state after mount
+    setThemeState(themeChoice());
   }, []);
   const pickTheme = (value: string) => {
-    const dark = value === 'dark';
-    document.documentElement.classList.toggle('dark', dark);
-    localStorage.setItem('toll-e.theme', value);
-    setTheme(dark ? 'dark' : 'light');
+    const choice = value as ThemeChoice;
+    setTheme(choice);
+    setThemeState(choice);
   };
 
   const [defaultMarket, setDefaultMarket] = useState<string | null>(null);
@@ -101,6 +102,7 @@ export function SettingsScreen() {
             [
               { value: 'dark', label: t('dark') },
               { value: 'light', label: t('light') },
+              { value: 'system', label: t('system') },
             ],
             theme,
             pickTheme,
