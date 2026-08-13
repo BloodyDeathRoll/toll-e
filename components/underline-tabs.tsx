@@ -38,7 +38,7 @@ export function UnderlineTabs<T extends string>({
             // keeps it.
             grow ? 'flex-1 px-2' : 'px-3',
             t === value
-              ? 'border-primary text-primary'
+              ? 'tabs-border tabs-primary'
               : 'border-border text-muted-foreground',
           )}
         >

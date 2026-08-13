@@ -1,134 +1,118 @@
-# Session Handoff — 2026-08-11
+# Session Handoff — 2026-08-13
 
 ## Goal
-Fix the intraday charts that rendered the *previous* day full-width for the
-first minutes after the opening bell, then work a run of phone-review
-requests: app chrome on full-page flows, reorderable Holdings, chart
-scrubbing, an About section with industry screens, stat tooltips, RTL
-alignment, and a watchlist showing `0.00%` on rows that were not flat.
+Diagnose a reported bug — a buy of 21 SNDK showed as 210 shares at 124.90 on the
+stock page — and wire that page's position card to the real portfolio.
 
 ## Current State
-Everything is committed and pushed; `95457d9` is head, tree clean.
-Green: `pnpm lint`, `pnpm typecheck`, 101 Vitest, **13/13** `pnpm test:e2e`
-(the long-standing `smoke.spec.ts:76` failure is fixed — see below).
-EN/HE message files are 417 keys each, no drift.
+Done and pushed: `06cf85b` is head, tree clean except `handoff.md`.
+Green: `pnpm lint`, `pnpm typecheck`, 107 Vitest, **13/13** `pnpm test:e2e`.
 
-Verified in the running app (Playwright, 412px, EN + HE unless noted):
-- **Charts, two views.** Trading: axis is the bell-to-bell day, line runs
-  previous close → bars → dot on the live quote, so an empty feed still
-  draws. Closed: last finished session, full width, no dot. Measured live
-  at 26 min in (line ends 4/90px), at a simulated bell (2 points, hard
-  left), and with the clock faked to 22:00 ET (90/90px, no dot).
-- **Scrubbing** the stock chart: mouse and touch both read out price,
-  change-from-range-start and timestamp; releasing restores the live quote.
-  1Y reads dates, 1D reads clock times.
-- **Bottom nav** absent on `/transactions/new` and `/watchlists/new`,
-  present on Home/Transactions/Tax. Zero console errors on five screens
-  (was 2 — a hydration mismatch).
-- **Holdings reorder**: drag on its edit screen, Home lays out in that
-  order. API refuses rename/add/remove/delete on it (409), permits reorder.
-- **About + screens**: tags open `/screen/{sector|industry}/{name}`;
-  `Semiconductors` → NVDA TSM AVGO MU… "30 of 115"; `TEVA.TA` → 12 TASE
-  names. Info dots 12×12 on Vol/P-E/Mkt cap/Beta.
-- **Quotes**: 60 symbols asked → 60 returned (was capped at 24).
+The stock page's "YOUR POSITION" card now reads the real book. Verified in the
+running app with a throwaway Playwright spec (signed in as the e2e user, booked
+21 SNDK @ 1250 on 07/27, read the rendered card, deleted the transaction):
 
-Known broken / not done:
-- **Light mode: the field border is invisible.** `--border` and `--well` are
-  both `#eff0f4`. Carried from two sessions ago, still unfixed.
-- **`$-0.00` on the tax screen** (`tax-screen.tsx`); fixed only in
-  `performance-screen.tsx`. Carried over.
-- No auto-scroll while dragging past the screen edge in the reorder list.
-- The **on-device translation was only exercised against a stubbed
-  Translator.** Real Chrome reports `en→he` as `downloadable`, so the real
-  path is plausible but unproven on a device.
-- `watchlist-card.tsx:93` and `stock-screen.tsx:373` still carry
-  `(x?.changePct ?? 0)`. Neither renders a misleading `0.00%` (one shows a
-  blank, one only picks a colour), so both were left alone deliberately.
-- TASE **election days** are unencoded — they follow no calendar and must be
-  added by hand to `registry.ts` when one is called.
-- The eve half-day close is **assumed** to be 13:45 (the Friday bell);
-  unverified against TASE's published calendar.
-- A dev server runs in the background on :3000 (restarted mid-session).
+```
+Day's gain +2,359.56 (+8.84%) | Total gain +2,801.61 (+10.67%)
+Shares 21 | Avg cost 1,250.00 | Market value 29,051.61 | Tax if sold $700.40
+```
+
+Internally consistent: 21 × 1,383.41 = 29,051.61; gain = that − 26,250; tax =
+25% of gain; day's gain = 21 × the live change. `/stock/TSLA` (not held) renders
+no card at all.
+
+Known broken / not done (all carried forward, none touched this session):
+- **TASE prices are in agorot.** Yahoo returns `currency: ILA`, e.g. `TEVA.TA`
+  = 10950 meaning ₪109.50. Nothing handles `ILA`; IL portfolios are labelled
+  `ILS` with `₪`. **Every TASE figure on screen is 100× too large.** Phase 0 of
+  the commissions plan; blocks any percentage fee with a shekel floor.
+- **No commission input exists** and `app/api/portfolios/[id]/tax/preview/route.ts:34`
+  hardcodes `commission: 0`, so the sell preview understates cost.
+- `taxIfSold` on the stock card is a **flat-rate estimate** — it ignores the
+  loss-carryforward shield, same as Home. A true figure needs the tax preview
+  endpoint.
+- The rest of the stock page (key stats fallbacks, next event, the `stock`
+  fixture from `getDemoStock`) is still demo-backed where live data is missing.
+- Custody-fee valuation will be an estimate — `price_history` is only populated
+  when someone views a daily chart (`src/market-data/index.ts:108`).
+- 320px viewports overflow (Home 14px, stock 25px). Left alone deliberately;
+  360/390/412 measure 0px.
+- `docs/israeli-commissions-plan.md` is a plan only — **nothing in it is built**.
+- EN/HE message files are 457 keys each, no drift, but there is still **no
+  parity test**.
+- A dev server runs on :3000 (LAN: 192.168.1.133:3000).
 
 ## Active Files
-- `src/markets/calendar.ts` — `intradaySeries` gained `live` + `lastTradeAt`;
-  new `sessionLine()` builds the drawn polyline for both views.
-- `src/markets/hebrew-calendar.ts` — **new**; TASE closures derived from the
-  Hebrew calendar via `Intl`. `hebrew-calendar.test.ts` — **new**, 9 tests.
-- `src/markets/registry.ts` — TASE holidays/eves wired in; US 2028 added.
-- `src/market-data/yahoo.ts` — `pickSession(points, cal, now, lastTradeAt)`;
-  new `getScreen()` + `screenerName()`.
-- `src/market-data/index.ts` — `intradayTtl()` clamps to the bell;
-  `getQuotes` batches by 20 and dedupes; `getScreen` cached 5 min.
-- `app/api/market/quote/route.ts` — cap is now 200 **and a 400**, not a slice.
-- `app/api/market/screen/route.ts` — **new**.
-- `app/[locale]/(app)/screen/**` — **new**; classification screen.
-- `components/price-chart.tsx` — scrubbing (crosshair, dot, `onScrub`).
-- `components/charts.tsx`, `portfolio-chart.tsx` — draw via `sessionLine`.
-- `components/quote-bits.tsx` — `ChangePill` takes optional `pct`; `NO_VALUE`.
-- `components/info-dot.tsx`, `use-translation.ts`, `app-content.tsx`,
-  `lib/use-hydrated.ts` — **new**.
-- `app/[locale]/(app)/stock/[symbol]/stock-screen.tsx` — scrub state, About
-  card, info dots, `StatCell` alignment.
+- `app/[locale]/(app)/stock/[symbol]/stock-screen.tsx` — the only file changed.
+  Position card + day's gain now come from `/api/positions`.
+
+Read but unchanged, and the references that mattered:
+- `components/use-portfolio.ts` — `usePortfolioPositions(marketId)`; states are
+  `loading | signed-out | empty | data`.
+- `src/server/portfolios.ts` — `getPositions`, the `PositionsPayload` shape.
+- `src/engine/portfolio/index.ts:190` — `positionView`, the shared position math.
+- `components/holdings-table.tsx:240` — `positionRows`, the established
+  `taxIfSold = max(0, gain) × rate` convention this reused.
+- `src/demo/data.ts:113` — the SNDK fixture row that was being displayed.
 
 ## Changes Made This Session
-1. **Charts (e024f4b).** Three faults stacked: `pickSession` needed two 5m
-   bars before calling today a session; the intraday TTL straddled the bell;
-   and `intradaySeries` fell back to the whole finished day when the live
-   session had no bars. The provider's last-trade stamp now separates "the
-   bell just rang" from "this exchange is shut and the calendar is wrong".
-2. **Chrome (65baff3).** better-auth resolves `useSession` from a client
-   cache synchronously, so the nav appeared a render before the HTML said
-   so. `useHydrated()` (via `useSyncExternalStore`) gates both navs.
-   `/transactions/new` joins `/watchlists/new` as a full-page flow.
-3. **Calendars (e356531).** TASE had *no* holidays at all. Named in the
-   Hebrew calendar rather than transcribed, so it cannot rot; handles leap
-   years (Purim → Adar II) and the Yom HaAtzmaut postponement.
-4. **Holdings (9c90ce0).** Reorder-only edit screen, enforced in the API too.
-5. **Scrubbing (8bc1492).** The dot is HTML, not SVG — the viewBox stretches
-   horizontally, so a circle renders as an ellipse. Surface is `pan-y`.
-6. **About + screens (d0efa1b).** Yahoo's classification filters live on a
-   POST screener the library does not model; routed through its own `_fetch`
-   for the crumb. Taxonomy mismatch: profiles say `Software - Infrastructure`,
-   the screener only answers to `Software—Infrastructure`.
-7. **RTL + translation (254e316).** `StatCell` children were stretched to the
-   label's width; a `dir="ltr"` value then sat at the *left* of that box.
-8. **Quotes (95457d9).** Route sliced at 25 and dropped the tail; rows
-   laundered the silence into a green `0.00%` via `?? 0`.
+1. **Diagnosis.** The card was sourced entirely from `getDemoHolding(marketId,
+   symbol)` with a fallback to the *other* market's row (`stock-screen.tsx:60`).
+   Every figure on screen matched `src/demo/data.ts:113` byte-for-byte —
+   210 · 124.90 · 29,218.98 · +2,989.98 (+11.31%). The 210 was never the user's
+   21 scaled; it is a hardcoded design value that happens to sit near it.
+   One number was a hybrid, which is what made it look like a scaling bug:
+   `daysGain = holding.shares * change` — demo shares × the *live* quote change,
+   210 × 99.005 = 20,791.05, exactly what was shown.
+2. **Wiring (06cf85b).** `usePortfolioPositions(market.id)` — the portfolio of
+   the market the *instrument* trades in, not the browsed lens, which answers
+   from the wrong book for a US symbol viewed under the IL tab.
+3. **Market value struck at the page's own price** (`live ? shares * price :
+   position.marketValue`) so the card cannot disagree with the headline above
+   it; the server's figure stands in when there is no live quote.
+4. **Demo only when signed out.** Someone signed in who does not hold the symbol
+   now gets no card, rather than someone else's shares. Deliberately *not* the
+   house convention — Home falls back to demo on `loading` too — because a flash
+   of a fake position is the very bug being fixed.
+5. **Tax rate is the portfolio's.** `taxIfSoldNote` hardcoded `rate: 25`; it
+   reads `portfolio.taxRatePct` now, and the whole tax block hides at 0% per the
+   plan's invariant. Both the desktop grid and the mobile card.
+6. **Total cost** reads the engine's `totalCost` instead of `shares × avgCost` —
+   they diverge once commissions land.
 
 ## Failed Attempts
-- **Hand-rolled Yahoo crumb** (`fc.yahoo.com` → `/v1/test/getcrumb` → POST
-  screener): got **429 Too Many Requests** on the crumb endpoint, twice,
-  minutes apart. Do not go back to this; use `yf._fetch(..., needsCrumb)`.
-- **`yf._fetch` with a POST straight away**: 405 Method Not Allowed — the
-  `fetchOptions` are applied to the *crumb* request too. A priming `yf.quote`
-  call first leaves a cached crumb and fixes it.
-- **`yf.screener`** is predefined-only (15 canned screens); no industry filter.
-- **`yf.search('Semiconductors')`** returns name matches, not sector members;
-  `'Software - Infrastructure'` returned nothing at all.
-- **`recommendationsBySymbol`** is co-viewing ("people also watch"), not
-  industry: NVDA → TSLA, AMZN, AAPL.
-- **`lang=he-IL` on quoteSummary** returns the *same English* description;
-  Yahoo does not localise `longBusinessSummary`. Verified he/fr/en.
-- **Measuring RTL drift by bounding box** reports 0 for every cell — a
-  stretched child's box matches its sibling's exactly. Measure the text
-  (`Range.getBoundingClientRect`), which showed 39px on מכפיל רווח.
-- **`p-2` on a `size-3` button** collapsed the info glyph to 0 width
-  (border-box). Grow the tap target with `before:-inset-2` instead.
-- **Tailwind `size-3` is 13.5px here**, not 12 — root font-size is 18px.
-  The spec-literal 12px needs `size-[12px]`.
-- **Playwright's `synthesizeScrollGesture` scrolls nothing** on this page,
-  chart or not; it cannot test that `pan-y` lets the page scroll. Assert the
-  computed `touch-action` instead.
-- **The dev server served stale i18n JSON**, rendering raw keys like
-  `stock.showOriginal`. Restart `pnpm dev` after adding message keys.
+- **Chasing a 10× scaling bug.** 21 → 210 and 1250 → 124.90 both looked like a
+  factor of ten, and `'21' + 0 === '210'` is a real JS trap with Drizzle numeric
+  columns (they come back as strings). It was a coincidence — the demo row is
+  just those numbers. Check the fixtures before theorising about arithmetic.
+- **`npx playwright test --testDir <path>`** — not a valid flag. Copy the
+  throwaway spec into `e2e/` and delete it after.
+- Carried forward from the previous session, still hard constraints:
+  - **`scrollIntoView` on every focus event** in the tx form — a field owns
+    several focusable things, so the page jumps under a finger that never left.
+    Key the scroll to a *change of field*.
+  - **The prefill-claim-key idiom for commission** — a commission depends on
+    shares, so a claim key containing `shares` is invalidated by every keystroke
+    and clobbers a hand-typed value. Use a `'profile' | 'manual'` ownership flag.
+  - **Measuring layout with a bare `document.querySelector`** — both the mobile
+    and desktop branches render (one `display:none`). Filter on
+    `offsetParent !== null` and measure the specific element.
+  - **Testing the Tax screen with no sales** — it renders the empty state, not
+    the shield card. Create a buy/sell pair via the API first.
 
 ## Next Step
-Fix the light-mode field border: give fields their own token instead of
-`--border`, which equals `--well` (`#eff0f4`) in `app/globals.css`, so a
-field's border is currently its own fill colour. Then the `$-0.00` in
-`app/[locale]/(app)/tax/tax-screen.tsx` — copy the guard already in
-`performance-screen.tsx`.
+Unchanged from last session — start the commissions work at **Phase 0** of
+`docs/israeli-commissions-plan.md`: normalize `ILA` → `ILS` at the provider
+boundary in `src/market-data/yahoo.ts` (`toQuote` ~line 114, plus the chart and
+summary mappers) — divide price-like fields by 100 and report `ILS`. Add a
+Vitest for the conversion. Ship it as its own commit; every TASE figure on
+screen changes by 100×.
 
-Worth confirming on a real phone: tap **תרגם** on a stock page's About
-section and check Chrome actually downloads the en→he model and translates.
+Then Phase 1: `src/brokers/registry.ts` + `fees.ts` (pure, framework-free —
+`src/markets/registry.ts` and `scheduleFor` at `src/markets/calendar.ts:93-99`
+are the templates), with the 12 institutions from
+`docs/israeli-commissions-spec.md`.
+
+Smaller, independent: the `commission: 0` in
+`app/api/portfolios/[id]/tax/preview/route.ts:34` is a two-line fix, worth doing
+whenever the form gains its commission field.
