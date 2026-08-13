@@ -49,12 +49,12 @@
   --faint: rgba(30, 30, 30, 0.4); /* tertiary text */
   --gain: #299800; /* Brand/Green */
   --gain-foreground: #ffffff;
-  --loss: #c13d3d; /* text/error */
+  --loss: #ff4453; /* text/error */
   --loss-foreground: #ffffff;
   /* Filled change-pill surfaces (green/red badges). One red across the whole
-     app, both themes: #ff6666. */
+     app, both themes: #ff4453. */
   --gain-surface: #b9ef06;
-  --loss-surface: #c13d3d;
+  --loss-surface: #ff4453;
   /* After-hours crescent. */
   --moon: #faab00;
   /* The desk the phone lies on, and the hairline around the phone itself —
@@ -113,10 +113,10 @@
   --faint: rgba(255, 255, 255, 0.4);
   --gain: #00b91c;
   --gain-foreground: #ffffff;
-  --loss: #c13d3d;
+  --loss: #ff4453;
   --loss-foreground: #ffffff;
-  --gain-surface: #73ef06;
-  --loss-surface: #c13d3d;
+  --gain-surface: #a4fd55;
+  --loss-surface: #ff4453;
   --moon: #9a9a9a;
   /* Black desk: the shadow does nothing here, so the hairline is the only
      thing separating the phone from it. */
