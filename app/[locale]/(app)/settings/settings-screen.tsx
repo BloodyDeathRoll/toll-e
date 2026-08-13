@@ -9,10 +9,10 @@ import { useMarket } from '@/components/app-shell/market-context';
 import { getMarket, marketIds } from '@/src/markets/registry';
 import { InstallSettingsRow } from '@/components/install-prompt';
 import { Dropdown } from '@/components/dropdown';
+import { MonitorCog, Moon, Sun } from 'lucide-react';
 import { routing } from '@/src/i18n/routing';
 import { authClient, signOut, useSession } from '@/lib/auth-client';
 import { setTheme, themeChoice, type ThemeChoice } from '@/lib/theme';
-import { cn } from '@/lib/utils';
 
 export function SettingsScreen() {
   const t = useTranslations('settings');
@@ -48,32 +48,6 @@ export function SettingsScreen() {
     await authClient.updateUser({ defaultMarket: market });
   };
 
-  const segment = (
-    options: Array<{ value: string; label: React.ReactNode }>,
-    active: string,
-    onPick: (v: string) => void,
-    disabled = false,
-  ) => (
-    <div className={cn('flex gap-0.5 rounded-lg border border-border bg-background p-[3px]', disabled && 'opacity-50')}>
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          disabled={disabled}
-          onClick={() => onPick(o.value)}
-          className={cn(
-            'rounded-md px-3 py-1.5 text-[13px]',
-            o.value === active
-              ? 'bg-primary font-semibold text-primary-foreground'
-              : 'text-muted-foreground',
-          )}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  );
-
   const row = (label: string, control: React.ReactNode) => (
     <div className="flex items-center justify-between gap-4">
       <span className="text-sm text-foreground">{label}</span>
@@ -98,15 +72,18 @@ export function SettingsScreen() {
         </h2>
         {row(
           t('theme'),
-          segment(
-            [
-              { value: 'dark', label: t('dark') },
-              { value: 'light', label: t('light') },
-              { value: 'system', label: t('system') },
-            ],
-            theme,
-            pickTheme,
-          ),
+          <Dropdown
+            options={[
+              { value: 'system', badge: <MonitorCog className="size-4" aria-hidden />, name: t('system') },
+              { value: 'dark', badge: <Moon className="size-4" aria-hidden />, name: t('dark') },
+              { value: 'light', badge: <Sun className="size-4" aria-hidden />, name: t('light') },
+            ]}
+            active={theme}
+            onPick={pickTheme}
+            // An icon alone would leave System unsayable, and a moon on the
+            // trigger reads as the palette rather than the choice.
+            showName
+          />,
         )}
         {row(
           t('language'),
