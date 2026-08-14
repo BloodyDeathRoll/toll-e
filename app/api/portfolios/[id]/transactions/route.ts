@@ -23,6 +23,8 @@ const txSchema = z.object({
   shares: z.number().positive(),
   pricePerShare: z.number().nonnegative(),
   commission: z.number().nonnegative().default(0),
+  // 'manual' or 'profile:<brokerId>@<effectiveFrom>' — audit only (spec §5).
+  commissionSource: z.string().max(80).optional(),
   note: z.string().max(500).optional(),
 });
 
@@ -69,6 +71,7 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/portfolios/
       shares: String(t.shares),
       pricePerShare: String(t.pricePerShare),
       commission: String(t.commission),
+      commissionSource: t.commissionSource,
       currency: portfolio.currency,
       note: t.note,
     })

@@ -14,6 +14,7 @@ const patchSchema = z.object({
   shares: z.number().positive().optional(),
   pricePerShare: z.number().nonnegative().optional(),
   commission: z.number().nonnegative().optional(),
+  commissionSource: z.string().max(80).nullable().optional(),
   note: z.string().max(500).nullable().optional(),
 });
 

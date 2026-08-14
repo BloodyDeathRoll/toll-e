@@ -75,6 +75,34 @@ describe('computePortfolio — FIFO lots', () => {
     expect(realized[0].gain).toBeCloseTo(4_920);
   });
 
+  it('one sell across three commissioned lots reconciles with the un-split calculation', () => {
+    // Spec §6: buy commissions ride per share into each matched lot; the
+    // sell commission is deducted once at sale level (per-match attribution
+    // is a drill-down feature, and the aggregate is identical).
+    const { realized, holdings } = computePortfolio([
+      tx('BUY', 'NVDA', '2026-01-10', 100, 10, 10), // cost/share 10.1
+      tx('BUY', 'NVDA', '2026-02-10', 100, 20, 20), // 20.2
+      tx('BUY', 'NVDA', '2026-03-10', 100, 30, 30), // 30.3
+      tx('SELL', 'NVDA', '2026-04-10', 250, 40, 25),
+    ]);
+    const [ev] = realized;
+    expect(ev.matchedLots).toHaveLength(3);
+    expect(ev.matchedLots.map((m) => [m.shares, m.costPerShare])).toEqual([
+      [100, 10.1],
+      [100, 20.2],
+      [50, 30.3],
+    ]);
+    // Each match at its own commissioned cost, summing to the sale's basis…
+    const matchedCost = ev.matchedLots.reduce((s, m) => s + m.shares * m.costPerShare, 0);
+    expect(ev.costBasis).toBeCloseTo(matchedCost);
+    expect(ev.costBasis).toBeCloseTo(4_545);
+    // …and gain = net proceeds − that basis, exactly the un-split figure.
+    expect(ev.proceeds).toBeCloseTo(250 * 40 - 25);
+    expect(ev.gain).toBeCloseTo(9_975 - 4_545);
+    // The unsold remainder keeps the unallocated share of its buy commission.
+    expect(holdings[0].lots).toEqual([expect.objectContaining({ shares: 50, costPerShare: 30.3 })]);
+  });
+
   it('backdated buys enter the timeline at their trade date', () => {
     // Sale recorded first, then a backdated cheaper buy — FIFO must use it.
     const sale = tx('SELL', 'NVDA', '2026-03-10', 50, 300);

@@ -9,7 +9,7 @@ import { useBrokerProfile } from '@/components/use-broker-profile';
 import { applyOverrides } from '@/src/brokers/overrides';
 import { brokers, scheduleFor } from '@/src/brokers/registry';
 import type { BrokerDef, FeeSchedule, TradeFee } from '@/src/brokers/types';
-import { fmtNum } from '@/lib/format';
+import { fmtNum, fmtRatePct } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 /**
@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 type Step = { name: 'kind' } | { name: 'broker'; kind: BrokerDef['kind'] } | { name: 'review'; brokerId: string };
 
 const sym = (currency: string) => ({ ILS: '₪', USD: '$' })[currency] ?? `${currency} `;
-const pctLabel = (pct: number, locale: string) => `${fmtNum(Number((pct * 100).toFixed(3)), locale, 0)}%`;
+const pctLabel = fmtRatePct;
 
 export function OnboardingScreen() {
   const t = useTranslations('onboarding');

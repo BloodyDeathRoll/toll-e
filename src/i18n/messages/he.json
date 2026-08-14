@@ -228,7 +228,15 @@
     "save": "שמירה",
     "offsetByPool": "קוזז בהפסדים קודמים השנה",
     "taxRow": "מס",
-    "cannotSell": "אי אפשר למכור יותר ממה שברשותך — יש לך {shares} מניות"
+    "cannotSell": "אי אפשר למכור יותר ממה שברשותך — יש לך {shares} מניות",
+    "commission": "עמלה",
+    "minApplied": "הוחל מינימום {amount}",
+    "perShareRate": "{amount} למניה",
+    "lowestTierAssumed": "הונחה המדרגה הנמוכה",
+    "noMarketRate": "אין תעריף לשוק זה",
+    "noBrokerSet": "לא הוגדר ברוקר",
+    "setBroker": "להגדרה",
+    "resetSuggested": "איפוס להצעה"
   },
   "taxPage": {
     "title": "מס",

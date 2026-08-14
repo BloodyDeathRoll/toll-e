@@ -23,6 +23,11 @@ export function fmtPct(pct: number, locale: string, dp = 2): string {
   return `${fmtSigned(pct, locale, dp)}%`;
 }
 
+/** '0.08%' from a fraction (0.0008) — trailing zeros trimmed, ≤3 dp. */
+export function fmtRatePct(fraction: number, locale: string): string {
+  return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 3 }).format(fraction * 100)}%`;
+}
+
 /** '$126,034.89' / '₪412,806.40'. */
 export function fmtMoney(amount: number, currency: string, locale: string, dp = 2): string {
   return new Intl.NumberFormat(locale, {

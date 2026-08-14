@@ -10,6 +10,7 @@ const schema = z.object({
   shares: z.number().positive(),
   pricePerShare: z.number().nonnegative(),
   tradeDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  commission: z.number().nonnegative().default(0),
 });
 
 /** Real FIFO sell-time tax preview (§3.4) — never persisted. */
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/portfolios/
     tradeDate: body.data.tradeDate,
     shares: body.data.shares,
     pricePerShare: body.data.pricePerShare,
-    commission: 0,
+    commission: body.data.commission,
     createdAt: Number.MAX_SAFE_INTEGER,
   };
   const check = validateSell(txs, candidate);

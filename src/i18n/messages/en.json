@@ -228,7 +228,15 @@
     "save": "Save",
     "offsetByPool": "Offset by earlier losses this year",
     "taxRow": "Tax",
-    "cannotSell": "You cannot sell more than you hold — you have {shares} shares"
+    "cannotSell": "You cannot sell more than you hold — you have {shares} shares",
+    "commission": "Commission",
+    "minApplied": "min {amount} applied",
+    "perShareRate": "{amount}/share",
+    "lowestTierAssumed": "lowest tier assumed",
+    "noMarketRate": "no rate for this market",
+    "noBrokerSet": "No broker set",
+    "setBroker": "Set one",
+    "resetSuggested": "Reset to suggested"
   },
   "taxPage": {
     "title": "Tax",

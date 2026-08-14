@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeTax, previewSell } from './index';
-import type { EngineTx } from '../portfolio';
+import { computePortfolio, type EngineTx } from '../portfolio';
 
 let seq = 0;
 const tx = (
@@ -337,5 +337,68 @@ describe('previewSell', () => {
     expect(p.gain).toBeCloseTo(-1_480);
     expect(p.taxDelta).toBe(0);
     expect(p.shieldAfter).toBeCloseTo(382.5 + 370);
+  });
+});
+
+describe('computeTax — a commission edited retroactively on a fully-consumed lot', () => {
+  // Spec §6: the recompute invariant. The same year computed twice, the only
+  // difference a buy commission added after the lot was fully sold — every
+  // downstream artifact must move: the matched-lot cost, the month pool, the
+  // withholding, and the registered shield.
+  const year = (buyCommission: number) => [
+    tx('BUY', 'L', '2026-01-05', 100, 100, buyCommission),
+    tx('SELL', 'L', '2026-02-10', 100, 80), // Feb loss → pool
+    tx('BUY', 'A', '2026-01-05', 100, 100),
+    tx('SELL', 'A', '2026-03-10', 100, 150), // Mar +5,000 gain
+    tx('BUY', 'M', '2026-06-01', 100, 100),
+    tx('SELL', 'M', '2026-11-10', 100, 80), // Nov −2,000, after the gain
+  ];
+
+  it('before the edit: the year nets to a gain', () => {
+    const { years, shieldRemaining } = computeTax(year(0), RATE);
+    expect(years[0]).toMatchObject({
+      realizedGains: 5_000,
+      realizedLosses: 4_000,
+      net: 1_000,
+      paid: 750, // Mar: (5,000 − 2,000 pool) × 25%
+      owed: 250,
+      refundNextYear: 500,
+      registered: 0,
+    });
+    expect(years[0].months.map((m) => [m.month, m.poolUsed, m.paid])).toEqual([
+      [2, 0, null],
+      [3, 2_000, 750],
+      [11, 0, null],
+    ]);
+    expect(shieldRemaining).toBe(0);
+  });
+
+  it('after the edit: pool, withholding, and shield all recompute', () => {
+    // ₪2,000 of commission lands in the consumed lot's basis: the February
+    // loss deepens to 4,000, March's pool absorbs more, the withholding
+    // drops, and the year flips to a registered shield.
+    const { years, shieldRemaining } = computeTax(year(2_000), RATE);
+    expect(years[0]).toMatchObject({
+      realizedLosses: 6_000,
+      net: -1_000,
+      paid: 250, // Mar: (5,000 − 4,000 pool) × 25%
+      owed: 0,
+      refundNextYear: 250,
+      registered: 250, // −1,000 × 25%, carried as next year's shield
+    });
+    expect(years[0].months.map((m) => [m.month, m.poolUsed, m.paid])).toEqual([
+      [2, 0, null],
+      [3, 4_000, 250],
+      [11, 0, null],
+    ]);
+    expect(shieldRemaining).toBe(250);
+  });
+
+  it('the matched lot itself carries the edited commission', () => {
+    const { realized } = computePortfolio(year(2_000));
+    const feb = realized.find((r) => r.symbol === 'L')!;
+    expect(feb.matchedLots[0].costPerShare).toBe(120); // 100 + 2,000/100
+    expect(feb.costBasis).toBe(12_000);
+    expect(feb.gain).toBe(8_000 - 12_000);
   });
 });
