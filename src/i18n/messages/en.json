@@ -404,7 +404,8 @@
     "theme": "Toggle theme",
     "stale": "Stale",
     "delayed": "Delayed",
-    "retry": "Try again"
+    "retry": "Try again",
+    "close": "Close"
   },
   "perf": {
     "title": "Performance",

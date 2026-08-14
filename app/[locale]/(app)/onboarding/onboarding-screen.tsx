@@ -67,6 +67,16 @@ export function OnboardingScreen() {
   const name = (b: BrokerDef) => (locale === 'he' ? b.nameHe : b.name);
   const all = Object.values(brokers);
 
+  /**
+   * What the account-creation date opens on: a stored answer first, else the
+   * earliest trade already on record — an account cannot be younger than the
+   * first trade placed through it, and those are the months whose fees the
+   * ledger should be charging. Null falls back to today inside ReviewStep.
+   */
+  const openedAtDefault =
+    (editing ? state.profile.accountOpenedAt : null) ??
+    (state.status === 'data' || state.status === 'unset' ? state.firstTradeDate : null);
+
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col pb-28">
       <div className="flex items-center gap-4 p-6">
@@ -146,14 +156,17 @@ export function OnboardingScreen() {
 
       {step.name === 'review' && (
         <ReviewStep
-          key={step.brokerId}
+          // Keyed on the date too: ReviewStep seeds its own state once, so if
+          // the profile fetch lands while the review is already open the key
+          // change is what lets the resolved date replace the fallback.
+          key={`${step.brokerId}:${openedAtDefault ?? ''}`}
           broker={brokers[step.brokerId]}
           // Editing the broker you already have starts from your negotiated
           // overrides; a different pick starts from the catalogue.
           initialOverrides={
             editing && state.profile.brokerId === step.brokerId ? (state.profile.overrides ?? null) : null
           }
-          initialOpenedAt={editing ? state.profile.accountOpenedAt : null}
+          initialOpenedAt={openedAtDefault}
           busy={busy}
           onSave={(overrides, openedAt) => void finish(step.brokerId, overrides, openedAt)}
         />

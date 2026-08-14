@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useEffect, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { CalendarDays, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { fmtDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -34,24 +34,24 @@ export function DatePicker({
   label: string;
 }) {
   const locale = useLocale();
+  const tCommon = useTranslations('common');
   const [open, setOpen] = useState(false);
   // The month on display, which is not the value until a day is picked.
   const [view, setView] = useState(() => ({ y: Number(value.slice(0, 4)), m: Number(value.slice(5, 7)) }));
-  const ref = useRef<HTMLDivElement>(null);
 
+  // Escape closes, and the page beneath must not scroll under the overlay —
+  // the same contract every other overlay in the app keeps.
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
-    document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
     };
   }, [open]);
 
@@ -95,7 +95,7 @@ export function DatePicker({
   );
 
   return (
-    <div ref={ref} className="relative min-w-0 flex-1">
+    <div className="min-w-0 flex-1">
       <button
         type="button"
         aria-label={label}
@@ -110,8 +110,20 @@ export function DatePicker({
         <span className="text-base font-medium text-foreground">{fmtDate(value, locale)}</span>
       </button>
 
+      {/* An overlay, not a panel in the flow: anchored under the field it
+          read as one more form row, and on a short screen it pushed the rest
+          of the form out of reach. Fixed to the app frame — `.app-device`
+          carries a transform, so this covers the phone, not the desktop
+          window behind it, exactly as the watchlist sheet does. */}
       {open && (
-        <div className="absolute inset-x-0 top-full z-50 mt-1.5 rounded-xl border border-border bg-card p-3 shadow-lg">
+        <div role="dialog" aria-modal="true" aria-label={label} className="fixed inset-0 z-50 flex items-center justify-center p-6">
+          <button
+            type="button"
+            aria-label={tCommon('close')}
+            onClick={() => setOpen(false)}
+            className="absolute inset-0 bg-black/50"
+          />
+          <div className="relative w-full max-w-[330px] rounded-xl border border-border bg-card p-3 shadow-lg">
           <div className="flex items-center justify-between gap-1 pb-2">
             {nav('-1y', () => move(-12), ChevronsLeft)}
             {nav('-1m', () => move(-1), ChevronLeft)}
@@ -169,6 +181,7 @@ export function DatePicker({
                 </button>
               );
             })}
+          </div>
           </div>
         </div>
       )}

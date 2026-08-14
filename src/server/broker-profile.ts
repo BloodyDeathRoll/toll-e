@@ -1,8 +1,8 @@
 import 'server-only';
 
-import { eq } from 'drizzle-orm';
+import { eq, min } from 'drizzle-orm';
 import { db } from '@/src/db';
-import { brokerProfiles } from '@/src/db/schema';
+import { brokerProfiles, portfolios, transactions } from '@/src/db/schema';
 import { applyOverrides } from '@/src/brokers/overrides';
 import { getBroker, scheduleFor } from '@/src/brokers/registry';
 import type { FeeOverrides, FeeSchedule } from '@/src/brokers/types';
@@ -12,6 +12,21 @@ export type BrokerProfileRow = typeof brokerProfiles.$inferSelect;
 export async function getBrokerProfile(userId: string): Promise<BrokerProfileRow | null> {
   const [p] = await db.select().from(brokerProfiles).where(eq(brokerProfiles.userId, userId));
   return p ?? null;
+}
+
+/**
+ * The user's earliest trade date across every portfolio, or null if they
+ * have never traded. The account-opening date defaults to it: someone
+ * setting a broker for the first time already has a history, and the
+ * account cannot be younger than the first trade placed through it.
+ */
+export async function getFirstTradeDate(userId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ first: min(transactions.tradeDate) })
+    .from(transactions)
+    .innerJoin(portfolios, eq(portfolios.id, transactions.portfolioId))
+    .where(eq(portfolios.userId, userId));
+  return row?.first ?? null;
 }
 
 export interface BrokerProfilePatch {

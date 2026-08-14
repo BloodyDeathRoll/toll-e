@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getSession } from '@/lib/session';
 import { brokerIds } from '@/src/brokers/registry';
-import { getBrokerProfile, upsertBrokerProfile } from '@/src/server/broker-profile';
+import { getBrokerProfile, getFirstTradeDate, upsertBrokerProfile } from '@/src/server/broker-profile';
 
 export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  const profile = await getBrokerProfile(session.user.id);
+  const [profile, firstTradeDate] = await Promise.all([
+    getBrokerProfile(session.user.id),
+    getFirstTradeDate(session.user.id),
+  ]);
   return NextResponse.json({
     profile: profile && {
       brokerId: profile.brokerId,
@@ -16,6 +19,8 @@ export async function GET() {
       accountFeeWaivedUntil: profile.accountFeeWaivedUntil,
       accountOpenedAt: profile.accountOpenedAt,
     },
+    // What the account-opening date defaults to when it has never been set.
+    firstTradeDate,
   });
 }
 

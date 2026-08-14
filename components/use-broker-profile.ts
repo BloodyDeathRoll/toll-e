@@ -25,8 +25,11 @@ export type BrokerProfileState =
   // Distinct from 'signed-out' — see the note in use-portfolio.ts. The gate
   // must not read a failing endpoint as "never answered".
   | { status: 'error' }
-  | { status: 'unset' }
-  | { status: 'data'; profile: BrokerProfileData };
+  // `firstTradeDate` rides on both answered states because it is what the
+  // account-opening date defaults to, and the user who most needs that
+  // default — someone with a history but no broker set — is in 'unset'.
+  | { status: 'unset'; firstTradeDate: string | null }
+  | { status: 'data'; profile: BrokerProfileData; firstTradeDate: string | null };
 
 export function useBrokerProfile() {
   const [state, setState] = useState<BrokerProfileState>({ status: 'loading' });
@@ -40,7 +43,12 @@ export function useBrokerProfile() {
       }
       if (!res.ok) throw new Error(String(res.status));
       const json = await res.json();
-      setState(json.profile ? { status: 'data', profile: json.profile } : { status: 'unset' });
+      const firstTradeDate = json.firstTradeDate ?? null;
+      setState(
+        json.profile
+          ? { status: 'data', profile: json.profile, firstTradeDate }
+          : { status: 'unset', firstTradeDate },
+      );
     } catch {
       setState((s) => (s.status === 'loading' ? { status: 'error' } : s));
     }
