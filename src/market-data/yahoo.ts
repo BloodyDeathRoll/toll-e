@@ -99,8 +99,16 @@ const ms = (t: Date | number | string | undefined): number | undefined =>
  * arrives as `10950`), while the rest of the app — portfolio values,
  * commission floors quoted in real shekels — speaks ILS. The unit is
  * corrected here at the provider boundary so 'ILA' never escapes: every
- * money-denominated field is divided by 100 and the currency reported as
+ * quote-denominated field is divided by 100 and the currency reported as
  * ILS. Ratios (percent change, P/E, beta) and counts (volume) pass through.
+ *
+ * What counts as quote-denominated was verified against live data, not
+ * guessed: prices, day/52wk ranges, market cap, analyst price targets and
+ * institutional-holding values all ride the ILA scale (holder value ÷
+ * position reproduces the agorot price exactly). EPS and the financials
+ * charts do NOT — they are reported in the *statement* currency
+ * (`financialCurrency`: ₪7.19 for POLI.TA against a 7,774-agorot price and
+ * a coherent P/E of 10.8; USD for TEVA.TA) and must pass through untouched.
  */
 const AGOROT_PER_ILS = 100;
 const ilaFactor = (currency: string | undefined): number => (currency === 'ILA' ? AGOROT_PER_ILS : 1);
@@ -338,9 +346,11 @@ export class YahooProvider implements MarketDataProvider {
       stats: {
         marketCap: money(price?.marketCap ?? detail?.marketCap),
         peTtm: detail?.trailingPE,
-        // Per-share figures share the quote's unit, so EPS converts with the
-        // price and P/E stays coherent.
-        epsTtm: money(stats?.trailingEps),
+        // Deliberately NOT scaled: trailingEps is in the statement currency
+        // (see the ILA note above), so dividing it by 100 is how POLI.TA's
+        // ₪7.19 became ₪0.07. It may still differ from the quote currency
+        // for foreign-reporting listings (TEVA.TA reports USD).
+        epsTtm: stats?.trailingEps,
         dividendYieldPct: detail?.dividendYield !== undefined ? detail.dividendYield * 100 : undefined,
         beta: detail?.beta,
         wk52Low: money(detail?.fiftyTwoWeekLow),
@@ -369,17 +379,21 @@ export class YahooProvider implements MarketDataProvider {
   }
 
   async getAnalysis(symbol: string): Promise<StockAnalysis> {
+    // 'price' rides along only for its currency: analyst targets are quoted
+    // in the trading unit (agorot on TASE), not the statement currency, and
+    // financialData carries no field that says so.
     const res = await yf.quoteSummary(symbol, {
-      modules: ['recommendationTrend', 'financialData', 'upgradeDowngradeHistory'],
+      modules: ['recommendationTrend', 'financialData', 'upgradeDowngradeHistory', 'price'],
     });
     const fin = res.financialData;
+    const f = ilaFactor(res.price?.currency);
     const target =
       fin?.targetLowPrice !== undefined && fin?.targetMeanPrice !== undefined && fin?.targetHighPrice !== undefined
         ? {
-            low: fin.targetLowPrice,
-            mean: fin.targetMeanPrice,
-            high: fin.targetHighPrice,
-            current: fin.currentPrice,
+            low: fin.targetLowPrice / f,
+            mean: fin.targetMeanPrice / f,
+            high: fin.targetHighPrice / f,
+            current: fin.currentPrice !== undefined ? fin.currentPrice / f : undefined,
           }
         : undefined;
 
@@ -410,9 +424,14 @@ export class YahooProvider implements MarketDataProvider {
   }
 
   async getFinancials(symbol: string): Promise<StockFinancials> {
+    // 'price' rides along only for its currency — see getAnalysis. Note the
+    // asymmetry: holder values are position × trading price (agorot on
+    // TASE), while everything from `earnings` is statement-currency and
+    // passes through untouched.
     const res = await yf.quoteSummary(symbol, {
-      modules: ['earnings', 'earningsHistory', 'majorHoldersBreakdown', 'institutionOwnership'],
+      modules: ['earnings', 'earningsHistory', 'majorHoldersBreakdown', 'institutionOwnership', 'price'],
     });
+    const f = ilaFactor(res.price?.currency);
     const chart = res.earnings?.financialsChart;
     const holders = res.majorHoldersBreakdown;
 
@@ -447,7 +466,7 @@ export class YahooProvider implements MarketDataProvider {
         top: (res.institutionOwnership?.ownershipList ?? []).slice(0, 10).map((o) => ({
           organization: o.organization,
           pctHeld: o.pctHeld * 100,
-          value: o.value,
+          value: o.value / f,
           reportDate: o.reportDate ? new Date(o.reportDate).toISOString().slice(0, 10) : undefined,
         })),
       },
