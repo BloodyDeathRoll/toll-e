@@ -65,6 +65,10 @@
      against the backdrop, not against the app's own surfaces. */
   --backdrop: #dcdfe6;
   --device-edge: rgb(0 0 0 / 0.08);
+  /* Thrown upward by the bar fixed to the bottom of the screen, so it reads
+     as sitting over the page rather than butting against it. Two weights
+     because one cannot serve both themes: see the dark palette. */
+  --bar-shadow: 0 -6px 20px rgb(0 0 0 / 0.05);
   /* Categorical series (chart overlays) — the brand lime walked down through
      green and teal to slate, so a breakdown reads as one family rather than
      five unrelated signals. Fixed order, never cycled; the dark end is
@@ -139,13 +143,16 @@
   --gain-foreground: #ffffff;
   --loss: #ff4453;
   --loss-foreground: #ffffff;
-  --gain-surface: #127a21;
+  --gain-surface: #00994a;
   --loss-surface: #ff4453;
   --moon: #9a9a9a;
   /* Black desk: the shadow does nothing here, so the hairline is the only
      thing separating the phone from it. */
   --backdrop: #000000;
   --device-edge: rgb(255 255 255 / 0.1);
+  /* Heavier here: the bar and the page behind it are only a couple of points
+     of lightness apart, so the light weight would be invisible. */
+  --bar-shadow: 0 -8px 8px rgb(0 0 0 / 0.4);
   /* Same five hues, lifted so the dark end still separates from a near-black
      card. */
   --series-1: #a8ee2e;
@@ -262,6 +269,12 @@
   width: 100%;
   max-width: 480px;
   margin-inline: auto;
+}
+
+/* The lift under a bottom-fixed bar. Its weight is a palette token, so the
+   two themes carry their own and no screen has to spell one out. */
+@utility bar-shadow {
+  box-shadow: var(--bar-shadow);
 }
 
 /* ── The phone, drawn as a phone ──────────────────────────────────────────
