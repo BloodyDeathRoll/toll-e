@@ -201,7 +201,9 @@
     "translate": "Translate",
     "translating": "Translating…",
     "showOriginal": "Show original",
-    "showTranslation": "Show translation"
+    "showTranslation": "Show translation",
+    "atr": "ATR (14d)",
+    "aboutAtr": "A technical indicator that measures market volatility by calculating the average of true ranges over a specified period, typically 14 days - good estimator for stop losses"
   },
   "tx": {
     "title": "Add transaction",

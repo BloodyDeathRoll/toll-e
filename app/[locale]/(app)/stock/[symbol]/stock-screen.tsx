@@ -120,6 +120,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
     eps: summary?.stats.epsTtm ?? stock.stats.eps,
     divYieldPct: summary?.stats.dividendYieldPct ?? stock.stats.divYieldPct,
     beta: summary?.stats.beta ?? stock.stats.beta,
+    atr14: summary?.stats.atr14,
   };
   const headline = {
     name: summary?.name ?? stock.name,
@@ -664,7 +665,12 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   <StatCell label={t('divYield')} value={`${fmtNum(stats.divYieldPct, nl)}%`} end />
                 </div>
                 <div className="flex items-center justify-between tabular-nums">
-                  <StatCell label={t('earningsDate')} value={fmtDate(eventDate, locale)} />
+                  <StatCell
+                    label={t('atr')}
+                    value={stats.atr14 !== undefined ? fmtNum(stats.atr14, nl) : '—'}
+                    note={t('aboutAtr')}
+                  />
+                  <StatCell label={t('earningsDate')} value={fmtDate(eventDate, locale)} end />
                 </div>
               </section>
 
@@ -808,6 +814,11 @@ export function StockScreen({ symbol }: { symbol: string }) {
                 <Row label={t('epsTtm')} value={fmtNum(stats.eps, nl)} />
                 <Row label={t('divYield')} value={`${fmtNum(stats.divYieldPct, nl)}%`} />
                 <Row label={t('beta')} value={fmtNum(stats.beta, nl)} />
+                <Row
+                  label={t('atr')}
+                  value={stats.atr14 !== undefined ? fmtNum(stats.atr14, nl) : '—'}
+                  note={t('aboutAtr')}
+                />
               </div>
             </section>
             <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card p-5">
@@ -894,10 +905,13 @@ function StatCell({
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
-    <div className="flex justify-between gap-3">
-      <span className="text-muted-foreground">{label}</span>
+    <div className="relative flex justify-between gap-3">
+      <span className="flex items-center gap-1.5 text-muted-foreground">
+        {label}
+        {note && <InfoDot label={label} note={note} className="static" />}
+      </span>
       <span dir="ltr" className="text-foreground">{value}</span>
     </div>
   );

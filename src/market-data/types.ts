@@ -80,6 +80,11 @@ export interface KeyStats {
   beta?: number;
   wk52Low?: number;
   wk52High?: number;
+  /**
+   * Average True Range over 14 daily bars, in the quote currency. Not a
+   * provider field — derived from the daily chart at the API layer.
+   */
+  atr14?: number;
 }
 
 export interface Summary {
