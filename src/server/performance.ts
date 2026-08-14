@@ -6,6 +6,7 @@ import { portfolios } from '@/src/db/schema';
 import { computeTax } from '@/src/engine/tax';
 import { getFx, getSummary } from '@/src/market-data';
 import { OTHER_SLICE } from '@/src/allocation';
+import { makeConvert } from './fx-convert';
 import { getPositions, listTransactions, toEngineTx } from './portfolios';
 
 // The combined picture (§3.4): native amounts are authoritative; conversion
@@ -123,12 +124,7 @@ export async function getPerformance(
   if (rows.length === 0) return null;
 
   const fx = await getFx('USDILS');
-  const convert = (amount: number, from: string): number => {
-    if (from === displayCurrency) return amount;
-    if (from === 'USD' && displayCurrency === 'ILS') return amount * fx.rate;
-    if (from === 'ILS' && displayCurrency === 'USD') return amount / fx.rate;
-    return amount; // unknown pair — pass through rather than invent a rate
-  };
+  const convert = makeConvert(fx.rate, displayCurrency);
 
   const perPortfolio: PerformancePortfolio[] = [];
   const monthAcc = new Map<number, PerformanceMonth>();
