@@ -11,7 +11,7 @@ import { InfoDot } from '@/components/info-dot';
 import { ShieldRows } from '@/components/shield-rows';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMarket } from '@/src/markets/registry';
-import { fmtMoney, fmtMoneySigned } from '@/lib/format';
+import { fmtDate, fmtMoney, fmtMoneySigned, fmtNum } from '@/lib/format';
 import { OTHER_SLICE } from '@/src/allocation';
 import type { PerformancePayload } from '@/src/server/performance';
 import { cn } from '@/lib/utils';
@@ -161,6 +161,74 @@ export function PerformanceScreen() {
               {t('sectors')}
             </h2>
             <AllocationDonut slices={slices} numberLocale={nl} />
+          </section>
+        )}
+
+        {data && data.costs.totalConverted > 0 && (
+          /* What the year cost in fees — the tax engine's quieter sibling.
+             Commission rows stay native per currency and are never summed
+             across; only the total converts, at the payload's rate. */
+          <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
+            <h2 className="text-[11px] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+              {t('costsTitle')}
+            </h2>
+            <div className="flex flex-col gap-1.5 text-sm tabular-nums">
+              {Object.entries(data.costs.tradeCommissions).map(([ccy, amount]) => (
+                <div key={ccy} className="flex justify-between gap-3">
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                    {Object.keys(data.costs.tradeCommissions).length > 1
+                      ? `${t('tradeCommissions')} (${ccy})`
+                      : t('tradeCommissions')}
+                    <InfoDot label={t('tradeCommissions')} note={t('commissionsInPnlNote')} />
+                  </span>
+                  <span dir="ltr" className="private text-foreground">
+                    {money(amount, ccy)}
+                  </span>
+                </div>
+              ))}
+              {data.costs.accountFee && (
+                <div className="flex justify-between gap-3">
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                    {t('accountFees')}
+                    <InfoDot label={t('accountFees')} note={t('accountLevelNote')} />
+                  </span>
+                  <span dir="ltr" className="private text-foreground">
+                    {money(data.costs.accountFee.amount, data.costs.accountFee.currency)}
+                  </span>
+                </div>
+              )}
+              {data.costs.custody && (
+                <div className="flex justify-between gap-3">
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                    {t('custodyEstimated')}
+                    <InfoDot
+                      label={t('custodyEstimated')}
+                      note={
+                        data.costs.custody.quartersAtCost > 0
+                          ? `${t('custodyEstNote')} ${t('quartersAtCost', {
+                              atCost: data.costs.custody.quartersAtCost,
+                              quarters: data.costs.custody.quarters,
+                            })}`
+                          : t('custodyEstNote')
+                      }
+                    />
+                  </span>
+                  <span dir="ltr" className="private text-foreground">
+                    {money(data.costs.custody.amount, data.costs.custody.currency)}
+                  </span>
+                </div>
+              )}
+              <div className="h-px bg-border" />
+              <Row label={t('costsTotal')} value={money(data.costs.totalConverted, data.displayCurrency)} bold big />
+            </div>
+            {/* Only worth saying when a figure was actually converted. */}
+            {(Object.keys(data.costs.tradeCommissions).some((c) => c !== data.displayCurrency) ||
+              (data.costs.accountFee && data.costs.accountFee.currency !== data.displayCurrency) ||
+              (data.costs.custody && data.costs.custody.currency !== data.displayCurrency)) && (
+              <p className="text-xs text-muted-foreground">
+                {t('fxNote', { rate: fmtNum(data.fx.rate, nl, 3), date: fmtDate(data.fx.asOf, locale) })}
+              </p>
+            )}
           </section>
         )}
 

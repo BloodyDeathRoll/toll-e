@@ -1,8 +1,8 @@
 import 'server-only';
 
-import { and, gte, inArray, lte } from 'drizzle-orm';
+import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 import { db } from '@/src/db';
-import { priceHistory } from '@/src/db/schema';
+import { portfolios as portfoliosTable, priceHistory } from '@/src/db/schema';
 import { computeCosts, type CostsLedger, type CostsTx } from '@/src/engine/costs';
 import {
   mergePeriodValuations,
@@ -14,6 +14,7 @@ import {
 import type { EngineTx } from '@/src/engine/portfolio';
 import { getBrokerProfile, resolveSchedule } from './broker-profile';
 import { makeConvert } from './fx-convert';
+import { listTransactions, toEngineTx } from './portfolios';
 
 // The DB-facing face of the cost ledger: one price_history read, the FX
 // conversions the engines refuse to do, and the assembly of computeCosts's
@@ -27,13 +28,25 @@ export interface CostsPortfolio {
   txs: EngineTx[];
 }
 
-export async function getUserCosts(
-  userId: string,
-  year: number,
-  portfolios: CostsPortfolio[],
-  usdIlsRate: number,
-): Promise<CostsLedger> {
-  const profile = await getBrokerProfile(userId);
+/**
+ * The year's cost ledger for the whole account. Deliberately unscoped: the
+ * account and custody fees are per account, not per portfolio — a user with
+ * a US and an IL portfolio at Meitav owes ₪15/month once — so this reads
+ * every portfolio itself rather than taking the market-scoped set the
+ * Performance read holds.
+ */
+export async function getUserCosts(userId: string, year: number, usdIlsRate: number): Promise<CostsLedger> {
+  const [profile, rows] = await Promise.all([
+    getBrokerProfile(userId),
+    db.select().from(portfoliosTable).where(eq(portfoliosTable.userId, userId)),
+  ]);
+  const portfolios: CostsPortfolio[] = await Promise.all(
+    rows.map(async (p) => ({
+      id: p.id,
+      currency: p.currency,
+      txs: (await listTransactions(p.id)).map(toEngineTx),
+    })),
+  );
   const today = new Date().toISOString().slice(0, 10);
   const schedule = resolveSchedule(profile, today);
 

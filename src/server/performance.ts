@@ -6,6 +6,7 @@ import { portfolios } from '@/src/db/schema';
 import { computeTax } from '@/src/engine/tax';
 import { getFx, getSummary } from '@/src/market-data';
 import { OTHER_SLICE } from '@/src/allocation';
+import { getUserCosts } from './costs';
 import { makeConvert } from './fx-convert';
 import { getPositions, listTransactions, toEngineTx } from './portfolios';
 
@@ -56,7 +57,35 @@ export interface PerformanceMonth {
   losses: number;
   net: number;
   tax: number;
+  /**
+   * The month's trade commissions in the display currency — ALREADY inside
+   * `gains`/`losses` (folded into basis and proceeds before matching), so a
+   * reader may show them but must never add them to the month's footing.
+   */
+  costs: number;
+  /** Same commissions by native currency, unconverted. */
+  costsNative: Record<string, number>;
+  /** Account fee charged that month, display currency — in nothing above. */
+  accountFee: number;
   sales: PerformanceSale[];
+}
+
+/** The year's fee picture — the Costs card. Fees are account-level. */
+export interface PerformanceCosts {
+  /** Native trade-commission totals by currency — never cross-summed. */
+  tradeCommissions: Record<string, number>;
+  tradeCommissionsConverted: number;
+  accountFee: { amount: number; currency: string; converted: number } | null;
+  custody: {
+    amount: number;
+    currency: string;
+    converted: number;
+    basis: 'market' | 'partial' | 'cost';
+    quarters: number;
+    quartersAtCost: number;
+  } | null;
+  /** Commissions + fees, converted to the display currency. */
+  totalConverted: number;
 }
 
 /** A slice of the holdings, by the provider's sector classification. */
@@ -91,6 +120,12 @@ export interface PerformancePayload {
   portfolios: PerformancePortfolio[];
   /** Combined month rows in the display currency. */
   months: PerformanceMonth[];
+  /**
+   * What the year cost in fees. Unlike everything above, the account and
+   * custody fees are account-level — one fee across all portfolios,
+   * whatever market the screen is scoped to — and the UI labels them so.
+   */
+  costs: PerformanceCosts;
   /**
    * Where the money is now, by sector, largest first — the donut on the
    * Performance screen. Unlike everything else here this is about the
@@ -127,7 +162,7 @@ export async function getPerformance(
   const convert = makeConvert(fx.rate, displayCurrency);
 
   const perPortfolio: PerformancePortfolio[] = [];
-  const monthAcc = new Map<number, PerformanceMonth>();
+  const monthAcc = new Map<number, Omit<PerformanceMonth, 'costs' | 'costsNative' | 'accountFee'>>();
   const yearSet = new Set<number>();
 
   // One read and one tax run per portfolio, held for both passes. The two
@@ -153,6 +188,23 @@ export async function getPerformance(
   yearSet.add(thisYear);
   const years = [...yearSet].sort((a, b) => b - a);
   const selectedYear = year && yearSet.has(year) ? year : thisYear;
+
+  // The fee ledger runs concurrently with the per-portfolio pass below —
+  // its price_history read is the one extra query this payload costs.
+  const ledgerPromise = getUserCosts(userId, selectedYear, fx.rate);
+
+  // The months shown are the scoped portfolios' — so their commission lines
+  // are too, taken straight from the transactions already in hand.
+  const monthCommissions = new Map<number, Record<string, number>>();
+  for (const { p, txs } of computed) {
+    for (const tx of txs) {
+      if (!tx.tradeDate.startsWith(String(selectedYear)) || tx.commission <= 0) continue;
+      const m = Number(tx.tradeDate.slice(5, 7));
+      const acc = monthCommissions.get(m) ?? {};
+      acc[p.currency] = round2((acc[p.currency] ?? 0) + tx.commission);
+      monthCommissions.set(m, acc);
+    }
+  }
 
   /** Symbol → market value in the display currency, for the allocation. */
   const heldValue = new Map<string, number>();
@@ -235,17 +287,46 @@ export async function getPerformance(
     }
   }
 
-  const months = [...monthAcc.values()]
-    .map((m) => ({
-      month: m.month,
-      gains: round2(m.gains),
-      losses: round2(m.losses),
-      net: round2(m.net),
-      tax: round2(m.tax),
-      // Newest first, matching the month order the screen lists them in.
-      sales: [...m.sales].sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1)),
-    }))
+  const ledger = await ledgerPromise;
+  const ledgerAccountFee = new Map(ledger.months.map((m) => [m.month, m.accountFee]));
+  const feeCurrency = ledger.accountFee?.currency ?? 'ILS';
+
+  const months: PerformanceMonth[] = [...monthAcc.values()]
+    .map((m) => {
+      const costsNative = monthCommissions.get(m.month) ?? {};
+      return {
+        month: m.month,
+        gains: round2(m.gains),
+        losses: round2(m.losses),
+        net: round2(m.net),
+        tax: round2(m.tax),
+        costs: round2(
+          Object.entries(costsNative).reduce((s, [ccy, amount]) => s + convert(amount, ccy), 0),
+        ),
+        costsNative,
+        accountFee: round2(convert(ledgerAccountFee.get(m.month) ?? 0, feeCurrency)),
+        // Newest first, matching the month order the screen lists them in.
+        sales: [...m.sales].sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1)),
+      };
+    })
     .sort((a, b) => a.month - b.month);
+
+  const tradeCommissionsConverted = round2(
+    Object.entries(ledger.tradeCommissions).reduce((s, [ccy, amount]) => s + convert(amount, ccy), 0),
+  );
+  const accountFeeConverted = ledger.accountFee
+    ? round2(convert(ledger.accountFee.amount, ledger.accountFee.currency))
+    : 0;
+  const custodyConverted = ledger.custody
+    ? round2(convert(ledger.custody.amount, ledger.custody.currency))
+    : 0;
+  const costs: PerformanceCosts = {
+    tradeCommissions: ledger.tradeCommissions,
+    tradeCommissionsConverted,
+    accountFee: ledger.accountFee ? { ...ledger.accountFee, converted: accountFeeConverted } : null,
+    custody: ledger.custody ? { ...ledger.custody, converted: custodyConverted } : null,
+    totalConverted: round2(tradeCommissionsConverted + accountFeeConverted + custodyConverted),
+  };
 
   return {
     allocation: await allocate(heldValue),
@@ -268,6 +349,7 @@ export async function getPerformance(
     },
     portfolios: perPortfolio,
     months,
+    costs,
   };
 }
 

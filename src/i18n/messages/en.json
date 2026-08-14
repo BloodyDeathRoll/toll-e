@@ -426,7 +426,17 @@
     "noSalesYear": "No sales in this year.",
     "sectors": "Sectors",
     "otherSlice": "Other",
-    "unrealizedNote": "On open positions, as of today"
+    "unrealizedNote": "On open positions, as of today",
+    "costsTitle": "Costs",
+    "tradeCommissions": "Trade commissions",
+    "accountFees": "Account fees",
+    "custodyEstimated": "Custody fee (estimated)",
+    "costsTotal": "Total costs",
+    "commissionsInPnlNote": "Already reflected in the gains and losses above — commissions are folded into cost basis and proceeds before matching.",
+    "accountLevelNote": "Account-level — charged once across all portfolios, whatever market is on screen.",
+    "custodyEstNote": "An estimate from the catalogue rate and reconstructed quarter-end values — not a record of a charge.",
+    "quartersAtCost": "{atCost} of {quarters} quarters valued at cost.",
+    "alreadyReflected": "already reflected above"
   },
   "settings": {
     "title": "Settings",

@@ -426,7 +426,17 @@
     "noSalesYear": "אין מכירות בשנה הזו.",
     "sectors": "סקטורים",
     "otherSlice": "אחר",
-    "unrealizedNote": "על פוזיציות פתוחות, נכון להיום"
+    "unrealizedNote": "על פוזיציות פתוחות, נכון להיום",
+    "costsTitle": "עלויות",
+    "tradeCommissions": "עמלות מסחר",
+    "accountFees": "דמי טיפול",
+    "custodyEstimated": "דמי משמרת (אומדן)",
+    "costsTotal": "סך עלויות",
+    "commissionsInPnlNote": "כבר משוקללות ברווחים ובהפסדים למעלה — עמלות נכללות בעלות ובתמורה לפני ההתאמה.",
+    "accountLevelNote": "ברמת החשבון — נגבה פעם אחת על כל התיקים, בכל שוק שמוצג.",
+    "custodyEstNote": "אומדן לפי תעריף הקטלוג ושחזור שווי בסוף כל רבעון — לא תיעוד של חיוב בפועל.",
+    "quartersAtCost": "{atCost} מתוך {quarters} רבעונים הוערכו לפי עלות.",
+    "alreadyReflected": "כבר משוקלל למעלה"
   },
   "settings": {
     "title": "הגדרות",

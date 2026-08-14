@@ -178,6 +178,35 @@ export function PnlPane({
                         big
                       />
                     </div>
+                    {/* LOAD-BEARING: these two rows sit OUTSIDE the footing
+                        above, on purpose, and must stay there. Trade
+                        commissions are ALREADY inside m.gains/m.losses — the
+                        engine folds them into basis and proceeds before
+                        matching — so adding them again would double-count.
+                        The account fee is in nothing above, but afterTax =
+                        net − tax means one thing across the whole app, and
+                        redefining this month's bottom line would change every
+                        number the user has ever seen. Do not "fix" this by
+                        footing them in. */}
+                    {(m.costs > 0 || m.accountFee > 0) && (
+                      <>
+                        <div className="h-px bg-border" />
+                        <div className="flex flex-col gap-[7px] text-xs tabular-nums">
+                          {m.costs > 0 && (
+                            <Row
+                              label={`${t('tradeCommissions')} · ${t('alreadyReflected')}`}
+                              value={money(m.costs, data.displayCurrency)}
+                            />
+                          )}
+                          {m.accountFee > 0 && (
+                            <Row
+                              label={t('accountFees')}
+                              value={money(-m.accountFee, data.displayCurrency)}
+                            />
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
