@@ -42,18 +42,12 @@ export function TxScreen() {
   const pickerRef = useRef<HTMLDivElement>(null);
 
   /**
-   * Commission auto-fill is an *ownership flag*, not a claim key — a
-   * deliberate break from the prefill idiom below. Price and shares are
-   * one-shot fills keyed on what they depend on; a commission is a
-   * continuous function of symbol, market, date, shares and price, so a
-   * claim key containing `shares` would be invalidated by every keystroke
-   * in the shares field and clobber a hand-typed commission. Instead the
-   * profile owns the number until the first manual edit, which flips
-   * ownership for good; "reset to suggested" is the only way back.
+   * The commission this transaction already carries, in edit mode. Read
+   * only: it is the record of what was actually charged — possibly
+   * negotiated, possibly from a superseded schedule — so today's rates
+   * never overwrite it.
    */
-  const [commission, setCommission] = useState(0);
-  /** 'profile' = tracks the schedule; 'manual' = the user owns this number. */
-  const [commissionSource, setCommissionSource] = useState<'profile' | 'manual'>('profile');
+  const [storedCommission, setStoredCommission] = useState<number | null>(null);
 
   const searchHits = useSearch(symbolQuery, marketId);
   const { quotes } = useQuotes(symbol ? [symbol] : []);
@@ -92,10 +86,7 @@ export function TxScreen() {
       setShares(Number(tx.shares));
       setPrice(Number(tx.pricePerShare));
       setTradeDate(tx.tradeDate);
-      // 'manual' immediately: a historical, possibly negotiated number must
-      // never be overwritten by today's schedule.
-      setCommission(Number(tx.commission));
-      setCommissionSource('manual');
+      setStoredCommission(Number(tx.commission));
       setPrefilledFor(`${tx.symbol}@${tx.tradeDate}`);
       setEditLoaded(true);
     })();
@@ -164,17 +155,14 @@ export function TxScreen() {
       })
     : null;
   const suggestedAmount = suggested ? Number(suggested.amount.toFixed(2)) : 0;
-  useEffect(() => {
-    if (commissionSource !== 'profile') return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- suggestion tracks inputs while the profile owns the field
-    setCommission(suggestedAmount);
-  }, [commissionSource, suggestedAmount]);
-  const onCommissionEdit = (n: number) => {
-    setCommissionSource('manual');
-    setCommission(n);
-  };
+  /**
+   * What this trade costs in commission. Derived, never typed: on a new
+   * trade it is the profile's rate applied to the current inputs, and it
+   * follows them; on an edit it is whatever the transaction already stored.
+   */
+  const commission = editTxId ? (storedCommission ?? 0) : suggestedAmount;
 
-  // The line under the field that names where the number came from:
+  // The small line under the total that names where the number came from:
   // "Meitav Trade · 0.08% · min ₪4.65 applied". The rate shown is the one
   // the suggestion actually used — for bank tiers, the resolved tier's.
   const marketFee = schedule ? (marketId === 'IL' ? schedule.taseTrade : schedule.usTrade) : undefined;
@@ -207,13 +195,10 @@ export function TxScreen() {
     }
     return parts.join(' · ');
   })();
-  /** Persisted audit trail: 'manual' or 'profile:<brokerId>@<effectiveFrom>'. */
-  const commissionSourceValue =
-    commissionSource === 'manual'
-      ? 'manual'
-      : broker
-        ? `profile:${broker.id}${schedule?.effectiveFrom ? `@${schedule.effectiveFrom}` : ''}`
-        : undefined;
+  /** Persisted audit trail: 'profile:<brokerId>@<effectiveFrom>'. */
+  const commissionSourceValue = broker
+    ? `profile:${broker.id}${schedule?.effectiveFrom ? `@${schedule.effectiveFrom}` : ''}`
+    : undefined;
 
   /**
    * A sell opens on the whole position. Selling out is the common case and
@@ -347,8 +332,15 @@ export function TxScreen() {
           tradeDate,
           shares,
           pricePerShare: price,
-          commission: commission || 0,
-          ...(commissionSourceValue ? { commissionSource: commissionSourceValue } : {}),
+          // Only a new trade sets the commission. An edit leaves both fields
+          // out entirely, so the stored figure — and the source that
+          // explains it — survive untouched.
+          ...(editTxId
+            ? {}
+            : {
+                commission: commission || 0,
+                ...(commissionSourceValue ? { commissionSource: commissionSourceValue } : {}),
+              }),
         }),
       });
       if (res.status === 422) {
@@ -568,45 +560,41 @@ export function TxScreen() {
       )}
       {stepper(t('pricePerShare'), price, onPriceEdit, 0.1)}
 
-      {/* Commission — the last per-trade money field, above the total it
-          feeds. The line under it names the source of the suggestion. */}
-      {stepper(t('commission'), commission, onCommissionEdit, 0.1)}
-      <p className="px-6 text-xs text-muted-foreground">
-        {feeSourceLine ? (
-          <>
-            <span dir="ltr">{feeSourceLine}</span>
-            {commissionSource === 'manual' && suggested && (
-              <>
-                {' · '}
-                <button
-                  type="button"
-                  onClick={() => setCommissionSource('profile')}
-                  className="text-primary underline underline-offset-2"
-                >
-                  {t('resetSuggested')}
-                </button>
-              </>
-            )}
-          </>
-        ) : (
-          <>
-            {t('noBrokerSet')}
-            {' — '}
-            <Link href="/onboarding" className="text-primary underline underline-offset-2">
-              {t('setBroker')}
-            </Link>
-          </>
-        )}
-      </p>
-
-      {/* Total — matches engine semantics: a buy's commission adds to what
-          the trade costs you, a sell's comes off what it returns. */}
-      <div className="mx-6 flex items-center justify-between border-t border-border py-6">
-        <span className="text-base font-medium text-foreground">{t('total')}</span>
-        <span dir="ltr" className="private text-base font-bold text-foreground tabular-nums">
-          {sym}
-          {fmtNum((shares || 0) * (price || 0) + (type === 'buy' ? 1 : -1) * (commission || 0), nl)}
-        </span>
+      {/* Total — shares × price, the figure the form has always shown. The
+          commission is stated under it rather than folded in: it is not
+          something you are choosing here, and the engine applies it to
+          basis or proceeds itself. */}
+      <div className="mx-6 flex flex-col gap-2 border-t border-border py-6">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-base font-medium text-foreground">{t('total')}</span>
+          <span dir="ltr" className="private text-base font-bold text-foreground tabular-nums">
+            {sym}
+            {fmtNum((shares || 0) * (price || 0), nl)}
+          </span>
+        </div>
+        {/* The fee: shown, never typed. It comes from the broker profile —
+            or, on an edit, from what the transaction already stored. */}
+        <div className="flex items-baseline justify-between gap-3 text-xs text-muted-foreground">
+          {feeSourceLine ? (
+            <>
+              <span dir="ltr" className="min-w-0 truncate">
+                {t('commission')} · {feeSourceLine}
+              </span>
+              <span dir="ltr" className="private shrink-0 tabular-nums">
+                {sym}
+                {fmtNum(commission, nl)}
+              </span>
+            </>
+          ) : (
+            <span>
+              {t('noBrokerSet')}
+              {' — '}
+              <Link href="/onboarding" className="text-primary underline underline-offset-2">
+                {t('setBroker')}
+              </Link>
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Sell-time tax preview — shown only once the engine has answered, and

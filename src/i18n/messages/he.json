@@ -237,8 +237,7 @@
     "lowestTierAssumed": "הונחה המדרגה הנמוכה",
     "noMarketRate": "אין תעריף לשוק זה",
     "noBrokerSet": "לא הוגדר ברוקר",
-    "setBroker": "להגדרה",
-    "resetSuggested": "איפוס להצעה"
+    "setBroker": "להגדרה"
   },
   "taxPage": {
     "title": "מס",

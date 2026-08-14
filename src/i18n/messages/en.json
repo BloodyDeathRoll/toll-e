@@ -237,8 +237,7 @@
     "lowestTierAssumed": "lowest tier assumed",
     "noMarketRate": "no rate for this market",
     "noBrokerSet": "No broker set",
-    "setBroker": "Set one",
-    "resetSuggested": "Reset to suggested"
+    "setBroker": "Set one"
   },
   "taxPage": {
     "title": "Tax",
