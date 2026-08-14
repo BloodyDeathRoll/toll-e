@@ -84,7 +84,23 @@
   --card-lighter: /*rgb(28,38,40)*/ hsl(229, 38%, 19%);
   --card-darker: #000;
   --card-hover: hsl(229, 37%, 24%);
+
+  --background:  /*rgb(20,28,28)*/ hsl(228, 64%, 4%);
+  --foreground: #ffffff;
+  --card: /*rgb(28,38,40)*/ hsl(226, 40%, 8%);
+  --card-lighter: /*rgb(28,38,40)*/ hsl(225, 34%, 14%);
+  --card-hover: hsl(225, 32%, 17%);
+  --card-darker: #000;
   --card-foreground: #ffffff;
+  
+  --background:  /*rgb(20,28,28)*/ hsl(228, 64%, 6%);
+  --foreground: #ffffff;
+  --card: /*rgb(28,38,40)*/ hsl(226, 40%, 12%);
+  --card-lighter: /*rgb(28,38,40)*/ hsl(225, 34%, 18%);
+  --card-hover: hsl(225, 34%, 20%);
+  --card-darker: hsl(228, 64%, 4%);
+  --card-foreground: #ffffff;
+
   --popover: hsl(228, 64%, 4%);
   --popover-foreground: #ffffff;
   --primary: #73ef06;
