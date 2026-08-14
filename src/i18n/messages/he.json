@@ -330,7 +330,8 @@
       "name": "שם",
       "amount": "סכום",
       "action": "פעולה"
-    }
+    },
+    "noneInYear": "אין עסקאות ב־{year}."
   },
   "lists": {
     "editList": "עריכת רשימה",

@@ -41,7 +41,7 @@ const sorters: Record<SortKey, (a: TxRow, b: TxRow) => number> = {
  * rather than a page — the screen's header, its summary card and the tab strip
  * above it belong to transactions-screen.tsx, which shows this beside the P&L.
  */
-export function JournalPane() {
+export function JournalPane({ year }: { year?: number | null } = {}) {
   const t = useTranslations('journal');
   const locale = useLocale();
   const { marketId } = useMarket();
@@ -115,7 +115,13 @@ export function JournalPane() {
     load();
   };
 
-  const sorted = state.status === 'data' ? [...state.txs].sort(sorters[sort]) : [];
+  // The parent's year picker scopes this list too; null = all years (the
+  // pane is also used standalone, where no picker exists).
+  const inYear =
+    state.status === 'data'
+      ? state.txs.filter((tx) => year == null || tx.tradeDate.startsWith(String(year)))
+      : [];
+  const sorted = [...inYear].sort(sorters[sort]);
 
   // Month captions only make sense while the list is in date order; under any
   // other sort the dates jump around and the caption would lie about its rows.
@@ -195,6 +201,10 @@ export function JournalPane() {
             {t('addFirst')}
           </Link>
         </section>
+      )}
+
+      {state.status === 'data' && sorted.length === 0 && year != null && (
+        <p className="px-6 py-6 text-sm text-muted-foreground">{t('noneInYear', { year })}</p>
       )}
 
       {state.status === 'data' && (

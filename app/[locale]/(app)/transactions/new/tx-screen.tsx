@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, CalendarDays, ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { Link, useRouter } from '@/src/i18n/navigation';
 import { ActionBar } from '@/components/app-shell/action-bar';
 import { useMarket } from '@/components/app-shell/market-context';
+import { DatePicker } from '@/components/date-picker';
 import { useQuotes, useSearch } from '@/components/use-market-data';
 import { useBrokerProfile } from '@/components/use-broker-profile';
 import { ensurePortfolioId, usePortfolioPositions } from '@/components/use-portfolio';
@@ -535,22 +536,8 @@ export function TxScreen() {
           because buy-or-sell frames the search itself. */}
       {symbol && (
         <>
-      {/* Date */}
-      {fieldShell(
-        t('date'),
-        <div className="flex h-[48px] items-center gap-4 rounded-[20px] border border-field bg-well px-4">
-          <CalendarDays className="size-4 shrink-0 text-foreground" aria-hidden />
-          <input
-            dir="ltr"
-            type="date"
-            value={tradeDate}
-            max={today}
-            onChange={(e) => setTradeDate(e.target.value)}
-            aria-label={t('date')}
-            className="min-w-0 flex-1 bg-transparent text-base font-medium text-foreground outline-none"
-          />
-        </div>,
-      )}
+      {/* Date — our own calendar, because the native popup takes no styling. */}
+      {fieldShell(t('date'), <DatePicker value={tradeDate} onChange={setTradeDate} max={today} label={t('date')} />)}
 
       {ownsNone ? (
         <p role="status" className="px-6 py-4 text-sm text-muted-foreground">

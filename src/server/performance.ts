@@ -312,16 +312,19 @@ export async function getPerformance(
       sales: [...m.sales].sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1)),
     };
   });
-  // A month can cost money without selling anything — commissions on buys,
-  // or the account fee of a backdated account opening. Those months still
-  // earn a row, or the charges would be invisible everywhere but the year
-  // total.
+  // A month that was CHARGED a fee earns a row even without sales — a
+  // backdated account opening would otherwise be invisible everywhere but
+  // the year total. Commission-only months do not: a buy commission has no
+  // P&L effect (it is capitalized into basis and realizes on the sale), so
+  // a row for it would just read as an unexplained zero. A month whose
+  // commissions fully covered the fee is exactly such a month — nothing was
+  // charged, no row.
   const present = new Set(months.map((m) => m.month));
   for (let m = 1; m <= 12; m++) {
     if (present.has(m)) continue;
-    const costsNative = monthCommissions.get(m) ?? {};
     const fee = ledgerAccountFee.get(m) ?? 0;
-    if (Object.keys(costsNative).length === 0 && fee <= 0) continue;
+    if (fee <= 0) continue;
+    const costsNative = monthCommissions.get(m) ?? {};
     months.push({
       month: m,
       gains: 0,

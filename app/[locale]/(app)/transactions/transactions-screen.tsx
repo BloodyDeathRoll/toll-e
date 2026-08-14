@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
+import { Dropdown } from '@/components/dropdown';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { PerformancePayload } from '@/src/server/performance';
@@ -113,6 +114,19 @@ export function TransactionsScreen() {
 
       </div>
 
+      {/* The year scopes the whole screen — both the P&L's months and the
+          journal's rows — so it sits above the tabs it governs. */}
+      {data && (
+        <div className="flex justify-end px-4 pb-2">
+          <Dropdown
+            options={data.years.map((y) => ({ value: String(y), name: String(y) }))}
+            active={String(year ?? data.year)}
+            onPick={(y) => setYear(Number(y))}
+            showName
+          />
+        </div>
+      )}
+
       <UnderlineTabs
         tabs={tabs}
         value={tab}
@@ -123,9 +137,9 @@ export function TransactionsScreen() {
       />
 
       {tab === 'pnl' ? (
-        data && <PnlPane data={data} year={year} onYear={setYear} />
+        data && <PnlPane data={data} />
       ) : (
-        <JournalPane />
+        <JournalPane year={year ?? data?.year ?? null} />
       )}
     </main>
   );

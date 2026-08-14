@@ -2,29 +2,25 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Triangle } from 'lucide-react';
 import { useMarket } from '@/components/app-shell/market-context';
-import { Dropdown } from '@/components/dropdown';
 import { displaySymbol, getMarket } from '@/src/markets/registry';
-import { fmtDate, fmtMoney, fmtMoneySigned, fmtMonth, fmtNum } from '@/lib/format';
+import { fmtDate, fmtMoney, fmtMonth, fmtNum } from '@/lib/format';
 import type { PerformancePayload } from '@/src/server/performance';
 import { cn } from '@/lib/utils';
 
 /**
  * The P&L tab: the months that make the selected year up, each opening onto
  * the sells behind it. Was the body of the Performance screen before that page
- * and the transaction journal became two tabs of one.
+ * and the transaction journal became two tabs of one. The year picker lives
+ * on the parent screen, above the tabs, because it scopes the journal too.
+ *
+ * Direction is carried by a triangle beside the figure, not by the figure's
+ * colour — a column of green and red numbers stopped being readable the
+ * moment the list grew past a screen. The figures themselves stay in the
+ * default ink, unsigned; the triangle says which way.
  */
-export function PnlPane({
-  data,
-  year,
-  onYear,
-}: {
-  data: PerformancePayload;
-  /** null = whichever year the server picked. */
-  year: number | null;
-  onYear: (y: number) => void;
-}) {
+export function PnlPane({ data }: { data: PerformancePayload }) {
   const t = useTranslations('perf');
   const tt = useTranslations('taxPage');
   const locale = useLocale();
@@ -34,7 +30,22 @@ export function PnlPane({
   const [openMonth, setOpenMonth] = useState<number | null>(null);
 
   const money = (v: number, ccy: string) => fmtMoney(v, ccy, nl);
-  const signed = (v: number, ccy: string) => fmtMoneySigned(v, ccy, nl);
+  /** The figure in default ink, its direction as a triangle beside it. */
+  const figure = (v: number, ccy: string, className: string) => (
+    <span
+      dir="ltr"
+      className={cn('private flex items-center gap-1.5 tabular-nums text-foreground', className)}
+    >
+      {v !== 0 && (
+        <Triangle
+          className={cn('size-2.5 shrink-0 fill-current', v > 0 ? 'text-gain' : 'rotate-180 text-loss')}
+          aria-hidden
+        />
+      )}
+      {v < 0 && <span className="sr-only">−</span>}
+      {money(Math.abs(v), ccy)}
+    </span>
+  );
   // Negating a zero prints "-$0.00"; a month with no losses reads as a plain
   // zero.
   const neg = (v: number) => (v > 0 ? -v : 0);
@@ -60,22 +71,6 @@ export function PnlPane({
         <p className="py-6 text-sm text-muted-foreground">{t('noSalesYear')}</p>
       ) : (
         <section className="flex flex-col">
-          {/* The year picker lives here now: it scopes these months, and the
-              card that used to hold it has moved to its own screen. */}
-          <div className="flex items-center justify-between gap-3 pb-2">
-            <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-              {tt('monthByMonth')}
-            </h2>
-            {/* Always offered, exactly like the Performance screen's — the
-                current year alone is still a choice worth naming. */}
-            <Dropdown
-              options={data.years.map((y) => ({ value: String(y), name: String(y) }))}
-              active={String(year ?? data.year)}
-              onPick={(y) => onYear(Number(y))}
-              showName
-            />
-          </div>
-
           {monthRows.map((m) => {
             const open = openMonth === m.month;
             // The account fee is part of the month's bottom line here (user
@@ -84,9 +79,6 @@ export function PnlPane({
             // commissions stay OUT — they are already inside gains/losses.
             // The fee is always 0 for the still-running month.
             const monthTotal = m.net - m.tax - m.accountFee;
-            // A flat month is a fact, not good news — zero renders white.
-            const totalColor =
-              monthTotal > 0 ? 'text-gain' : monthTotal < 0 ? 'text-loss' : 'text-foreground';
             return (
               <div key={m.month} className="border-b border-border py-4">
                 <button
@@ -107,26 +99,11 @@ export function PnlPane({
                       aria-hidden
                     />
                   </span>
-                  {!open && (
-                    <span
-                      dir="ltr"
-                      className={cn('private self-start text-xl font-bold tabular-nums', totalColor)}
-                    >
-                      {signed(monthTotal, data.displayCurrency)}
-                    </span>
-                  )}
+                  {!open && figure(monthTotal, data.displayCurrency, 'self-start text-xl font-bold')}
                 </button>
                 {open && (
                   <div className="flex flex-col gap-2 pt-1">
-                    <p
-                      dir="ltr"
-                      className={cn(
-                        'private self-start text-[28px] font-bold tracking-tight tabular-nums',
-                        totalColor,
-                      )}
-                    >
-                      {signed(monthTotal, data.displayCurrency)}
-                    </p>
+                    {figure(monthTotal, data.displayCurrency, 'self-start text-[28px] font-bold tracking-tight')}
                     {/* One line per sell action: what it realized, and what it
                         left after the tax withheld on it. */}
                     <div className="flex flex-col gap-3 pt-1">
@@ -147,12 +124,7 @@ export function PnlPane({
                             </span>
                           </span>
                           <span className="private flex flex-col items-end gap-[3px] tabular-nums">
-                            <span
-                              dir="ltr"
-                              className={cn('text-sm', s.net >= 0 ? 'text-gain' : 'text-loss')}
-                            >
-                              {signed(s.net, data.displayCurrency)}
-                            </span>
+                            {figure(s.net, data.displayCurrency, 'text-sm')}
                             {/* A loss line needs no second figure — net is the
                                 gain, untaxed. */}
                             {(s.tax > 0 || s.gain > 0) && (

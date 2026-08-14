@@ -330,7 +330,8 @@
       "name": "Name",
       "amount": "Amount",
       "action": "Action"
-    }
+    },
+    "noneInYear": "No transactions in {year}."
   },
   "lists": {
     "editList": "Edit list",
