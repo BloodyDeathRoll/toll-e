@@ -1,6 +1,7 @@
 import { AppContent } from './app-content';
 import { AuthGuard } from './auth-guard';
 import { MarketProvider } from './market-context';
+import { OnboardingGuard } from './onboarding-guard';
 import { TopNav } from './top-nav';
 import { BottomNav } from './bottom-nav';
 
@@ -12,6 +13,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <MarketProvider>
       <AuthGuard />
+      <OnboardingGuard />
       <TopNav />
       <AppContent>{children}</AppContent>
       <BottomNav />

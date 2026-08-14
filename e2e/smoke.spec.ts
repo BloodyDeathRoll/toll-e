@@ -31,6 +31,16 @@ async function signIn(page: Page, baseURL: string) {
     );
     // 422 = the account survived a previous run, which is fine.
     expect([200, 422]).toContain(signUp.status());
+    // Answer the broker gate the way a real user does — once. Without this,
+    // every deep-route navigation below lands on /onboarding instead of its
+    // screen. Not a weakening of the gate: the gate has its own tests.
+    const session = await page.request.post('/api/auth/sign-in/email', { data: creds, ...opts });
+    expect(session.status()).toBe(200);
+    await page.goto('/en/onboarding');
+    await page.getByRole('button', { name: "I'll set this later" }).click();
+    // A surviving account already answered, so the flow is in editor mode
+    // and returns to Settings rather than home — accept either exit.
+    await page.waitForURL((url) => !url.pathname.includes('onboarding'));
     accountReady = true;
   }
   const res = await page.request.post('/api/auth/sign-in/email', { data: creds, ...opts });
@@ -156,6 +166,48 @@ test.describe('pwa', () => {
     await fire();
     await page.waitForTimeout(3_200);
     await expect(page.getByRole('dialog')).toHaveCount(0);
+  });
+});
+
+// The gate tests need an account whose broker question is genuinely
+// unanswered, so they mint their own per run instead of borrowing the shared
+// one (which signIn answers as setup).
+test.describe('onboarding gate', () => {
+  test.describe.configure({ mode: 'serial' });
+  const creds = { email: `e2e-gate-${Date.now()}@test.dev`, password: 'testpass123' };
+
+  async function signInGateAccount(page: Page, baseURL: string) {
+    const opts = { headers: { Origin: baseURL }, failOnStatusCode: false };
+    const signUp = await page.request.post('/api/auth/sign-up/email', {
+      data: { name: 'E2E Gate', ...creds },
+      ...opts,
+    });
+    test.skip(
+      signUp.status() === 404,
+      'E2E_TEST_AUTH not enabled — password sign-in is disabled here',
+    );
+    expect([200, 422]).toContain(signUp.status());
+    const res = await page.request.post('/api/auth/sign-in/email', { data: creds, ...opts });
+    expect(res.status()).toBe(200);
+  }
+
+  test('a fresh account is gated straight to the broker question', async ({ page, baseURL }) => {
+    await signInGateAccount(page, baseURL!);
+    await page.goto('/en');
+    await page.waitForURL('**/en/onboarding');
+    await expect(seen(page, 'Who do you trade through?')).toBeVisible();
+  });
+
+  test('an answer — even "later" — is never asked again', async ({ page, baseURL }) => {
+    await signInGateAccount(page, baseURL!);
+    await page.goto('/en/onboarding');
+    await page.getByRole('button', { name: "I'll set this later" }).click();
+    await page.waitForURL('**/en');
+
+    // The dashboard renders and stays put — no bounce back to the flow.
+    await expect(seen(page, /Holdings|No holdings yet/)).toBeVisible();
+    await page.waitForTimeout(1_000);
+    expect(page.url()).not.toContain('onboarding');
   });
 });
 

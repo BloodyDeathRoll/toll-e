@@ -24,7 +24,7 @@ const rightTabs = [
  * way out of a half-filled form. The tab bar is for the app's four screens;
  * these get an ActionBar in the same place instead.
  */
-const OWN_ACTION = ['/transactions/new', '/watchlists/new'];
+const OWN_ACTION = ['/transactions/new', '/watchlists/new', '/onboarding'];
 
 /** Does this screen show the tab bar, rather than its own action bar? */
 export function reservesBottomNav(pathname: string): boolean {
