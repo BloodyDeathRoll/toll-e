@@ -31,7 +31,7 @@ export function ActionBar({
   onClick: () => void;
 }) {
   return (
-    <div className="app-frame fixed inset-x-0 bottom-0 z-40 bg-card">
+    <div className="app-frame fixed inset-x-0 bottom-0 z-40 bg-card-darker">
       {/* Clears the half of the button that hangs into the bar: 56px of
           button, 12px of it above the edge. */}
       <div className="flex flex-col items-center px-6 pt-[52px] pb-[max(24px,env(safe-area-inset-bottom))]">

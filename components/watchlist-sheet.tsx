@@ -134,8 +134,9 @@ export function WatchlistSheet({
           </button>
         )}
 
-        {/* Save sits on the card bar, exactly where the tab bar would be. */}
-        <div className="-mx-6 -mb-4 mt-2 flex flex-col items-center gap-1 bg-card px-6 pt-4 pb-[max(24px,env(safe-area-inset-bottom))]">
+        {/* Save sits on the same bar as the tab bar and the ActionBar, in the
+            same surface — one shape at the bottom of a screen. */}
+        <div className="-mx-6 -mb-4 mt-2 flex flex-col items-center gap-1 bg-card-darker px-6 pt-4 pb-[max(24px,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={save}
