@@ -188,7 +188,9 @@ export function TxScreen() {
       const tier = marketFee.tiers.find((x) => x.id === suggested?.tier?.id) ?? marketFee.tiers[0];
       parts.push(fmtRatePct(tier.pct, nl));
       min = tier.min;
-      if (suggested?.tier && !suggested.tier.pinned && marketValue === undefined) {
+      // With one tier there is nothing to assume — a collapsed custom rate
+      // or a flat bank figure resolves the same at any portfolio value.
+      if (suggested?.tier && !suggested.tier.pinned && marketValue === undefined && marketFee.tiers.length > 1) {
         parts.push(t('lowestTierAssumed'));
       }
     }

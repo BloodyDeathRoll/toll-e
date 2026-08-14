@@ -5,10 +5,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft, Building2, Landmark } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { ActionBar } from '@/components/app-shell/action-bar';
+import { LocalePicker } from '@/components/locale-picker';
 import { useBrokerProfile } from '@/components/use-broker-profile';
 import { applyOverrides } from '@/src/brokers/overrides';
 import { brokers, scheduleFor } from '@/src/brokers/registry';
-import type { BrokerDef, FeeSchedule, TradeFee } from '@/src/brokers/types';
+import type { BrokerDef, FeeOverrides, FeeSchedule, TradeFee, TradeFeeOverride } from '@/src/brokers/types';
 import { fmtNum, fmtRatePct } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +19,11 @@ import { cn } from '@/lib/utils';
  * "I'll set this later" is a real answer, recorded so the question is never
  * asked again. Reached again from Settings, the same flow is the editor:
  * one component writing one state from both places.
+ *
+ * The review step carries a per-field "Custom" editor writing sparse
+ * FeeOverrides: negotiated rates are the norm at banks, and a user who
+ * knows their number should be able to set it here — before saving, and
+ * again any time after via Settings, since both paths land on this screen.
  */
 type Step = { name: 'kind' } | { name: 'broker'; kind: BrokerDef['kind'] } | { name: 'review'; brokerId: string };
 
@@ -36,10 +42,16 @@ export function OnboardingScreen() {
   // back; as the first-run gate it may not.
   const editing = state.status === 'data';
 
-  const finish = async (brokerId: string | null) => {
+  const finish = async (brokerId: string | null, overrides?: FeeOverrides) => {
     setBusy(true);
     const wasEditing = editing;
-    if (await save({ brokerId })) {
+    const patch =
+      brokerId === null
+        ? { brokerId }
+        : // Empty overrides clear explicitly: re-saving after deleting your
+          // customisations must not leave the old ones behind.
+          { brokerId, overrides: overrides && Object.keys(overrides).length ? overrides : null };
+    if (await save(patch)) {
       if (wasEditing) router.push('/settings');
       else router.replace('/');
     } else {
@@ -71,6 +83,9 @@ export function OnboardingScreen() {
           {step.name === 'broker' && (step.kind === 'bank' ? t('chooseBank') : t('chooseHouse'))}
           {step.name === 'review' && name(brokers[step.brokerId])}
         </h1>
+        {/* The gate greets users before Settings is reachable, so the
+            language choice has to live here too. */}
+        {step.name === 'kind' && <LocalePicker />}
       </div>
 
       {step.name === 'kind' && (
@@ -126,12 +141,15 @@ export function OnboardingScreen() {
 
       {step.name === 'review' && (
         <ReviewStep
+          key={step.brokerId}
           broker={brokers[step.brokerId]}
-          // Editing the broker you already have keeps your negotiated
-          // overrides visible; a different pick starts from the catalogue.
-          overrides={editing && state.profile.brokerId === step.brokerId ? state.profile.overrides : null}
+          // Editing the broker you already have starts from your negotiated
+          // overrides; a different pick starts from the catalogue.
+          initialOverrides={
+            editing && state.profile.brokerId === step.brokerId ? (state.profile.overrides ?? null) : null
+          }
           busy={busy}
-          onSave={() => void finish(step.brokerId)}
+          onSave={(overrides) => void finish(step.brokerId, overrides)}
         />
       )}
     </main>
@@ -151,45 +169,182 @@ function tradeFeeLabel(fee: TradeFee, locale: string, t: ReturnType<typeof useTr
     case 'tiered_pct': {
       const first = fee.tiers[0];
       const last = fee.tiers[fee.tiers.length - 1];
-      const range = first === last ? pctLabel(first.pct, locale) : `${pctLabel(first.pct, locale)}–${pctLabel(last.pct, locale)}`;
-      return `${range} · ${t('byValue')}`;
+      // One tier — a user's collapsed custom rate, or FIBI's flat figure —
+      // is not "by portfolio value" any more; read it like a plain pct fee.
+      if (first === last) {
+        const rate = pctLabel(first.pct, locale);
+        return first.min !== undefined
+          ? `${rate} · ${t('min', { amount: `${sym(fee.currency)}${fmtNum(first.min, locale)}` })}`
+          : rate;
+      }
+      return `${pctLabel(first.pct, locale)}–${pctLabel(last.pct, locale)} · ${t('byValue')}`;
     }
   }
 }
 
+/** Number inputs give NaN for an empty field; a fee of nothing is 0. */
+const num = (v: number) => (Number.isNaN(v) ? 0 : v);
+
 function ReviewStep({
   broker,
-  overrides,
+  initialOverrides,
   busy,
   onSave,
 }: {
   broker: BrokerDef;
-  overrides: Parameters<typeof applyOverrides>[1];
+  initialOverrides: FeeOverrides | null;
   busy: boolean;
-  onSave: () => void;
+  onSave: (overrides: FeeOverrides) => void;
 }) {
   const t = useTranslations('onboarding');
   const locale = useLocale();
   const today = new Date().toISOString().slice(0, 10);
-  const s: FeeSchedule = applyOverrides(scheduleFor(broker, today), overrides);
+  const base = scheduleFor(broker, today);
+  const [overrides, setOverrides] = useState<FeeOverrides>(initialOverrides ?? {});
+  const [open, setOpen] = useState<Record<string, boolean>>({});
+  // The rows always render the *merged* schedule, so a custom number is
+  // reflected the moment it is typed — before anything is saved.
+  const s: FeeSchedule = applyOverrides(base, overrides);
 
-  const rows: Array<{ key: string; label: string; value: string }> = [];
-  if (s.taseTrade) rows.push({ key: 'tase', label: t('taseTrade'), value: tradeFeeLabel(s.taseTrade, locale, t) });
-  if (s.usTrade) {
-    let value = tradeFeeLabel(s.usTrade, locale, t);
-    if (s.usTradePassthrough) {
+  const clear = (key: keyof FeeOverrides) =>
+    setOverrides((o) => {
+      const next = { ...o };
+      delete next[key];
+      return next;
+    });
+
+  /**
+   * A negotiated trade rate replaces whatever shape the catalogue has: a pct
+   * fee keeps its type, and a bank's tier table collapses to the one flat
+   * tier the user actually pays — which is what "I know my rate" means.
+   */
+  const setTrade = (key: 'taseTrade' | 'usTrade', patch: { rate?: number; min?: number }) => {
+    const fee = base[key];
+    if (!fee) return;
+    setOverrides((o) => {
+      const cur: TradeFeeOverride = { ...(o[key] ?? {}) };
+      if (fee.type === 'per_share') {
+        if (patch.rate !== undefined) cur.perShare = num(patch.rate);
+        if (patch.min !== undefined) cur.min = num(patch.min);
+      } else if (fee.type === 'pct') {
+        if (patch.rate !== undefined) cur.pct = num(patch.rate) / 100;
+        if (patch.min !== undefined) cur.min = num(patch.min);
+      } else {
+        const prev = cur.tiers?.[0];
+        cur.tiers = [
+          {
+            id: 'custom',
+            pct: patch.rate !== undefined ? num(patch.rate) / 100 : (prev?.pct ?? fee.tiers[0].pct),
+            min: patch.min !== undefined ? num(patch.min) : (prev?.min ?? fee.tiers[0].min),
+          },
+        ];
+      }
+      return { ...o, [key]: cur };
+    });
+  };
+
+  // Uncontrolled on purpose: a controlled number input clobbers a half-typed
+  // decimal ("0." parses to NaN and the render wipes it). The editor mounts
+  // fresh each time it opens, so defaultValue is the current effective
+  // figure, and only valid parses commit to the overrides — whose effect is
+  // visible live in the row's value line above.
+  const input = (label: string, value: number | undefined, onChange: (n: number) => void) => (
+    <label className="flex min-w-0 flex-1 flex-col gap-1">
+      <span className="text-[11px] text-muted-foreground">{label}</span>
+      <input
+        dir="ltr"
+        type="number"
+        inputMode="decimal"
+        min={0}
+        step="any"
+        defaultValue={value ?? ''}
+        onChange={(e) => {
+          if (!Number.isNaN(e.target.valueAsNumber)) onChange(e.target.valueAsNumber);
+        }}
+        className="h-[40px] min-w-0 rounded-[14px] border border-field bg-well px-3 text-sm text-foreground tabular-nums outline-none"
+      />
+    </label>
+  );
+
+  /** The current effective (post-override) numbers, prefilling the editor. */
+  const tradeEff = (fee: TradeFee) =>
+    fee.type === 'pct'
+      ? { rate: fee.pct * 100, min: fee.min }
+      : fee.type === 'per_share'
+        ? { rate: fee.perShare, min: fee.min }
+        : { rate: fee.tiers[0].pct * 100, min: fee.tiers[0].min };
+
+  const feeRow = (
+    key: string,
+    label: string,
+    value: string,
+    editor: React.ReactNode | null,
+    onClear: (() => void) | null,
+    i: number,
+  ) => (
+    <div key={key} className={cn('flex flex-col gap-0.5 py-3', i > 0 && 'border-t border-border')}>
+      <span className="flex items-baseline justify-between gap-3">
+        <span className="text-xs text-muted-foreground">{label}</span>
+        {editor && (
+          <button
+            type="button"
+            onClick={() =>
+              setOpen((v) => {
+                if (v[key] && onClear) onClear();
+                return { ...v, [key]: !v[key] };
+              })
+            }
+            className="text-xs text-primary underline underline-offset-2"
+          >
+            {open[key] ? t('reset') : t('custom')}
+          </button>
+        )}
+      </span>
+      <span className="text-base text-foreground" dir="ltr">
+        {value}
+      </span>
+      {editor && open[key] && <div className="flex gap-3 pt-2">{editor}</div>}
+    </div>
+  );
+
+  const rows: React.ReactNode[] = [];
+  let i = 0;
+  for (const key of ['taseTrade', 'usTrade'] as const) {
+    const fee = s[key];
+    if (!fee) continue;
+    const eff = tradeEff(fee);
+    let value = tradeFeeLabel(fee, locale, t);
+    if (key === 'usTrade' && s.usTradePassthrough) {
       value += ` + ${t('perShare', { amount: `${sym(s.usTradePassthrough.currency)}${fmtNum(s.usTradePassthrough.perShare, locale)}` })}`;
     }
-    rows.push({ key: 'us', label: t('usTrade'), value });
+    rows.push(
+      feeRow(
+        key,
+        key === 'taseTrade' ? t('taseTrade') : t('usTrade'),
+        value,
+        <>
+          {input(fee.type === 'per_share' ? t('perShareFee') : t('ratePct'), eff.rate, (n) => setTrade(key, { rate: n }))}
+          {input(t('minFee'), eff.min, (n) => setTrade(key, { min: n }))}
+        </>,
+        () => clear(key),
+        i++,
+      ),
+    );
   }
   if (s.accountFee) {
-    rows.push({
-      key: 'account',
-      label: t('accountFee'),
-      value:
+    rows.push(
+      feeRow(
+        'account',
+        t('accountFee'),
         t('perMonth', { amount: `${sym(s.accountFee.currency)}${fmtNum(s.accountFee.monthly, locale, 0)}` }) +
-        (s.accountFee.offsetAgainstCommissions ? ` · ${t('offsetNote')}` : ''),
-    });
+          (s.accountFee.offsetAgainstCommissions ? ` · ${t('offsetNote')}` : ''),
+        input(t('monthlyAmount'), s.accountFee.monthly, (n) =>
+          setOverrides((o) => ({ ...o, accountFee: { ...o.accountFee, monthly: num(n) } })),
+        ),
+        () => clear('accountFee'),
+        i++,
+      ),
+    );
   }
   if (s.custodyFee) {
     const tiers = s.custodyFee.annual.tiers;
@@ -197,33 +352,43 @@ function ReviewStep({
       tiers.length > 1
         ? `${pctLabel(tiers[0].pct, locale)}–${pctLabel(tiers[tiers.length - 1].pct, locale)}`
         : pctLabel(tiers[0].pct, locale);
-    rows.push({
-      key: 'custody',
-      label: t('custodyFee'),
-      value: `${t('perYear', { rate: range })} · ${t('billedQuarterly')}`,
-    });
+    rows.push(
+      feeRow(
+        'custody',
+        t('custodyFee'),
+        `${t('perYear', { rate: range })} · ${t('billedQuarterly')}`,
+        input(t('annualPct'), tiers[0].pct * 100, (n) =>
+          setOverrides((o) => ({
+            ...o,
+            custodyFee: { ...o.custodyFee, annual: { tiers: [{ id: 'custom', pct: num(n) / 100 }] } },
+          })),
+        ),
+        () => clear('custodyFee'),
+        i++,
+      ),
+    );
   }
   if (s.fxFeePct !== undefined) {
-    rows.push({ key: 'fx', label: t('fxFee'), value: pctLabel(s.fxFeePct, locale) });
+    rows.push(
+      feeRow(
+        'fx',
+        t('fxFee'),
+        pctLabel(s.fxFeePct, locale),
+        input(t('ratePct'), s.fxFeePct * 100, (n) => setOverrides((o) => ({ ...o, fxFeePct: num(n) / 100 }))),
+        () => clear('fxFeePct'),
+        i++,
+      ),
+    );
   }
 
   return (
     <>
       <div className="flex flex-col gap-4 px-6">
         <p className="text-base text-muted-foreground">{t('reviewHint')}</p>
-        <div className="rounded-xl bg-card px-4 py-1">
-          {rows.map((r, i) => (
-            <div key={r.key} className={cn('flex flex-col gap-0.5 py-3', i > 0 && 'border-t border-border')}>
-              <span className="text-xs text-muted-foreground">{r.label}</span>
-              <span className="text-base text-foreground" dir="ltr">
-                {r.value}
-              </span>
-            </div>
-          ))}
-        </div>
+        <div className="rounded-xl bg-card px-4 py-1">{rows}</div>
         {broker.kind === 'bank' && <p className="text-xs text-muted-foreground">{t('bankSoftNote')}</p>}
       </div>
-      <ActionBar label={t('save')} disabled={busy} onClick={onSave} />
+      <ActionBar label={t('save')} disabled={busy} onClick={() => onSave(overrides)} />
     </>
   );
 }

@@ -2,15 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Link, usePathname, useRouter } from '@/src/i18n/navigation';
+import { Link, useRouter } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
-import Image from 'next/image';
 import { useMarket } from '@/components/app-shell/market-context';
 import { getMarket, marketIds } from '@/src/markets/registry';
 import { InstallSettingsRow } from '@/components/install-prompt';
 import { Dropdown } from '@/components/dropdown';
+import { LocalePicker } from '@/components/locale-picker';
 import { MonitorCog, Moon, Sun } from 'lucide-react';
-import { routing } from '@/src/i18n/routing';
 import { authClient, signOut, useSession } from '@/lib/auth-client';
 import { useBrokerProfile } from '@/components/use-broker-profile';
 import { brokers } from '@/src/brokers/registry';
@@ -24,7 +23,6 @@ export function SettingsScreen() {
   const tm = useTranslations('market');
   const locale = useLocale();
   const router = useRouter();
-  const pathname = usePathname();
   const { data: session, isPending } = useSession();
   const { setMarketId } = useMarket();
 
@@ -110,22 +108,7 @@ export function SettingsScreen() {
             showName
           />,
         )}
-        {row(
-          t('language'),
-          <Dropdown
-            options={routing.locales.map((l) => ({
-              value: l,
-              badge: <Flag locale={l} />,
-              name: localeNames[l] ?? l,
-            }))}
-            active={locale}
-            // Hard navigation — a client locale transition remounts the
-            // [locale] layout and trips React's script-tag error (see
-            // app-header.tsx).
-            // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- hard reload is the point
-            onPick={(l) => window.location.assign(`/${l}${pathname === '/' ? '' : pathname}`)}
-          />,
-        )}
+        {row(t('language'), <LocalePicker />)}
         {row(
           t('defaultMarket'),
           <Dropdown
@@ -205,16 +188,3 @@ export function SettingsScreen() {
   );
 }
 
-/** Language is chosen by flag, exactly as in the header picker. */
-function Flag({ locale }: { locale: string }) {
-  return (
-    <Image
-      src={locale === 'he' ? '/flags/il.svg' : '/flags/us.svg'}
-      alt={locale === 'he' ? 'עברית' : 'English'}
-      width={18}
-      height={17}
-    />
-  );
-}
-
-const localeNames: Record<string, string> = { en: 'English', he: 'עברית' };

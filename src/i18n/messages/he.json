@@ -481,7 +481,14 @@
     "billedQuarterly": "נגבה רבעונית",
     "bankSoftNote": "תעריפי הבנקים נתונים למשא ומתן ומשתנים בין לקוחות — התייחסו אליהם כנקודת פתיחה בלבד.",
     "save": "שמירה",
-    "back": "חזרה"
+    "back": "חזרה",
+    "custom": "התאמה אישית",
+    "reset": "איפוס",
+    "ratePct": "תעריף (%)",
+    "perShareFee": "למניה",
+    "minFee": "מינימום",
+    "monthlyAmount": "חודשי",
+    "annualPct": "שנתי (%)"
   },
   "install": {
     "sectionTitle": "אפליקציה",

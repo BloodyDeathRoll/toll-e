@@ -481,7 +481,14 @@
     "billedQuarterly": "billed quarterly",
     "bankSoftNote": "Bank rates are negotiable and vary by customer — treat these as starting defaults.",
     "save": "Save",
-    "back": "Back"
+    "back": "Back",
+    "custom": "Custom",
+    "reset": "Reset",
+    "ratePct": "Rate (%)",
+    "perShareFee": "Per share",
+    "minFee": "Minimum",
+    "monthlyAmount": "Monthly",
+    "annualPct": "Annual (%)"
   },
   "install": {
     "sectionTitle": "App",
