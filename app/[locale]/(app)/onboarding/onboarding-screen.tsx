@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft, Building2, CalendarDays, ChevronDown, ChevronUp, Landmark } from 'lucide-react';
+import { ArrowLeft, Building2, ChevronDown, ChevronUp, Landmark } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { ActionBar } from '@/components/app-shell/action-bar';
+import { DatePicker } from '@/components/date-picker';
 import { LocalePicker } from '@/components/locale-picker';
 import { useBrokerProfile } from '@/components/use-broker-profile';
 import { applyOverrides } from '@/src/brokers/overrides';
@@ -425,18 +426,7 @@ function ReviewStep({
         {(s.accountFee || s.custodyFee) && (
           <div className="flex flex-col gap-2">
             <span className="text-xs text-muted-foreground">{t('accountCreation')}</span>
-            <div className="flex h-[48px] items-center gap-4 rounded-[20px] border border-field bg-well px-4">
-              <CalendarDays className="size-4 shrink-0 text-foreground" aria-hidden />
-              <input
-                dir="ltr"
-                type="date"
-                value={openedAt}
-                max={today}
-                onChange={(e) => e.target.value && setOpenedAt(e.target.value)}
-                aria-label={t('accountCreation')}
-                className="min-w-0 flex-1 bg-transparent text-base font-medium text-foreground outline-none"
-              />
-            </div>
+            <DatePicker value={openedAt} onChange={setOpenedAt} max={today} label={t('accountCreation')} />
             <p className="text-xs text-muted-foreground">{t('accountCreationHint')}</p>
           </div>
         )}
