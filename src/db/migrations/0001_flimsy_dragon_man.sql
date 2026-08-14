@@ -1,0 +1,1 @@
+ALTER TABLE "transactions" ADD COLUMN "commission_source" text;

@@ -1,0 +1,63 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import type { FeeOverrides } from '@/src/brokers/types';
+
+export interface BrokerProfileData {
+  /** Registry id, or null = answered "I'll set this later". */
+  brokerId: string | null;
+  tierId: string | null;
+  overrides: FeeOverrides | null;
+  accountFeeWaivedUntil: string | null;
+}
+
+/**
+ * 'unset' is a first-class state, distinct from 'data' with a null brokerId:
+ * the first means the question was never answered and the onboarding gate
+ * must show; the second means the user said "later" and must never be
+ * re-prompted.
+ */
+export type BrokerProfileState =
+  | { status: 'loading' }
+  | { status: 'signed-out' }
+  | { status: 'unset' }
+  | { status: 'data'; profile: BrokerProfileData };
+
+export function useBrokerProfile() {
+  const [state, setState] = useState<BrokerProfileState>({ status: 'loading' });
+
+  const reload = useCallback(async () => {
+    try {
+      const res = await fetch('/api/broker-profile');
+      if (res.status === 401) {
+        setState({ status: 'signed-out' });
+        return;
+      }
+      if (!res.ok) throw new Error(String(res.status));
+      const json = await res.json();
+      setState(json.profile ? { status: 'data', profile: json.profile } : { status: 'unset' });
+    } catch {
+      setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+    }
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- async fetch-on-mount
+    reload();
+  }, [reload]);
+
+  // No optimistic updates: the answer gates onboarding, and a rollback there
+  // would flash the gate.
+  const save = async (patch: Partial<BrokerProfileData>): Promise<boolean> => {
+    const res = await fetch('/api/broker-profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) return false;
+    await reload();
+    return true;
+  };
+
+  return { state, reload, save };
+}

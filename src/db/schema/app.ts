@@ -4,13 +4,16 @@ import {
   date,
   index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import { user } from './auth';
+import type { FeeOverrides } from '@/src/brokers/types';
 
 // Market ids ('US', 'IL') and ISO currency codes ('USD', 'ILS') are stored as
 // plain strings, never enums — the market registry (src/markets) is the source
@@ -55,6 +58,10 @@ export const transactions = pgTable(
     shares: numeric('shares', { precision: 20, scale: 8 }).notNull(), // fractional shares supported
     pricePerShare: numeric('price_per_share', { precision: 20, scale: 6 }).notNull(),
     commission: numeric('commission', { precision: 20, scale: 6 }).notNull().default('0'),
+    // Where the commission figure came from: 'manual' or
+    // 'profile:<brokerId>@<effectiveFrom>'. NULL on rows predating the
+    // feature. Audit trail only — the stored commission is authoritative.
+    commissionSource: text('commission_source'),
     currency: text('currency').notNull(),
     note: text('note'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -101,6 +108,36 @@ export const watchlistItems = pgTable(
     sortOrder: integer('sort_order').notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.watchlistId, t.symbol] })],
+);
+
+// Who the user trades through — one broker per user, on the account, not the
+// portfolio (nobody trades in two places, and it makes the ₪15/month account
+// fee unambiguous: one account, one fee, however many portfolios). Its own
+// table rather than better-auth additionalFields: those serialize into every
+// session response, and the sign-in path is what the e2e suite stands on.
+export const brokerProfiles = pgTable(
+  'broker_profiles',
+  {
+    id: id(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    /** Registry id (src/brokers). NULL = answered "I'll set this later". */
+    brokerId: text('broker_id'),
+    /** Pinned bank tier; NULL = resolve from portfolio value. */
+    tierId: text('tier_id'),
+    /** Sparse field-level overrides merged over the resolved schedule. */
+    overrides: jsonb('overrides').$type<FeeOverrides>(),
+    // Promo waivers ("2 years free monthly fee") — spec §2.
+    accountFeeWaivedUntil: date('account_fee_waived_until'),
+    /** Non-null even for "later" — this is what stops the re-prompt. */
+    answeredAt: timestamp('answered_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [uniqueIndex('broker_profiles_userId_idx').on(t.userId)],
 );
 
 // Cached instrument metadata from the market-data provider.
