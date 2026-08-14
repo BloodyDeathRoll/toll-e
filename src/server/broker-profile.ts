@@ -20,6 +20,7 @@ export interface BrokerProfilePatch {
   tierId?: string | null;
   overrides?: FeeOverrides | null;
   accountFeeWaivedUntil?: string | null;
+  accountOpenedAt?: string | null;
 }
 
 /**

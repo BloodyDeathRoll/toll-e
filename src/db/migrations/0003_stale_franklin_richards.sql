@@ -1,0 +1,1 @@
+ALTER TABLE "broker_profiles" ADD COLUMN "account_opened_at" date;

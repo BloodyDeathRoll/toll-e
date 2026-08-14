@@ -130,6 +130,12 @@ export const brokerProfiles = pgTable(
     overrides: jsonb('overrides').$type<FeeOverrides>(),
     // Promo waivers ("2 years free monthly fee") — spec §2.
     accountFeeWaivedUntil: date('account_fee_waived_until'),
+    /**
+     * When the brokerage account was opened — the monthly-fee clock starts
+     * here, so backdating it populates past months with fees. NULL (rows
+     * predating the field) falls back to the first trade date.
+     */
+    accountOpenedAt: date('account_opened_at'),
     /** Non-null even for "later" — this is what stops the re-prompt. */
     answeredAt: timestamp('answered_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')

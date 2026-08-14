@@ -295,25 +295,46 @@ export async function getPerformance(
   const ledgerAccountFee = new Map(ledger.months.map((m) => [m.month, m.accountFee]));
   const feeCurrency = ledger.accountFee?.currency ?? 'ILS';
 
-  const months: PerformanceMonth[] = [...monthAcc.values()]
-    .map((m) => {
-      const costsNative = monthCommissions.get(m.month) ?? {};
-      return {
-        month: m.month,
-        gains: round2(m.gains),
-        losses: round2(m.losses),
-        net: round2(m.net),
-        tax: round2(m.tax),
-        costs: round2(
-          Object.entries(costsNative).reduce((s, [ccy, amount]) => s + convert(amount, ccy), 0),
-        ),
-        costsNative,
-        accountFee: round2(convert(ledgerAccountFee.get(m.month) ?? 0, feeCurrency)),
-        // Newest first, matching the month order the screen lists them in.
-        sales: [...m.sales].sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1)),
-      };
-    })
-    .sort((a, b) => a.month - b.month);
+  const months: PerformanceMonth[] = [...monthAcc.values()].map((m) => {
+    const costsNative = monthCommissions.get(m.month) ?? {};
+    return {
+      month: m.month,
+      gains: round2(m.gains),
+      losses: round2(m.losses),
+      net: round2(m.net),
+      tax: round2(m.tax),
+      costs: round2(
+        Object.entries(costsNative).reduce((s, [ccy, amount]) => s + convert(amount, ccy), 0),
+      ),
+      costsNative,
+      accountFee: round2(convert(ledgerAccountFee.get(m.month) ?? 0, feeCurrency)),
+      // Newest first, matching the month order the screen lists them in.
+      sales: [...m.sales].sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1)),
+    };
+  });
+  // A month can cost money without selling anything — commissions on buys,
+  // or the account fee of a backdated account opening. Those months still
+  // earn a row, or the charges would be invisible everywhere but the year
+  // total.
+  const present = new Set(months.map((m) => m.month));
+  for (let m = 1; m <= 12; m++) {
+    if (present.has(m)) continue;
+    const costsNative = monthCommissions.get(m) ?? {};
+    const fee = ledgerAccountFee.get(m) ?? 0;
+    if (Object.keys(costsNative).length === 0 && fee <= 0) continue;
+    months.push({
+      month: m,
+      gains: 0,
+      losses: 0,
+      net: 0,
+      tax: 0,
+      costs: round2(Object.entries(costsNative).reduce((s, [ccy, amount]) => s + convert(amount, ccy), 0)),
+      costsNative,
+      accountFee: round2(convert(fee, feeCurrency)),
+      sales: [],
+    });
+  }
+  months.sort((a, b) => a.month - b.month);
 
   const tradeCommissionsConverted = round2(
     Object.entries(ledger.tradeCommissions).reduce((s, [ccy, amount]) => s + convert(amount, ccy), 0),

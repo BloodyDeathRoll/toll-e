@@ -111,6 +111,7 @@ export async function getUserCosts(userId: string, year: number, usdIlsRate: num
     txs: costsTxs,
     schedule,
     accountFeeWaivedUntil: profile?.accountFeeWaivedUntil,
+    accountOpenedAt: profile?.accountOpenedAt,
     firstTradeDate,
     commissionsInFeeCurrency,
     valuations,

@@ -14,6 +14,7 @@ export async function GET() {
       tierId: profile.tierId,
       overrides: profile.overrides,
       accountFeeWaivedUntil: profile.accountFeeWaivedUntil,
+      accountOpenedAt: profile.accountOpenedAt,
     },
   });
 }
@@ -70,6 +71,7 @@ const putSchema = z.object({
   tierId: z.string().min(1).nullable().optional(),
   overrides: overridesSchema.nullable().optional(),
   accountFeeWaivedUntil: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  accountOpenedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
 });
 
 export async function PUT(req: NextRequest) {

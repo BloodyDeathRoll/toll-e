@@ -9,6 +9,8 @@ export interface BrokerProfileData {
   tierId: string | null;
   overrides: FeeOverrides | null;
   accountFeeWaivedUntil: string | null;
+  /** When the brokerage account was opened — starts the monthly-fee clock. */
+  accountOpenedAt: string | null;
 }
 
 /**

@@ -66,18 +66,14 @@ export function PnlPane({
             <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
               {tt('monthByMonth')}
             </h2>
-            {data.years.length > 1 ? (
-              <Dropdown
-                options={data.years.map((y) => ({ value: String(y), name: String(y) }))}
-                active={String(year ?? data.year)}
-                onPick={(y) => onYear(Number(y))}
-                showName
-              />
-            ) : (
-              <span className="text-xs text-muted-foreground">
-                {t('combinedIn', { currency: data.displayCurrency })}
-              </span>
-            )}
+            {/* Always offered, exactly like the Performance screen's — the
+                current year alone is still a choice worth naming. */}
+            <Dropdown
+              options={data.years.map((y) => ({ value: String(y), name: String(y) }))}
+              active={String(year ?? data.year)}
+              onPick={(y) => onYear(Number(y))}
+              showName
+            />
           </div>
 
           {monthRows.map((m) => {

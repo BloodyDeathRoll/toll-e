@@ -25,7 +25,13 @@ export interface CostsInput {
   schedule: FeeSchedule | null;
   /** Promo waiver: months ending on or before this date owe no account fee. */
   accountFeeWaivedUntil?: string | null;
-  /** First trade ever — the account-fee clock does not run before it. */
+  /**
+   * When the account was opened. The fee clock starts here — a bank charges
+   * for the account's existence, trades or not, so backdating this
+   * populates the earlier months with fees.
+   */
+  accountOpenedAt?: string | null;
+  /** Fallback fee-clock start for profiles that never set an opening date. */
   firstTradeDate?: string;
   /**
    * Month (1-12) → that month's commissions expressed in the account fee's
@@ -100,11 +106,11 @@ export function computeCosts(input: CostsInput): CostsLedger {
     return `${year}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
   };
   const accountFeeByMonth = new Map<number, number>();
-  if (feeDef && schedule) {
+  const feeClockStart = input.accountOpenedAt ?? input.firstTradeDate;
+  if (feeDef && schedule && feeClockStart) {
     for (let m = 1; m <= 12; m++) {
       if (monthEnd(m) >= today) break; // the month is not over yet
-      if (input.firstTradeDate && monthEnd(m) < input.firstTradeDate) continue;
-      if (!input.firstTradeDate) continue; // no account activity at all
+      if (monthEnd(m) < feeClockStart) continue; // before the account existed
       if (input.accountFeeWaivedUntil && monthEnd(m) <= input.accountFeeWaivedUntil) continue;
       // The offset is what makes "actually collected" true or false: a month
       // whose commissions reached the fee charges 0 and never shows.

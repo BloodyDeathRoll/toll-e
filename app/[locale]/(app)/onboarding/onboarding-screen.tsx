@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft, Building2, ChevronDown, ChevronUp, Landmark } from 'lucide-react';
+import { ArrowLeft, Building2, CalendarDays, ChevronDown, ChevronUp, Landmark } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { ActionBar } from '@/components/app-shell/action-bar';
 import { LocalePicker } from '@/components/locale-picker';
@@ -42,7 +42,7 @@ export function OnboardingScreen() {
   // back; as the first-run gate it may not.
   const editing = state.status === 'data';
 
-  const finish = async (brokerId: string | null, overrides?: FeeOverrides) => {
+  const finish = async (brokerId: string | null, overrides?: FeeOverrides, accountOpenedAt?: string) => {
     setBusy(true);
     const wasEditing = editing;
     const patch =
@@ -50,7 +50,11 @@ export function OnboardingScreen() {
         ? { brokerId }
         : // Empty overrides clear explicitly: re-saving after deleting your
           // customisations must not leave the old ones behind.
-          { brokerId, overrides: overrides && Object.keys(overrides).length ? overrides : null };
+          {
+            brokerId,
+            overrides: overrides && Object.keys(overrides).length ? overrides : null,
+            accountOpenedAt: accountOpenedAt ?? null,
+          };
     if (await save(patch)) {
       if (wasEditing) router.push('/settings');
       else router.replace('/');
@@ -148,8 +152,9 @@ export function OnboardingScreen() {
           initialOverrides={
             editing && state.profile.brokerId === step.brokerId ? (state.profile.overrides ?? null) : null
           }
+          initialOpenedAt={editing ? state.profile.accountOpenedAt : null}
           busy={busy}
-          onSave={(overrides) => void finish(step.brokerId, overrides)}
+          onSave={(overrides, openedAt) => void finish(step.brokerId, overrides, openedAt)}
         />
       )}
     </main>
@@ -188,19 +193,24 @@ const num = (v: number) => (Number.isNaN(v) ? 0 : v);
 function ReviewStep({
   broker,
   initialOverrides,
+  initialOpenedAt,
   busy,
   onSave,
 }: {
   broker: BrokerDef;
   initialOverrides: FeeOverrides | null;
+  initialOpenedAt: string | null;
   busy: boolean;
-  onSave: (overrides: FeeOverrides) => void;
+  onSave: (overrides: FeeOverrides, accountOpenedAt: string) => void;
 }) {
   const t = useTranslations('onboarding');
   const locale = useLocale();
   const today = new Date().toISOString().slice(0, 10);
   const base = scheduleFor(broker, today);
   const [overrides, setOverrides] = useState<FeeOverrides>(initialOverrides ?? {});
+  // Today by default — no history invented. Backdated, every ended month
+  // since then is billed its fee, whether or not anything traded in it.
+  const [openedAt, setOpenedAt] = useState(initialOpenedAt ?? today);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   // The rows always render the *merged* schedule, so a custom number is
   // reflected the moment it is typed — before anything is saved.
@@ -412,9 +422,27 @@ function ReviewStep({
       <div className="flex flex-col gap-4 px-6">
         <p className="text-base text-muted-foreground">{t('reviewHint')}</p>
         <div className="rounded-xl bg-card px-4 py-1">{rows}</div>
+        {(s.accountFee || s.custodyFee) && (
+          <div className="flex flex-col gap-2">
+            <span className="text-xs text-muted-foreground">{t('accountCreation')}</span>
+            <div className="flex h-[48px] items-center gap-4 rounded-[20px] border border-field bg-well px-4">
+              <CalendarDays className="size-4 shrink-0 text-foreground" aria-hidden />
+              <input
+                dir="ltr"
+                type="date"
+                value={openedAt}
+                max={today}
+                onChange={(e) => e.target.value && setOpenedAt(e.target.value)}
+                aria-label={t('accountCreation')}
+                className="min-w-0 flex-1 bg-transparent text-base font-medium text-foreground outline-none"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">{t('accountCreationHint')}</p>
+          </div>
+        )}
         {broker.kind === 'bank' && <p className="text-xs text-muted-foreground">{t('bankSoftNote')}</p>}
       </div>
-      <ActionBar label={t('save')} disabled={busy} onClick={() => onSave(overrides)} />
+      <ActionBar label={t('save')} disabled={busy} onClick={() => onSave(overrides, openedAt)} />
     </>
   );
 }

@@ -62,6 +62,27 @@ describe('computeCosts — account fee', () => {
     expect(running('2026-09-01')).toBe(true);
   });
 
+  it('a backdated account creation populates the earlier months with fees', () => {
+    // Opened in January, first trade only in March: a bank charges for the
+    // account's existence, trades or not — January and February bill too.
+    const ledger = computeCosts(
+      base({ schedule: sched('meitav-trade'), accountOpenedAt: '2026-01-20' }),
+    );
+    expect(ledger.months.map((m) => [m.month, m.accountFee])).toEqual([
+      [1, 15],
+      [2, 15],
+      [3, 15],
+      [4, 15],
+      [5, 15],
+      [6, 15],
+      [7, 15],
+    ]);
+    expect(ledger.accountFee).toEqual({ amount: 105, currency: 'ILS' });
+    // The opening date, once set, is the clock — not the first trade.
+    const later = computeCosts(base({ schedule: sched('meitav-trade'), accountOpenedAt: '2026-06-05' }));
+    expect(later.months.map((m) => m.month)).toEqual([6, 7]);
+  });
+
   it('waived months owe nothing — spec §2 promo waivers', () => {
     const ledger = computeCosts(
       base({

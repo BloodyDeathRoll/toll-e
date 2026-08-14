@@ -488,7 +488,9 @@
     "perShareFee": "למניה",
     "minFee": "מינימום",
     "monthlyAmount": "חודשי",
-    "annualPct": "שנתי (%)"
+    "annualPct": "שנתי (%)",
+    "accountCreation": "פתיחת החשבון",
+    "accountCreationHint": "דמי הטיפול החודשיים נספרים מתאריך זה — הזיזו אחורה כדי לכלול חודשים קודמים."
   },
   "install": {
     "sectionTitle": "אפליקציה",

@@ -488,7 +488,9 @@
     "perShareFee": "Per share",
     "minFee": "Minimum",
     "monthlyAmount": "Monthly",
-    "annualPct": "Annual (%)"
+    "annualPct": "Annual (%)",
+    "accountCreation": "Account creation",
+    "accountCreationHint": "Monthly account fees count from this date — set it back to include earlier months."
   },
   "install": {
     "sectionTitle": "App",
