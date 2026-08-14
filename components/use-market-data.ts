@@ -5,6 +5,7 @@ import type {
   ChartRange,
   ChartSeries,
   FxRate,
+  MoversKind,
   NewsItem,
   Quote,
   Screen,
@@ -137,6 +138,11 @@ export function useCharts(symbols: string[], range: ChartRange) {
 }
 
 /** Leading names in a sector or industry, for the classification screen. */
+/** The market's real movers — most active, gainers, losers — polled while shown. */
+export function useMovers(kind: MoversKind, marketId: string, refreshMs = 60_000) {
+  return useJson<{ quotes: Quote[] }>(`/api/market/movers?kind=${kind}&market=${marketId}`, refreshMs);
+}
+
 export function useScreen(kind: ScreenKind, name: string, marketId: string) {
   return useJson<Screen>(
     `/api/market/screen?kind=${kind}&name=${encodeURIComponent(name)}&market=${marketId}`,

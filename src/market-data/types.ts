@@ -104,6 +104,9 @@ export interface Summary {
 /** Sector or industry — the two lenses a screen can be built on. */
 export type ScreenKind = 'sector' | 'industry';
 
+/** The Markets page's three mover lists. */
+export type MoversKind = 'mostActive' | 'gainers' | 'losers';
+
 export interface Screen {
   kind: ScreenKind;
   /** The classification as the provider spells it. */
@@ -206,6 +209,8 @@ export interface MarketDataProvider {
   search(query: string): Promise<SearchResult[]>;
   /** Leading instruments in a sector or industry, largest first. */
   getScreen(kind: ScreenKind, name: string, marketId: string): Promise<Screen>;
+  /** The market's real movers, ranked by the provider's screener. */
+  getMovers(kind: MoversKind, marketId: string): Promise<Quote[]>;
   getSummary(symbol: string): Promise<Summary>;
   getFx(pair: string): Promise<FxRate>;
   getNews(symbol: string): Promise<NewsItem[]>;

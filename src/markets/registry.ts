@@ -15,6 +15,17 @@ export interface MarketDef {
   /** Provider symbol suffix (Yahoo convention); UI shows the clean symbol. */
   symbolSuffix?: string;
   numberLocale: string;
+  /**
+   * Screener liquidity floors for the Markets movers: listings below this
+   * day volume or price are noise — halted, OTC and micro names printing
+   * meaningless ±50% moves. Sized to the market: TASE trades far thinner
+   * than NYSE. The price floor is in the PROVIDER'S raw quote unit, the one
+   * exception to "agorot never escape yahoo.ts": screener criteria are sent
+   * upstream before any conversion can happen, so IL's floor is agorot
+   * (100 = ₪1) while US's is dollars.
+   */
+  moverMinVolume: number;
+  moverMinPrice: number;
 }
 
 const h = (hh: number, mm: number) => hh * 60 + mm;
@@ -139,6 +150,8 @@ export const markets: Record<string, MarketDef> = {
     indexes: ['^GSPC', '^IXIC', '^DJI', '^RUT', '^VIX'],
     calendar: usCalendar,
     numberLocale: 'en-US',
+    moverMinVolume: 50_000,
+    moverMinPrice: 5, // USD
   },
   IL: {
     id: 'IL',
@@ -149,6 +162,8 @@ export const markets: Record<string, MarketDef> = {
     calendar: ilCalendar,
     symbolSuffix: '.TA',
     numberLocale: 'he-IL',
+    moverMinVolume: 5_000,
+    moverMinPrice: 100, // agorot — ₪1 (see the field's unit note)
   },
 };
 

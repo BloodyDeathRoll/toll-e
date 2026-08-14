@@ -10,6 +10,7 @@ import type {
   ChartRange,
   ChartSeries,
   FxRate,
+  MoversKind,
   NewsItem,
   Quote,
   Screen,
@@ -45,6 +46,8 @@ const TTL = {
   search: 60 * 60_000,
   // A sector's leading names barely move; their prices do, a little.
   screen: 5 * 60_000,
+  // The movers boards reshuffle all session long — quote-class freshness.
+  movers: 60_000,
   summary: 24 * 60 * 60_000,
   news: 15 * 60_000,
   // Analyst data and reported financials move on earnings cadence.
@@ -139,6 +142,13 @@ export async function getScreen(
   );
 }
 
+/** The market's real movers — most active, gainers, losers — off the screener. */
+export async function getMovers(kind: MoversKind, marketId: string): Promise<Quote[]> {
+  return cached(`movers:${kind}:${marketId}`, TTL.movers, () =>
+    yahoo(() => provider.getMovers(kind, marketId)),
+  );
+}
+
 export async function getSummary(symbol: string): Promise<Summary> {
   return cached(`summary:${symbol}`, TTL.summary, () => yahoo(() => provider.getSummary(symbol)));
 }
@@ -176,6 +186,7 @@ export type {
   ChartRange,
   ChartSeries,
   FxRate,
+  MoversKind,
   NewsItem,
   Quote,
   Screen,

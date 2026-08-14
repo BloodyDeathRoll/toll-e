@@ -11,8 +11,8 @@ import { StaleBadge } from '@/components/stale-badge';
 import { SessionSparkline, Sparkline } from '@/components/charts';
 import { ChangePill, AfterHours } from '@/components/quote-bits';
 import { UnderlineTabs } from '@/components/underline-tabs';
-import { useCharts, useFx, useIndexQuotes, useQuotes } from '@/components/use-market-data';
-import { getMarket } from '@/src/markets/registry';
+import { useCharts, useFx, useIndexQuotes, useMovers, useQuotes } from '@/components/use-market-data';
+import { displaySymbol, getMarket } from '@/src/markets/registry';
 import { demo, demoFx } from '@/src/demo/data';
 import { fmtNum } from '@/lib/format';
 
@@ -33,21 +33,23 @@ export function MarketsScreen() {
     locale === 'he' && x.nameHe ? x.nameHe : x.name;
   const compact = new Intl.NumberFormat(nl, { notation: 'compact', maximumFractionDigits: 1 });
 
-  // Live quotes over the static mover universe — demo numbers only as a
-  // fallback so a Yahoo outage degrades instead of blanking the list.
-  const moverSymbols = data.mostActive.map((q) => q.symbol);
+  // The market's real movers, ranked by the provider's screener — most
+  // active by day volume, gainers/losers by percent change across the whole
+  // region. The static demo list is only an outage fallback: re-sorting a
+  // fixed universe is what used to make these tabs disagree with the actual
+  // market's boards.
+  const movers = useMovers(tab, marketId);
+  const rows = movers.data
+    ? movers.data.quotes.slice(0, 10)
+    : {
+        mostActive: data.mostActive,
+        gainers: [...data.mostActive].filter((q) => q.changePct > 0).sort((a, b) => b.changePct - a.changePct),
+        losers: [...data.mostActive].filter((q) => q.changePct < 0).sort((a, b) => a.changePct - b.changePct),
+      }[tab];
+  const moverSymbols = rows.map((q) => q.symbol);
   const { quotes: liveQuotes, stale: quotesStale } = useQuotes(moverSymbols);
   const moverCharts = useCharts(moverSymbols, '1d');
   const indexCharts = useCharts(data.indexes.map((ix) => ix.symbol), '1d');
-  const mostActive = data.mostActive.map((q) => {
-    const live = liveQuotes[q.symbol];
-    return { ...q, price: live?.price ?? q.price, changePct: live?.changePct ?? q.changePct };
-  });
-  const quotes = {
-    mostActive,
-    gainers: [...mostActive].filter((q) => q.changePct > 0).sort((a, b) => b.changePct - a.changePct),
-    losers: [...mostActive].filter((q) => q.changePct < 0).sort((a, b) => a.changePct - b.changePct),
-  }[tab];
 
   const spark = (symbol: string, fallback: number[] | undefined, up: boolean) => {
     const series = (symbol in indexCharts ? indexCharts : moverCharts)[symbol];
@@ -77,7 +79,7 @@ export function MarketsScreen() {
           <ArrowLeft className="size-6 text-foreground rtl:-scale-x-100" aria-hidden />
         </button>
         <h1 className="flex-1 text-base font-medium text-foreground">{t('nav.markets')}</h1>
-        <StaleBadge show={indexesStale || quotesStale} />
+        <StaleBadge show={indexesStale || quotesStale || movers.stale} />
         <MarketMenu />
       </div>
 
@@ -123,7 +125,7 @@ export function MarketsScreen() {
           label={(k) => t(`markets.${k}`)}
           className="pb-2.5"
         />
-        {quotes.map((q) => {
+        {rows.map((q) => {
           const live = liveQuotes[q.symbol];
           return (
             <Link
@@ -133,7 +135,7 @@ export function MarketsScreen() {
             >
               <span className="flex min-w-0 flex-col gap-2">
                 <span className="flex flex-col">
-                  <span className="text-base font-bold text-foreground">{q.symbol}</span>
+                  <span className="text-base font-bold text-foreground">{displaySymbol(q.symbol, market)}</span>
                   <span className="truncate text-xs text-foreground">{name(q)}</span>
                 </span>
                 {live?.volume !== undefined && (

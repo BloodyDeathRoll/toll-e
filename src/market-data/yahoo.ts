@@ -4,6 +4,7 @@ import type {
   ChartSeries,
   FxRate,
   MarketDataProvider,
+  MoversKind,
   NewsItem,
   Quote,
   Screen,
@@ -20,7 +21,7 @@ import {
   type SessionPhase,
   type TradingCalendar,
 } from '@/src/markets/calendar';
-import { marketForSymbol, marketIdForSymbol } from '@/src/markets/registry';
+import { getMarket, marketForSymbol, marketIdForSymbol } from '@/src/markets/registry';
 
 // Unofficial Yahoo endpoints (toll-e-plan.md §5) — accepted MVP risk, and the
 // reason everything routes through the MarketDataProvider interface.
@@ -90,6 +91,20 @@ type YQuote = Awaited<ReturnType<typeof yf.quote>>;
 export function screenerName(name: string): string {
   return name.replace(/ - /g, '—');
 }
+
+/**
+ * Screener criteria. The endpoint's operator grammar is undocumented and
+ * fussy: equality only matches wrapped in an 'or' (the shape Yahoo's own
+ * site emits), while gt/lt must be bare AND lowercase — 'GT' and or-wrapped
+ * comparisons are silently ignored rather than rejected, which is worse
+ * than an error. Verified against the live endpoint 2026-08-14.
+ */
+const eq = (field: string, value: string) => ({
+  operator: 'or',
+  operands: [{ operator: 'EQ', operands: [field, value] }],
+});
+const gt = (field: string, value: number) => ({ operator: 'gt', operands: [field, value] });
+const lt = (field: string, value: number) => ({ operator: 'lt', operands: [field, value] });
 
 const ms = (t: Date | number | string | undefined): number | undefined =>
   t === undefined ? undefined : new Date(t).getTime();
@@ -242,33 +257,29 @@ export class YahooProvider implements MarketDataProvider {
   }
 
   /**
-   * Leading instruments in a sector or industry, largest first.
+   * Run a query against Yahoo's POST screener.
    *
    * Yahoo's screener has two faces. The library wraps the GET one, which only
-   * serves fifteen canned screens ("day_gainers"); the classification filters
-   * live on a POST endpoint it does not model. So this goes through the
-   * client's own fetch — which is the point, since that is what carries the
-   * cookie/crumb handshake the endpoint demands. `_fetch` would otherwise
-   * apply our POST to the crumb request too and get a 405 back, hence the
-   * priming call: an ordinary GET first leaves a cached crumb behind.
+   * serves fifteen canned screens ("day_gainers"); real filters live on a
+   * POST endpoint it does not model. So this goes through the client's own
+   * fetch — which is the point, since that is what carries the cookie/crumb
+   * handshake the endpoint demands. `_fetch` would otherwise apply our POST
+   * to the crumb request too and get a 405 back, hence the priming call: an
+   * ordinary GET first leaves a cached crumb behind.
    */
-  async getScreen(kind: ScreenKind, name: string, marketId: string): Promise<Screen> {
-    const eq = (field: string, value: string) => ({
-      operator: 'or',
-      operands: [{ operator: 'EQ', operands: [field, value] }],
-    });
+  private async runScreener(
+    sortField: string,
+    sortType: 'ASC' | 'DESC',
+    operands: unknown[],
+    size = 30,
+  ): Promise<{ total: number; quotes: Quote[] }> {
     const body = {
-      size: 30,
+      size,
       offset: 0,
-      sortField: 'intradaymarketcap',
-      sortType: 'DESC',
+      sortField,
+      sortType,
       quoteType: 'EQUITY',
-      query: {
-        operator: 'AND',
-        // Region keeps a TASE screen on TASE rather than answering with Wall
-        // Street's version of the same industry.
-        operands: [eq('region', marketId.toLowerCase()), eq(kind, screenerName(name))],
-      },
+      query: { operator: 'AND', operands },
       userId: '',
       userIdType: 'guid',
     };
@@ -299,12 +310,82 @@ export class YahooProvider implements MarketDataProvider {
     )) as { finance?: { result?: Array<{ total?: number; quotes?: YQuote[] }> } };
 
     const result = res.finance?.result?.[0];
-    return {
-      kind,
-      name,
-      total: result?.total ?? 0,
-      quotes: (result?.quotes ?? []).map(toQuote),
+    return { total: result?.total ?? 0, quotes: (result?.quotes ?? []).map(toQuote) };
+  }
+
+  /** Leading instruments in a sector or industry, largest first. */
+  async getScreen(kind: ScreenKind, name: string, marketId: string): Promise<Screen> {
+    const { total, quotes } = await this.runScreener('intradaymarketcap', 'DESC', [
+      // Region keeps a TASE screen on TASE rather than answering with Wall
+      // Street's version of the same industry.
+      eq('region', marketId.toLowerCase()),
+      eq(kind, screenerName(name)),
+    ]);
+    return { kind, name, total, quotes };
+  }
+
+  /**
+   * The market's real movers: most active by volume, gainers and losers by
+   * percent change across the whole region — not a re-sort of some fixed
+   * universe.
+   *
+   * The screener is only trusted to SHORTLIST. Its filters and sort run on
+   * a lagged internal index — mid-session even Yahoo's own canned
+   * day_gainers answers with losers in it — so this takes a wide slate on
+   * loose indexed filters and ranks it here by the live figures the quotes
+   * themselves carry. Whatever order we show is then the order of the
+   * numbers on screen. The price/volume floors keep halted and micro
+   * listings from topping the change lists with meaningless ±50% prints.
+   */
+  async getMovers(kind: MoversKind, marketId: string): Promise<Quote[]> {
+    const market = getMarket(marketId);
+    const floors = [gt('dayvolume', market.moverMinVolume), gt('intradayprice', market.moverMinPrice)];
+    const spec: Record<MoversKind, { sort: string; dir: 'ASC' | 'DESC'; extra: unknown[]; rank: (a: Quote, b: Quote) => number; keep: (q: Quote) => boolean }> = {
+      mostActive: {
+        sort: 'dayvolume',
+        dir: 'DESC',
+        extra: [],
+        rank: (a, b) => (b.volume ?? 0) - (a.volume ?? 0),
+        keep: (q) => (q.volume ?? 0) > 0,
+      },
+      gainers: {
+        sort: 'percentchange',
+        dir: 'DESC',
+        // Loose on purpose: the indexed value only shortlists, the live one decides.
+        extra: [gt('percentchange', 0.5)],
+        rank: (a, b) => b.changePct - a.changePct,
+        keep: (q) => q.changePct > 0,
+      },
+      losers: {
+        sort: 'percentchange',
+        dir: 'ASC',
+        extra: [lt('percentchange', -0.5)],
+        rank: (a, b) => a.changePct - b.changePct,
+        keep: (q) => q.changePct < 0,
+      },
     };
+    const s = spec[kind];
+    const { quotes } = await this.runScreener(
+      s.sort,
+      s.dir,
+      [eq('region', marketId.toLowerCase()), ...floors, ...s.extra],
+      100,
+    );
+    // Two classes of junk survive the indexed floors and need the live data
+    // to catch: symbols that did not actually trade today (Yahoo test
+    // tickers report volume 0 but sit in the index), and TASE debt series —
+    // bonds and makam the screener tags EQUITY, recognizable by the digits
+    // in their series names (GOI0728, LUM-B188) that real equity tickers
+    // never carry.
+    const base = (sym: string) =>
+      market.symbolSuffix && sym.endsWith(market.symbolSuffix)
+        ? sym.slice(0, -market.symbolSuffix.length)
+        : sym;
+    const sane = (q: Quote) => (q.volume ?? 0) > 0 && !/\d/.test(base(q.symbol));
+    return quotes
+      .filter((q) => sane(q) && s.keep(q))
+      .sort(s.rank)
+      .slice(0, 30);
   }
 
   async search(query: string): Promise<SearchResult[]> {
