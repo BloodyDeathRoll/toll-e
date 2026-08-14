@@ -4,7 +4,7 @@ import { cached } from './cache';
 import { getChartFromDb, getFxFallback, getQuotesFromDb } from './fallback';
 import { persistDailyCloses, persistFx } from './persist';
 import { YahooProvider } from './yahoo';
-import { sessionWindow } from '@/src/markets/calendar';
+import { localDateIn, sessionWindow } from '@/src/markets/calendar';
 import { getMarket, marketForSymbol } from '@/src/markets/registry';
 import type {
   ChartRange,
@@ -195,7 +195,7 @@ export async function getCloseOn(symbol: string, date: string): Promise<number |
   const series = await getChart(symbol, '1y');
   let best: number | null = null;
   for (const p of series.points) {
-    const localDate = new Date(p.t).toLocaleDateString('en-CA', { timeZone: series.timezone });
+    const localDate = localDateIn(series.timezone, p.t);
     if (localDate <= date) best = p.close;
     else break;
   }

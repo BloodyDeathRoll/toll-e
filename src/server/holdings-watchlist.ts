@@ -1,8 +1,6 @@
-import { and, asc, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, gt, inArray, sql } from 'drizzle-orm';
 import { db } from '@/src/db';
 import { portfolios, transactions, watchlistItems, watchlists } from '@/src/db/schema';
-import { computePortfolio } from '@/src/engine/portfolio';
-import { toEngineTx } from './portfolios';
 import { HOLDINGS_LIST } from '@/src/watchlists/constants';
 
 export { HOLDINGS_LIST } from '@/src/watchlists/constants';
@@ -14,7 +12,23 @@ export { HOLDINGS_LIST } from '@/src/watchlists/constants';
  * a sale that closes the position takes it out. Written as a full reconcile
  * rather than incremental add/remove so backdated edits, deletes, and partial
  * sells all land on the same answer.
+ *
+ * The question this path asks is only ever "is the balance still above zero?",
+ * per (portfolio, symbol) — so it asks the database, rather than pulling every
+ * column of the user's entire transaction history across the wire and running
+ * the full FIFO replay (lot splits, realized events, matched-lot arrays) to
+ * reach the same yes/no. `transactions_portfolio_symbol_date_idx` already
+ * covers the grouping columns.
+ *
+ * Two details are load-bearing. The sum is cast to double precision so the
+ * cut-off matches the engine's own `shares > EPS` (1e-9) rather than a bare
+ * `> 0` that would keep a floating-point crumb alive as a held position. And
+ * dropping `computePortfolio` from this path also drops the `OversellError`
+ * it used to inherit — a belt-and-braces check that cannot fire here anyway,
+ * because the write routes validate before they reach this function.
  */
+const EPS = 1e-9;
+
 export async function syncHoldingsWatchlist(userId: string): Promise<void> {
   const owned = await db
     .select({ id: portfolios.id })
@@ -22,18 +36,16 @@ export async function syncHoldingsWatchlist(userId: string): Promise<void> {
     .where(eq(portfolios.userId, userId));
   if (owned.length === 0) return;
 
-  // Held symbols across every portfolio the user owns.
+  // Held symbols across every portfolio the user owns: one grouped aggregate,
+  // one row per (portfolio, symbol) still carrying a positive balance.
+  const netShares = sql<number>`sum(case when ${transactions.type} = 'BUY' then ${transactions.shares} else -${transactions.shares} end)::double precision`;
   const rows = await db
-    .select()
+    .select({ symbol: transactions.symbol })
     .from(transactions)
-    .where(inArray(transactions.portfolioId, owned.map((p) => p.id)));
-  const held = new Set<string>();
-  for (const p of owned) {
-    const { holdings } = computePortfolio(
-      rows.filter((r) => r.portfolioId === p.id).map(toEngineTx),
-    );
-    for (const h of holdings) if (h.shares > 0) held.add(h.symbol);
-  }
+    .where(inArray(transactions.portfolioId, owned.map((p) => p.id)))
+    .groupBy(transactions.portfolioId, transactions.symbol)
+    .having(gt(netShares, EPS));
+  const held = new Set(rows.map((r) => r.symbol));
 
   const [existing] = await db
     .select()

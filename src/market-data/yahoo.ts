@@ -20,12 +20,42 @@ import {
   type SessionPhase,
   type TradingCalendar,
 } from '@/src/markets/calendar';
-import { marketForSymbol } from '@/src/markets/registry';
+import { marketForSymbol, marketIdForSymbol } from '@/src/markets/registry';
 
 // Unofficial Yahoo endpoints (toll-e-plan.md §5) — accepted MVP risk, and the
 // reason everything routes through the MarketDataProvider interface.
 
 const yf = new YahooFinance({ suppressNotices: ['yahooSurvey'] });
+
+/**
+ * The screener endpoint needs a crumb, and the library only mints one on an
+ * ordinary GET. Priming it per screener call meant a throwaway quote on every
+ * cache miss — two upstream requests where the screen needs one, against an
+ * unofficial endpoint that toll-e-plan.md §5 asks us to be gentle with.
+ *
+ * Held per process instead, and deliberately NOT expired on a timer: the
+ * crumb's lifetime is Yahoo's business and guessing at it is how a wasted
+ * request turns into a broken screen. The screener call itself is the probe —
+ * `withCrumb` re-primes and retries once on any failure, so the worst case is
+ * the two requests we used to make unconditionally, and only on a failure.
+ */
+let crumbPrimed: Promise<unknown> | undefined;
+
+function primeCrumb(): Promise<unknown> {
+  crumbPrimed ??= yf.quote('AAPL').catch(() => undefined);
+  return crumbPrimed;
+}
+
+async function withCrumb<T>(call: () => Promise<T>): Promise<T> {
+  await primeCrumb();
+  try {
+    return await call();
+  } catch {
+    crumbPrimed = undefined;
+    await primeCrumb();
+    return call();
+  }
+}
 
 const phaseMap: Record<string, SessionPhase> = {
   PRE: 'pre',
@@ -224,19 +254,20 @@ export class YahooProvider implements MarketDataProvider {
         needsCrumb: boolean,
       ) => Promise<unknown>;
     };
-    await yf.quote('AAPL').catch(() => undefined); // prime the crumb
-    const res = (await client._fetch(
-      'https://query2.finance.yahoo.com/v1/finance/screener',
-      { lang: 'en-US', region: 'US', formatted: 'false' },
-      {
-        fetchOptions: {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(body),
+    const res = (await withCrumb(() =>
+      client._fetch(
+        'https://query2.finance.yahoo.com/v1/finance/screener',
+        { lang: 'en-US', region: 'US', formatted: 'false' },
+        {
+          fetchOptions: {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(body),
+          },
         },
-      },
-      'json',
-      true,
+        'json',
+        true,
+      ),
     )) as { finance?: { result?: Array<{ total?: number; quotes?: YQuote[] }> } };
 
     const result = res.finance?.result?.[0];
@@ -260,7 +291,7 @@ export class YahooProvider implements MarketDataProvider {
           name: str(rec.shortname) ?? str(rec.longname) ?? q.symbol,
           exchange: str(rec.exchDisp),
           type: str(rec.quoteType),
-          market: q.symbol.endsWith('.TA') ? 'IL' : q.symbol.includes('.') ? undefined : 'US',
+          market: marketIdForSymbol(q.symbol),
         };
       });
   }

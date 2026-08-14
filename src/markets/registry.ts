@@ -1,5 +1,5 @@
-import type { TradingCalendar } from './calendar';
-import { taseCalendarDays } from './hebrew-calendar';
+import type { SessionHours, TradingCalendar } from './calendar';
+import { taseCalendarDays, type TaseCalendarDays } from './hebrew-calendar';
 
 // Markets are data, not code. Adding a market = adding an entry here
 // (+ verifying provider symbol coverage). UI, search, formatting, and
@@ -94,7 +94,16 @@ const ilEve = ilFri;
 // Derived from the Hebrew calendar, not transcribed — see hebrew-calendar.ts.
 // Extend the span as the app's horizon moves; a year outside it simply has no
 // holidays, which the "no prints today" fallback survives.
-const ilDays = taseCalendarDays(2024, 2032);
+//
+// Derived on first read, not at module load. Stamping every Gregorian day in
+// 2023–2033 with its Hebrew date is ~8 ms of Intl work, and this module is
+// imported by 'use client' components (watchlist rows, price charts, the
+// screen view) purely for `getMarket` / `marketForSymbol` / `displaySymbol` —
+// so the browser was paying it on every page load, including the ones that
+// never look at a TASE closure. The memo makes the second reader free.
+let ilDaysMemo: TaseCalendarDays | undefined;
+const ilDays = () => (ilDaysMemo ??= taseCalendarDays(2024, 2032));
+let ilShortHoursMemo: Record<string, SessionHours> | undefined;
 
 const ilCalendar: TradingCalendar = {
   timezone: 'Asia/Jerusalem',
@@ -111,8 +120,14 @@ const ilCalendar: TradingCalendar = {
   ],
   // Festivals close the exchange; their eves shorten it. Election days shut
   // TASE too and follow no calendar — add them here when one is called.
-  holidays: ilDays.holidays,
-  specialHours: Object.fromEntries(ilDays.shortDays.map((iso) => [iso, ilEve])),
+  get holidays() {
+    return ilDays().holidays;
+  },
+  get specialHours() {
+    return (ilShortHoursMemo ??= Object.fromEntries(
+      ilDays().shortDays.map((iso) => [iso, ilEve]),
+    ));
+  },
 };
 
 export const markets: Record<string, MarketDef> = {
@@ -156,6 +171,27 @@ export function marketForSymbol(symbol: string): MarketDef {
     (m) => m.symbolSuffix && symbol.endsWith(m.symbolSuffix),
   );
   return suffixed ?? Object.values(markets).find((m) => !m.symbolSuffix) ?? markets.US;
+}
+
+/**
+ * The registry id a provider symbol can be *attributed* to, or undefined when
+ * nothing in the registry claims it. Unlike {@link marketForSymbol} — which
+ * always answers, because a price has to be formatted somehow — this one
+ * admits ignorance, which is what a search result needs: 'VOD.L' is a real
+ * listing on an exchange we do not carry, and labelling it 'US' is worse than
+ * leaving it unlabelled.
+ *
+ * The registry decides, not a hardcoded suffix: adding 'UK' with
+ * `symbolSuffix: '.L'` starts attributing those hits with no other edit.
+ */
+export function marketIdForSymbol(symbol: string): string | undefined {
+  const suffixed = Object.values(markets).find(
+    (m) => m.symbolSuffix && symbol.endsWith(m.symbolSuffix),
+  );
+  if (suffixed) return suffixed.id;
+  // A bare symbol belongs to the market that needs no suffix; a suffix we do
+  // not recognize belongs to an exchange we do not carry.
+  return symbol.includes('.') ? undefined : Object.values(markets).find((m) => !m.symbolSuffix)?.id;
 }
 
 /** Strip the provider suffix for display: 'TEVA.TA' → 'TEVA'. */

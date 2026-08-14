@@ -1,8 +1,8 @@
 import 'server-only';
 
-import { and, desc, eq, gte } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { db } from '@/src/db';
-import { priceHistory } from '@/src/db/schema';
+import { fxRates, priceHistory } from '@/src/db/schema';
 import { marketForSymbol } from '@/src/markets/registry';
 import type { ChartRange, ChartSeries, FxRate, Quote } from './types';
 
@@ -44,11 +44,37 @@ async function frankfurterFx(pair: string): Promise<FxRate> {
   return { pair, rate, asOf: json.date };
 }
 
+/**
+ * Last rate we persisted for the pair — the final link in the FX chain.
+ *
+ * Every successful `getFx` writes `fx_rates`, so by the time all three live
+ * sources are unreachable there is almost always an official rate on disk. It
+ * is the same shape as the other degraded reads: `asOf` carries the date the
+ * rate was official on, so the UI labels an old rate rather than passing it
+ * off as today's. Without this link an FX outage fails `getPerformance`
+ * outright — totals, months and allocation for every portfolio — because the
+ * screen awaits the rate before it computes anything.
+ */
+export async function getFxFromDb(pair: string): Promise<FxRate> {
+  const [row] = await db
+    .select()
+    .from(fxRates)
+    .where(eq(fxRates.pair, pair))
+    .orderBy(desc(fxRates.date))
+    .limit(1);
+  if (!row) throw new Error(`no persisted rate for ${pair}`);
+  return { pair, rate: Number(row.rate), asOf: row.date };
+}
+
 export async function getFxFallback(pair: string): Promise<FxRate> {
   try {
     return await boiFx(pair);
   } catch {
-    return frankfurterFx(pair);
+    try {
+      return await frankfurterFx(pair);
+    } catch {
+      return getFxFromDb(pair);
+    }
   }
 }
 
@@ -109,19 +135,63 @@ export async function getChartFromDb(symbol: string, range: ChartRange): Promise
   };
 }
 
-/** Last persisted close as a degraded quote — change is close-over-close. */
+/**
+ * Last persisted close as a degraded quote — change is close-over-close.
+ *
+ * The two most recent rows per symbol come back in ONE round trip: a
+ * `row_number()` window partitioned by symbol, filtered to the top two. This
+ * is the path taken precisely when the provider is already failing, which is
+ * the moment the screen can least afford one round trip per symbol in series.
+ *
+ * The window is deliberately not bounded by date. Taking "the last two rows"
+ * regardless of age is what the per-symbol queries did, and it is what a
+ * degraded quote for a thinly-traded or delisted symbol depends on — a
+ * cutoff would silently drop those instead of labelling them via `asOf`.
+ */
 export async function getQuotesFromDb(symbols: string[]): Promise<Quote[]> {
+  if (symbols.length === 0) throw new Error('no persisted closes for any requested symbol');
+
+  const ranked = db
+    .select({
+      symbol: priceHistory.symbol,
+      date: priceHistory.date,
+      close: priceHistory.close,
+      volume: priceHistory.volume,
+      rn: sql<number>`row_number() over (partition by ${priceHistory.symbol} order by ${priceHistory.date} desc)`.as(
+        'rn',
+      ),
+    })
+    .from(priceHistory)
+    .where(inArray(priceHistory.symbol, symbols))
+    .as('ranked');
+
+  const rows = await db
+    .select({
+      symbol: ranked.symbol,
+      date: ranked.date,
+      close: ranked.close,
+      volume: ranked.volume,
+    })
+    .from(ranked)
+    .where(lte(ranked.rn, 2))
+    .orderBy(ranked.symbol, desc(ranked.date));
+
+  // Group by symbol, newest first — the ORDER BY above already guarantees it.
+  const bySymbol = new Map<string, typeof rows>();
+  for (const row of rows) {
+    const got = bySymbol.get(row.symbol);
+    if (got) got.push(row);
+    else bySymbol.set(row.symbol, [row]);
+  }
+
+  // Walk the requested symbols, not the map, so the answer keeps the order it
+  // was asked in rather than the alphabetical order the window returned.
   const quotes: Quote[] = [];
   for (const symbol of symbols) {
-    const rows = await db
-      .select()
-      .from(priceHistory)
-      .where(eq(priceHistory.symbol, symbol))
-      .orderBy(desc(priceHistory.date))
-      .limit(2);
-    if (rows.length === 0) continue;
-    const last = Number(rows[0].close);
-    const prev = rows.length > 1 ? Number(rows[1].close) : undefined;
+    const got = bySymbol.get(symbol);
+    if (!got || got.length === 0) continue;
+    const last = Number(got[0].close);
+    const prev = got.length > 1 ? Number(got[1].close) : undefined;
     quotes.push({
       symbol,
       name: symbol,
@@ -130,8 +200,8 @@ export async function getQuotesFromDb(symbols: string[]): Promise<Quote[]> {
       change: prev !== undefined ? last - prev : 0,
       changePct: prev !== undefined && prev !== 0 ? ((last - prev) / prev) * 100 : 0,
       previousClose: prev,
-      volume: rows[0].volume ?? undefined,
-      asOf: new Date(`${rows[0].date}T00:00:00Z`).getTime(),
+      volume: got[0].volume ?? undefined,
+      asOf: new Date(`${got[0].date}T00:00:00Z`).getTime(),
     });
   }
   if (quotes.length === 0) throw new Error('no persisted closes for any requested symbol');

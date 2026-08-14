@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { db } from '@/src/db';
 import { fxRates, priceHistory } from '@/src/db/schema';
+import { localDateIn } from '@/src/markets/calendar';
 import type { ChartSeries, FxRate } from './types';
 
 // Daily closes + FX persist to Postgres (toll-e-plan.md §5) — backdated
@@ -14,7 +15,7 @@ export function persistDailyCloses(series: ChartSeries): void {
   const rows = series.points.map((p) => ({
     symbol: series.symbol,
     // Exchange-local calendar date of the bar.
-    date: new Date(p.t).toLocaleDateString('en-CA', { timeZone: series.timezone }),
+    date: localDateIn(series.timezone, p.t),
     open: num(p.open),
     high: num(p.high),
     low: num(p.low),

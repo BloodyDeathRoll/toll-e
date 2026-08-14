@@ -21,6 +21,15 @@ const store = new Map<string, Entry<unknown>>();
  */
 const MAX_ENTRIES = 5_000;
 
+/**
+ * How long a failed refresh holds its stale value before another attempt is
+ * made. Without it, every request during an outage is a fresh (doomed) provider
+ * call: the entry stays expired, so "stale beats broken" serves the right value
+ * but throttles nothing. Short enough that recovery is felt within one poll of
+ * the watchlist screen, long enough to cap the rate under load.
+ */
+const ERROR_BACKOFF_MS = 2_000;
+
 /** Map iterates in insertion order, so re-inserting on use makes this LRU. */
 function touch(key: string, entry: Entry<unknown>): void {
   store.delete(key);
@@ -52,8 +61,15 @@ export async function cached<T>(key: string, ttlMs: number, fetch: () => Promise
     })
     .catch((err) => {
       entry.pending = undefined;
-      // Stale beats broken: serve the expired value if we have one.
-      if (entry.value !== undefined) return entry.value;
+      // Stale beats broken: serve the expired value if we have one, and hold
+      // it briefly so a provider that is down is not asked again by every
+      // caller in the meantime. A key with nothing cached keeps trying — it
+      // has nothing to serve, and a cached failure would be worse than a slow
+      // one.
+      if (entry.value !== undefined) {
+        entry.expires = Date.now() + ERROR_BACKOFF_MS;
+        return entry.value;
+      }
       throw err;
     });
   touch(key, entry as Entry<unknown>);
