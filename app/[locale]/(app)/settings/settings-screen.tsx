@@ -12,7 +12,11 @@ import { Dropdown } from '@/components/dropdown';
 import { MonitorCog, Moon, Sun } from 'lucide-react';
 import { routing } from '@/src/i18n/routing';
 import { authClient, signOut, useSession } from '@/lib/auth-client';
+import { useBrokerProfile } from '@/components/use-broker-profile';
+import { brokers } from '@/src/brokers/registry';
 import { setTheme, themeChoice, type ThemeChoice } from '@/lib/theme';
+import { ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function SettingsScreen() {
   const t = useTranslations('settings');
@@ -51,6 +55,15 @@ export function SettingsScreen() {
   const user = mounted
     ? (session?.user as { name: string; email: string; defaultMarket?: string } | undefined)
     : undefined;
+
+  // The broker choice follows the defaultMarket precedent: a preference
+  // surfaced in two places writes the same state from both, so this row
+  // links to the onboarding flow itself — the flow *is* the editor.
+  const { state: brokerState } = useBrokerProfile();
+  const currentBroker =
+    brokerState.status === 'data' && brokerState.profile.brokerId
+      ? brokers[brokerState.profile.brokerId]
+      : null;
 
   const pickMarket = async (market: string) => {
     setDefaultMarket(market);
@@ -127,6 +140,24 @@ export function SettingsScreen() {
             // The symbol alone is too thin a label — say whose market it is.
             showName
           />,
+        )}
+        {row(
+          t('broker'),
+          <Link
+            href="/onboarding"
+            aria-disabled={!user}
+            className={cn(
+              'flex h-[48px] items-center gap-1.5 rounded-lg border border-border bg-card-lighter px-4 text-sm text-foreground hover:bg-card-hover',
+              !user && 'pointer-events-none opacity-50',
+            )}
+          >
+            {currentBroker
+              ? locale === 'he'
+                ? currentBroker.nameHe
+                : currentBroker.name
+              : t('brokerNotSet')}
+            <ChevronRight className="size-4 text-muted-foreground rtl:-scale-x-100" aria-hidden />
+          </Link>,
         )}
         {mounted && !user && !isPending && (
           <p className="text-xs text-muted-foreground">{t('signInForPrefs')}</p>

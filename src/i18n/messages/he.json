@@ -452,7 +452,9 @@
     "account": "חשבון",
     "hideAmounts": "הסתרת סכומים",
     "on": "פועל",
-    "off": "כבוי"
+    "off": "כבוי",
+    "broker": "ברוקר",
+    "brokerNotSet": "לא הוגדר"
   },
   "onboarding": {
     "title": "דרך מי אתם סוחרים?",

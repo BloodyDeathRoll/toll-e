@@ -452,7 +452,9 @@
     "account": "Account",
     "hideAmounts": "Hide amounts",
     "on": "On",
-    "off": "Off"
+    "off": "Off",
+    "broker": "Broker",
+    "brokerNotSet": "Not set"
   },
   "onboarding": {
     "title": "Who do you trade through?",
