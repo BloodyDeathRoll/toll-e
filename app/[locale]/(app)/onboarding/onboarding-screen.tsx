@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft, Building2, Landmark } from 'lucide-react';
+import { ArrowLeft, Building2, ChevronDown, ChevronUp, Landmark } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { ActionBar } from '@/components/app-shell/action-bar';
 import { LocalePicker } from '@/components/locale-picker';
@@ -247,24 +247,47 @@ function ReviewStep({
   // decimal ("0." parses to NaN and the render wipes it). The editor mounts
   // fresh each time it opens, so defaultValue is the current effective
   // figure, and only valid parses commit to the overrides — whose effect is
-  // visible live in the row's value line above.
-  const input = (label: string, value: number | undefined, onChange: (n: number) => void) => (
-    <label className="flex min-w-0 flex-1 flex-col gap-1">
-      <span className="text-[11px] text-muted-foreground">{label}</span>
-      <input
-        dir="ltr"
-        type="number"
-        inputMode="decimal"
-        min={0}
-        step="any"
-        defaultValue={value ?? ''}
-        onChange={(e) => {
-          if (!Number.isNaN(e.target.valueAsNumber)) onChange(e.target.valueAsNumber);
-        }}
-        className="h-[40px] min-w-0 rounded-[14px] border border-field bg-well px-3 text-sm text-foreground tabular-nums outline-none"
-      />
-    </label>
-  );
+  // visible live in the row's value line above. The chevrons are the
+  // transaction stepper's, native spinner hidden the same way; being
+  // uncontrolled, they write the input element directly before committing.
+  const input = (label: string, value: number | undefined, onChange: (n: number) => void, step = 0.01) => {
+    const bump = (e: React.MouseEvent<HTMLButtonElement>, delta: number) => {
+      const field = e.currentTarget.closest('label')?.querySelector('input');
+      if (!field) return;
+      const current = Number(field.value);
+      const next = Math.max(0, Number(((Number.isNaN(current) ? 0 : current) + delta).toFixed(4)));
+      field.value = String(next);
+      onChange(next);
+    };
+    return (
+      <label className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="text-[11px] text-muted-foreground">{label}</span>
+        <div className="flex h-[40px] items-center gap-2 rounded-[14px] border border-field bg-well px-3">
+          <input
+            dir="ltr"
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step="any"
+            defaultValue={value ?? ''}
+            aria-label={label}
+            onChange={(e) => {
+              if (!Number.isNaN(e.target.valueAsNumber)) onChange(e.target.valueAsNumber);
+            }}
+            className="min-w-0 flex-1 bg-transparent text-sm text-foreground tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+          <span className="flex items-center gap-1.5">
+            <button type="button" aria-label={`${label} +`} onClick={(e) => bump(e, step)}>
+              <ChevronUp className="size-4 text-foreground" aria-hidden />
+            </button>
+            <button type="button" aria-label={`${label} -`} onClick={(e) => bump(e, -step)}>
+              <ChevronDown className="size-4 text-foreground" aria-hidden />
+            </button>
+          </span>
+        </div>
+      </label>
+    );
+  };
 
   /** The current effective (post-override) numbers, prefilling the editor. */
   const tradeEff = (fee: TradeFee) =>
@@ -324,7 +347,7 @@ function ReviewStep({
         value,
         <>
           {input(fee.type === 'per_share' ? t('perShareFee') : t('ratePct'), eff.rate, (n) => setTrade(key, { rate: n }))}
-          {input(t('minFee'), eff.min, (n) => setTrade(key, { min: n }))}
+          {input(t('minFee'), eff.min, (n) => setTrade(key, { min: n }), 0.1)}
         </>,
         () => clear(key),
         i++,
@@ -338,8 +361,11 @@ function ReviewStep({
         t('accountFee'),
         t('perMonth', { amount: `${sym(s.accountFee.currency)}${fmtNum(s.accountFee.monthly, locale, 0)}` }) +
           (s.accountFee.offsetAgainstCommissions ? ` · ${t('offsetNote')}` : ''),
-        input(t('monthlyAmount'), s.accountFee.monthly, (n) =>
-          setOverrides((o) => ({ ...o, accountFee: { ...o.accountFee, monthly: num(n) } })),
+        input(
+          t('monthlyAmount'),
+          s.accountFee.monthly,
+          (n) => setOverrides((o) => ({ ...o, accountFee: { ...o.accountFee, monthly: num(n) } })),
+          1,
         ),
         () => clear('accountFee'),
         i++,
