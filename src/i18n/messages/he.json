@@ -412,7 +412,7 @@
     "shouldHavePaid": "היה צריך לשלם",
     "refundIn": "החזר ב-{year}",
     "paidCol": "שולם",
-    "realizedIn": "מומש ב-{year}",
+    "realized": "מומש",
     "netAfterTax": "נטו אחרי מס",
     "afterTax": "אחרי מס {amount}",
     "noSalesYear": "אין מכירות בשנה הזו.",

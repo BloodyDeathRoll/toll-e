@@ -49,7 +49,7 @@ export function Dropdown({
         aria-label={current?.name}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          'flex h-[48px] items-center gap-2 rounded-lg border border-border bg-background px-4 text-[13px] text-foreground',
+          'flex h-[48px] items-center gap-2 rounded-lg border border-border bg-card-lighter px-4 text-[15px] text-foreground hover:bg-card-hover',
           disabled && 'opacity-50',
         )}
       >
@@ -58,7 +58,7 @@ export function Dropdown({
         <ChevronDown className="size-4 text-muted-foreground" aria-hidden />
       </button>
       {open && (
-        <div className="absolute end-0 top-full z-50 mt-1.5 flex max-h-[280px] min-w-[180px] flex-col gap-3 overflow-y-auto rounded-[20px] bg-well p-5 shadow-lg">
+        <div className="absolute end-0 top-full z-50 mt-1.5 flex max-h-[280px] min-w-[180px] flex-col gap-3 overflow-y-auto rounded-[20px] bg-card-lighter p-5">
           {options.map((o) => (
             <button
               key={o.value}
@@ -67,7 +67,15 @@ export function Dropdown({
                 setOpen(false);
                 if (o.value !== active) onPick(o.value);
               }}
-              className="flex items-center gap-3 text-start text-[13px] whitespace-nowrap text-foreground"
+              className={cn(
+                'flex items-center gap-3 text-start text-[15px] whitespace-nowrap',
+                // The chosen row goes brand-coloured whole — icon, name and
+                // tick together — so the choice reads at a glance instead of
+                // hanging off a tick at the far end. `--gain` rather than the
+                // lime `--primary`, which is a surface colour and vanishes as
+                // text on a light menu.
+                o.value === active ? 'text-gain' : 'text-foreground',
+              )}
             >
               {hasBadges && <span className="flex w-5 shrink-0 justify-center">{o.badge}</span>}
               <span className="flex-1">{o.name}</span>

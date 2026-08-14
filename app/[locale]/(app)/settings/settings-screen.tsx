@@ -27,9 +27,16 @@ export function SettingsScreen() {
   // The stored *choice*, not the html class: 'system' and 'dark' can both be
   // showing the dark palette, and the segment has to say which one is on.
   const [theme, setThemeState] = useState<ThemeChoice>('system');
+  // `useSession` answers from its client-side cache on the very first client
+  // render, while the server never has a session at all — so anything derived
+  // from it has to wait for mount or the two renders disagree and React throws
+  // the hydrated tree away. Same reason the theme choice is read here rather
+  // than inline.
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- read stored state after mount
     setThemeState(themeChoice());
+    setMounted(true);
   }, []);
   const pickTheme = (value: string) => {
     const choice = value as ThemeChoice;
@@ -38,7 +45,12 @@ export function SettingsScreen() {
   };
 
   const [defaultMarket, setDefaultMarket] = useState<string | null>(null);
-  const user = session?.user as { name: string; email: string; defaultMarket?: string } | undefined;
+  // Held back until mount, so every reader below — the disabled state, the
+  // active market, the Account section — renders the signed-out picture the
+  // server rendered and only then swaps.
+  const user = mounted
+    ? (session?.user as { name: string; email: string; defaultMarket?: string } | undefined)
+    : undefined;
 
   const pickMarket = async (market: string) => {
     setDefaultMarket(market);
@@ -116,7 +128,7 @@ export function SettingsScreen() {
             showName
           />,
         )}
-        {!user && !isPending && (
+        {mounted && !user && !isPending && (
           <p className="text-xs text-muted-foreground">{t('signInForPrefs')}</p>
         )}
       </section>
@@ -129,10 +141,12 @@ export function SettingsScreen() {
           {t('account')}
         </h2>
         {user ? (
-          <>
-            <div className="flex flex-col gap-0.5">
+          /* Who you are and the way out, across from each other — the same
+             label-and-control row every setting above is built from. */
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex min-w-0 flex-col gap-0.5">
               <span className="text-sm font-semibold text-foreground">{user.name}</span>
-              <span className="text-xs text-muted-foreground">{user.email}</span>
+              <span className="truncate text-xs text-muted-foreground">{user.email}</span>
             </div>
             <button
               type="button"
@@ -141,11 +155,11 @@ export function SettingsScreen() {
                 router.push('/');
                 router.refresh();
               }}
-              className="self-start rounded-lg border border-border bg-background px-4 py-2 text-[13px] font-semibold text-loss hover:bg-accent"
+              className="flex h-[48px] shrink-0 items-center rounded-lg border border-border bg-card-lighter px-4 text-[15px] text-loss hover:bg-card-hover"
             >
               {ta('signOut')}
             </button>
-          </>
+          </div>
         ) : (
           <Link
             href="/sign-in"

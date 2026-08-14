@@ -94,7 +94,9 @@ export interface PerformancePayload {
    * Where the money is now, by sector, largest first — the donut on the
    * Performance screen. Unlike everything else here this is about the
    * holdings as they stand, not the selected year, because that is the only
-   * sense a breakdown of a portfolio can have.
+   * sense a breakdown of a portfolio can have. The screen therefore shows the
+   * donut only while the current year is selected, rather than pairing a
+   * "now" breakdown with a past year's figures.
    */
   allocation: AllocationSlice[];
 }
@@ -148,8 +150,13 @@ export async function getPerformance(
   for (const { tax } of computed) {
     for (const y of tax.years) yearSet.add(y.year);
   }
+  // The current year is always offered and is always the default, whether or
+  // not anything has been sold in it yet — "nothing realized this year" is an
+  // answer, and silently landing on an older year is not.
+  const thisYear = new Date().getFullYear();
+  yearSet.add(thisYear);
   const years = [...yearSet].sort((a, b) => b - a);
-  const selectedYear = year && yearSet.has(year) ? year : (years[0] ?? new Date().getFullYear());
+  const selectedYear = year && yearSet.has(year) ? year : thisYear;
 
   /** Symbol → market value in the display currency, for the allocation. */
   const heldValue = new Map<string, number>();

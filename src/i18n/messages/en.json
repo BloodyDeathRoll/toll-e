@@ -412,7 +412,7 @@
     "shouldHavePaid": "Should have paid",
     "refundIn": "Refund in {year}",
     "paidCol": "Paid",
-    "realizedIn": "Realized in {year}",
+    "realized": "Realized",
     "netAfterTax": "Net after tax",
     "afterTax": "after {amount} tax",
     "noSalesYear": "No sales in this year.",

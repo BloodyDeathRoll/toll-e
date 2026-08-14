@@ -44,6 +44,7 @@ export function PerformanceScreen() {
   const [state, setState] = useState<State>({ status: 'loading' });
   const [year, setYear] = useState<number | null>(null);
   const nl = locale === 'he' ? 'he-IL' : 'en-US';
+  const thisYear = new Date().getFullYear();
   // Only the newest request may write state: the lens hydrates a beat after
   // mount, so the previous market's request is often still in flight.
   const gen = useRef(0);
@@ -136,10 +137,25 @@ export function PerformanceScreen() {
           </section>
         )}
 
-        {data && slices.length > 0 && (
-          /* Where the money is. Its own card because it answers a different
-             question from everything below — one about the shape of the
-             portfolio, not about a year. */
+        {/* The year everything below reports on. Above both cards rather than
+            buried under the second one: it governs the page, so it reads as
+            the page's own control. */}
+        {data && (
+          <div className="flex justify-end">
+            <Dropdown
+              options={data.years.map((y) => ({ value: String(y), name: String(y) }))}
+              active={String(data.year)}
+              onPick={(y) => setYear(Number(y))}
+              showName
+            />
+          </div>
+        )}
+
+        {data && data.year === thisYear && slices.length > 0 && (
+          /* Where the money is — the holdings as they stand, which is the only
+             sense a breakdown of a portfolio has. It therefore has no reading
+             for a past year, so it shows only while the current one is
+             picked rather than sitting under an older year's figures. */
           <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
             <h2 className="text-[11px] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
               {t('sectors')}
@@ -156,7 +172,7 @@ export function PerformanceScreen() {
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-0.5">
                 <h2 className="text-[11px] font-semibold whitespace-nowrap tracking-[0.06em] uppercase text-muted-foreground">
-                  {t('realizedIn', { year: data.year })}
+                  {t('realized')}
                 </h2>
                 <p
                   dir="ltr"
@@ -233,17 +249,6 @@ export function PerformanceScreen() {
               )}
             </div>
 
-            {/* The year everything on this card reports on. */}
-            {data.years.length > 1 && (
-              <div className="flex justify-end">
-                <Dropdown
-                  options={data.years.map((y) => ({ value: String(y), name: String(y) }))}
-                  active={String(data.year)}
-                  onPick={(y) => setYear(Number(y))}
-                  showName
-                />
-              </div>
-            )}
           </section>
         )}
       </div>

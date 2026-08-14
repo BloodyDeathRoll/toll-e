@@ -9,6 +9,8 @@
   --background: #ffffff;
   --foreground: #000000;
   --card: #fafafa;
+  --card-lighter: #ededed;
+  --card-hover: #b9ef06;
   --card-foreground: #000000;
   --popover: #ffffff;
   --popover-foreground: #000000;
@@ -76,19 +78,21 @@
   --background:  /*rgb(20,28,28)*/ hsl(228, 64%, 4%);
   --foreground: #ffffff;
   --card: /*rgb(28,38,40)*/ hsl(226, 40%, 8%);
+  --card-lighter: /*rgb(28,38,40)*/ hsl(225, 34%, 14%);
+  --card-hover: hsl(225, 32%, 17%);
   --card-foreground: #ffffff;
-  --popover: hsl(228, 64%, 4%);;
+  --popover: hsl(228, 64%, 4%);
   --popover-foreground: #ffffff;
   --primary: #73ef06;
   --primary-foreground: #ffffff;
-  --secondary: #383838; /* surface/placeholder */
+  --secondary:  /* surface/placeholder */
   --secondary-foreground: rgba(255, 255, 255, 0.6);
   --muted: hsl(226, 40%, 5%);
   --muted-foreground: rgba(255, 255, 255, 0.64);
   --accent: #383838;
   --accent-foreground: #ffffff;
   --destructive: #ff6666;
-  --border: hsl(228, 64%, 8%); /* border/default */
+  --border: hsla(228, 40%, 12%, 0.733); /* border/default */
   --input: #2e2e2e;
   --ring: #faab00;
   --chart-1: #faab00;
@@ -100,7 +104,7 @@
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #faab00;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #383838;
+  --sidebar-accent: #fff;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #2e2e2e;
   --sidebar-ring: #faab00;
@@ -179,6 +183,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-card-lighter: var(--card-lighter);
+  --color-card-hover: var(--card-hover);
   /* Design radii: 8px controls, 14px menus, 16px cards. */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
