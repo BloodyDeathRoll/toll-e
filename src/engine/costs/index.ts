@@ -89,21 +89,25 @@ export function computeCosts(input: CostsInput): CostsLedger {
     yearTotals[tx.currency] = round2((yearTotals[tx.currency] ?? 0) + tx.commission);
   }
 
-  // Account fee: one per account per month, from the first trade ever
-  // through today, minus waived months, minus the commission offset.
+  // Account fee: one per account per month, from the first trade ever,
+  // minus waived months, minus the commission offset — and only for months
+  // that have fully ENDED. A running month is not billed yet, and at an
+  // offset broker its trades can still cover the fee; showing it mid-month
+  // would report a charge nobody has collected and no one may ever collect.
   const feeDef = schedule?.accountFee;
   const monthEnd = (m: number) => {
     const lastDay = new Date(Date.UTC(year, m, 0)).getUTCDate();
     return `${year}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
   };
-  const monthStart = (m: number) => `${year}-${String(m).padStart(2, '0')}-01`;
   const accountFeeByMonth = new Map<number, number>();
   if (feeDef && schedule) {
     for (let m = 1; m <= 12; m++) {
-      if (monthStart(m) > today) break; // not happened yet
+      if (monthEnd(m) >= today) break; // the month is not over yet
       if (input.firstTradeDate && monthEnd(m) < input.firstTradeDate) continue;
       if (!input.firstTradeDate) continue; // no account activity at all
       if (input.accountFeeWaivedUntil && monthEnd(m) <= input.accountFeeWaivedUntil) continue;
+      // The offset is what makes "actually collected" true or false: a month
+      // whose commissions reached the fee charges 0 and never shows.
       const fee = accountFeeFor(schedule, input.commissionsInFeeCurrency?.[m] ?? 0);
       if (fee > 0) accountFeeByMonth.set(m, round2(fee));
     }

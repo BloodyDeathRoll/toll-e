@@ -65,7 +65,11 @@ export interface PerformanceMonth {
   costs: number;
   /** Same commissions by native currency, unconverted. */
   costsNative: Record<string, number>;
-  /** Account fee charged that month, display currency — in nothing above. */
+  /**
+   * Account fee actually charged for the month, display currency — in
+   * nothing above. Zero while the month is still running: nothing has been
+   * collected yet, and at an offset broker later trades can still cover it.
+   */
   accountFee: number;
   sales: PerformanceSale[];
 }

@@ -36,8 +36,8 @@ describe('computeCosts — account fee', () => {
     expect(feeByMonth.get(3)).toBe(0);
     expect(feeByMonth.get(4)).toBe(9);
     expect(feeByMonth.get(5)).toBe(15);
-    // March through August (today) = 0 + 9 + 4 × 15.
-    expect(ledger.accountFee).toEqual({ amount: 69, currency: 'ILS' });
+    // March through July = 0 + 9 + 3 × 15 — August is still running.
+    expect(ledger.accountFee).toEqual({ amount: 54, currency: 'ILS' });
   });
 
   it('charges a non-offset fee in full regardless of commissions', () => {
@@ -48,8 +48,18 @@ describe('computeCosts — account fee', () => {
         commissionsInFeeCurrency: { 3: 20 },
       }),
     );
-    // Six months, ₪15 each, the ₪20 of commissions notwithstanding.
-    expect(ledger.accountFee).toEqual({ amount: 90, currency: 'ILS' });
+    // Five ended months, ₪15 each, the ₪20 of commissions notwithstanding.
+    expect(ledger.accountFee).toEqual({ amount: 75, currency: 'ILS' });
+  });
+
+  it('never bills the month still running — future trades may yet cover it', () => {
+    const running = (today: string) =>
+      computeCosts(base({ schedule: sched('meitav-trade'), today })).months.some((m) => m.month === 8);
+    // Mid-August, and even on August's own last day, no fee exists yet…
+    expect(running('2026-08-14')).toBe(false);
+    expect(running('2026-08-31')).toBe(false);
+    // …it becomes a fact only once the month is behind us.
+    expect(running('2026-09-01')).toBe(true);
   });
 
   it('waived months owe nothing — spec §2 promo waivers', () => {
@@ -59,9 +69,9 @@ describe('computeCosts — account fee', () => {
         accountFeeWaivedUntil: '2026-05-31',
       }),
     );
-    // March–May waived; June–August remain.
-    expect(ledger.accountFee).toEqual({ amount: 45, currency: 'ILS' });
-    expect(ledger.months.map((m) => m.month)).toEqual([6, 7, 8]);
+    // March–May waived; August still running; June–July remain.
+    expect(ledger.accountFee).toEqual({ amount: 30, currency: 'ILS' });
+    expect(ledger.months.map((m) => m.month)).toEqual([6, 7]);
   });
 
   it('runs no fee clock before the first trade or without a schedule', () => {

@@ -97,7 +97,7 @@ export async function getUserCosts(userId: string, year: number, usdIlsRate: num
     for (const p of portfolios) {
       for (const q of [1, 2, 3, 4] as const) {
         const quarterEnd = `${year}-${String(q * 3).padStart(2, '0')}-${q === 1 ? '31' : q === 2 ? '30' : q === 3 ? '30' : '31'}`;
-        if (quarterEnd > today) continue; // only quarters that have ended are billed
+        if (quarterEnd >= today) continue; // only quarters that have fully ended are billed
         const v = quarterValuation(p.txs, year, q, closes);
         if (v) perPortfolio.push({ ...v, value: toTier(v.value, p.currency) });
       }
