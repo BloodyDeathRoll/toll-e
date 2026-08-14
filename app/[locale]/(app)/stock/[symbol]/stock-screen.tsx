@@ -582,9 +582,10 @@ export function StockScreen({ symbol }: { symbol: string }) {
                 </div>
               </section>
 
-              {/* Your position */}
+              {/* Your position — a card, like its desktop twin: these two are
+                  self-contained readings, not another stretch of the page. */}
               {holding && (
-                <section className="flex flex-col gap-6 border-b border-border p-6">
+                <section className="mx-4 mt-4 flex flex-col gap-6 rounded-2xl border border-border bg-card p-5">
                   <h2 className="text-xs uppercase text-muted-foreground">{t('yourPosition')}</h2>
                   {/* Label above value, both on the start edge: a two-column
                       row strands the figure against the far margin, which in
@@ -628,7 +629,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
               )}
 
               {/* Key statistics */}
-              <section className="flex flex-col gap-6 p-6">
+              <section className="mx-4 mt-4 mb-4 flex flex-col gap-6 rounded-2xl border border-border bg-card p-5">
                 <h2 className="text-xs uppercase text-muted-foreground">{t('keyStats')}</h2>
                 <RangeSlider
                   low={stats.dayLow}
