@@ -15,6 +15,7 @@ import { PortfolioChart } from '@/components/portfolio-chart';
 import { RangePills, rangeToChart, type RangeOption } from '@/components/range-pills';
 import { ChangePill, AfterHours } from '@/components/quote-bits';
 import { DevLogin } from '@/components/dev-login';
+import { ErrorCard } from '@/components/error-card';
 import { GoogleButton } from '@/components/google-button';
 import { Logo } from '@/components/logo';
 import { ReserveBar } from '@/components/reserve-bar';
@@ -75,7 +76,7 @@ export function HomeScreen() {
     });
   const [showPortfolioLine, setShowPortfolioLine] = useState(true);
   const { quotes: indexQuotes } = useIndexQuotes(marketId);
-  const { state } = usePortfolioPositions(marketId);
+  const { state, reload } = usePortfolioPositions(marketId);
   const { state: taxState } = useTax(marketId);
   // Signed-in states: 'empty' gets a first-transaction CTA instead of the
   // (signed-out) demo showcase; 'loading' gets skeletons, never fake numbers.
@@ -185,6 +186,9 @@ export function HomeScreen() {
 
   // Signed-out: the HP login frame — logo, tagline, Google and nothing else.
   // App chrome (header, tab bar) hides itself while there is no session.
+  // Reached ONLY on a 401. A failing endpoint gets the error state below
+  // instead: showing this wall to someone who is signed in tells them to fix
+  // a problem they do not have, and signing in again cannot clear it.
   if (state.status === 'signed-out') {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-6 p-6">
@@ -194,6 +198,17 @@ export function HomeScreen() {
         </p>
         <GoogleButton />
         <DevLogin />
+      </main>
+    );
+  }
+
+  if (state.status === 'error') {
+    return (
+      <main className="flex flex-1 flex-col">
+        <AppHeader currency />
+        <div className="px-4 pt-2">
+          <ErrorCard onRetry={reload} />
+        </div>
       </main>
     );
   }

@@ -22,6 +22,9 @@ export interface BrokerProfileData {
 export type BrokerProfileState =
   | { status: 'loading' }
   | { status: 'signed-out' }
+  // Distinct from 'signed-out' — see the note in use-portfolio.ts. The gate
+  // must not read a failing endpoint as "never answered".
+  | { status: 'error' }
   | { status: 'unset' }
   | { status: 'data'; profile: BrokerProfileData };
 
@@ -39,7 +42,7 @@ export function useBrokerProfile() {
       const json = await res.json();
       setState(json.profile ? { status: 'data', profile: json.profile } : { status: 'unset' });
     } catch {
-      setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+      setState((s) => (s.status === 'loading' ? { status: 'error' } : s));
     }
   }, []);
 

@@ -6,6 +6,7 @@ import { Link } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
 import { Dropdown } from '@/components/dropdown';
+import { ErrorCard } from '@/components/error-card';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { PerformancePayload } from '@/src/server/performance';
@@ -15,6 +16,8 @@ import { PnlPane } from './pnl-pane';
 type State =
   | { status: 'loading' }
   | { status: 'signed-out' }
+  // Only a 401 is 'signed-out' — see the note in components/use-portfolio.ts.
+  | { status: 'error' }
   | { status: 'empty' }
   | { status: 'data'; data: PerformancePayload };
 
@@ -61,7 +64,7 @@ export function TransactionsScreen() {
       apply(json.empty ? { status: 'empty' } : { status: 'data', data: json });
     } catch {
       if (gen.current === mine) {
-        setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+        setState((s) => (s.status === 'loading' ? { status: 'error' } : s));
       }
     }
   }, [year, marketId]);
@@ -99,6 +102,8 @@ export function TransactionsScreen() {
             </Link>
           </section>
         )}
+
+        {state.status === 'error' && <ErrorCard onRetry={load} />}
 
         {state.status === 'empty' && (
           <section className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6">

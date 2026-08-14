@@ -9,9 +9,11 @@ export interface WatchlistData {
   isDefault: number;
 }
 
+// 'error' stays distinct from 'signed-out' — see the note in use-portfolio.ts.
 export type WatchlistsState =
   | { status: 'loading' }
   | { status: 'signed-out' }
+  | { status: 'error' }
   | { status: 'data'; lists: WatchlistData[] };
 
 export function useWatchlists() {
@@ -28,7 +30,7 @@ export function useWatchlists() {
       const json = await res.json();
       setState({ status: 'data', lists: json.watchlists });
     } catch {
-      setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+      setState((s) => (s.status === 'loading' ? { status: 'error' } : s));
     }
   }, []);
 

@@ -3,9 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TaxPayload } from '@/src/server/tax';
 
+// 'error' stays distinct from 'signed-out': only a 401 means signed out.
+// See the note in use-portfolio.ts.
 export type TaxState =
   | { status: 'loading' }
   | { status: 'signed-out' }
+  | { status: 'error' }
   | { status: 'empty' }
   | { status: 'data'; data: TaxPayload };
 
@@ -36,7 +39,7 @@ export function useTax(marketId: string) {
       apply({ status: 'data', data: json });
     } catch {
       if (gen.current === mine) {
-        setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+        setState((s) => (s.status === 'loading' ? { status: 'error' } : s));
       }
     }
   }, [marketId]);

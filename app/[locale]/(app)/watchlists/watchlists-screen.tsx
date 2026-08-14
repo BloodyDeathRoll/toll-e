@@ -8,6 +8,7 @@ import { ActionBar } from '@/components/app-shell/action-bar';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
 import { ListInfo, ListMenu } from '@/components/list-menu';
+import { ErrorCard } from '@/components/error-card';
 import { ReorderList } from '@/components/reorder-list';
 import { RowLink } from '@/components/row-link';
 import { ChangePill, NO_VALUE } from '@/components/quote-bits';
@@ -32,7 +33,7 @@ export function WatchlistsScreen({
   const { marketId } = useMarket();
   const market = getMarket(marketId);
   const nl = market.numberLocale;
-  const { state, createList, patchList, deleteList } = useWatchlists();
+  const { state, reload, createList, patchList, deleteList } = useWatchlists();
   const router = useRouter();
   // /watchlists/new is how the tab bar's plus asks for the create screen;
   // /watchlists/<id>/edit and /<id>/add are how the home screen's list menu
@@ -275,6 +276,14 @@ export function WatchlistsScreen({
 
       {state.status === 'signed-out' && (
         <p className="px-6 pb-6 text-xs text-muted-foreground">{t('demoNote')}</p>
+      )}
+
+      {/* The demo lists above are the signed-out showcase. On a failure they
+          are still what renders, so say plainly that these are not yours. */}
+      {state.status === 'error' && (
+        <div className="px-6 pb-6">
+          <ErrorCard onRetry={reload} />
+        </div>
       )}
     </main>
   );

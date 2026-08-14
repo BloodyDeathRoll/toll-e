@@ -403,7 +403,8 @@
     "language": "Language",
     "theme": "Toggle theme",
     "stale": "Stale",
-    "delayed": "Delayed"
+    "delayed": "Delayed",
+    "retry": "Try again"
   },
   "perf": {
     "title": "Performance",

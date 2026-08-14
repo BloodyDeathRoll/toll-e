@@ -7,6 +7,7 @@ import { AllocationDonut } from '@/components/allocation-donut';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
 import { Dropdown } from '@/components/dropdown';
+import { ErrorCard } from '@/components/error-card';
 import { InfoDot } from '@/components/info-dot';
 import { ShieldRows } from '@/components/shield-rows';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,6 +21,8 @@ import { Row } from '../transactions/pnl-pane';
 type State =
   | { status: 'loading' }
   | { status: 'signed-out' }
+  // Only a 401 is 'signed-out' — see the note in components/use-portfolio.ts.
+  | { status: 'error' }
   | { status: 'empty' }
   | { status: 'data'; data: PerformancePayload };
 
@@ -67,7 +70,7 @@ export function PerformanceScreen() {
       apply(json.empty ? { status: 'empty' } : { status: 'data', data: json });
     } catch {
       if (gen.current === mine) {
-        setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+        setState((s) => (s.status === 'loading' ? { status: 'error' } : s));
       }
     }
   }, [year, marketId]);
@@ -124,6 +127,8 @@ export function PerformanceScreen() {
             </Link>
           </section>
         )}
+
+        {state.status === 'error' && <ErrorCard onRetry={load} />}
 
         {state.status === 'empty' && (
           <section className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6">

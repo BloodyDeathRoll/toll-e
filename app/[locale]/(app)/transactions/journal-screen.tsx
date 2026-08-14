@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Check, ChevronDown, Trash2 } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
+import { ErrorCard } from '@/components/error-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMarket } from '@/src/markets/registry';
 import { fmtDate, fmtNum } from '@/lib/format';
@@ -22,6 +23,9 @@ interface TxRow {
 type State =
   | { status: 'loading' }
   | { status: 'signed-out' }
+  // A failed request is neither signed out nor empty: "no transactions yet"
+  // is a claim about the data, and a 500 knows nothing about the data.
+  | { status: 'error' }
   | { status: 'empty' }
   | { status: 'data'; portfolioId: string; txs: TxRow[] };
 
@@ -83,7 +87,7 @@ export function JournalPane({ year }: { year?: number | null } = {}) {
       apply({ status: 'data', portfolioId: portfolio.id, txs: transactions });
     } catch {
       if (gen.current === mine) {
-        setState((s) => (s.status === 'loading' ? { status: 'empty' } : s));
+        setState((s) => (s.status === 'loading' ? { status: 'error' } : s));
       }
     }
   }, [marketId]);
@@ -189,6 +193,12 @@ export function JournalPane({ year }: { year?: number | null } = {}) {
             {t('signInCta')}
           </Link>
         </section>
+      )}
+
+      {state.status === 'error' && (
+        <div className="mx-6">
+          <ErrorCard onRetry={load} />
+        </div>
       )}
 
       {state.status === 'empty' && (

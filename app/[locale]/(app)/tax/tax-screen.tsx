@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ChevronDown, Shield } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
+import { ErrorCard } from '@/components/error-card';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { ShieldRows } from '@/components/shield-rows';
 import { useMarket } from '@/components/app-shell/market-context';
@@ -88,7 +89,7 @@ export function TaxScreen() {
   // formats as "-0.00", and a year with no losses should read as a plain
   // zero. Same guard as the performance screen.
   const neg = (v: number) => (v > 0 ? -v : 0);
-  const { state } = useTax(marketId);
+  const { state, reload } = useTax(marketId);
   const [pickedYear, setPickedYear] = useState<number | null>(null);
   const [openSale, setOpenSale] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<(typeof mobileTabs)[number]>('monthly');
@@ -121,6 +122,17 @@ export function TaxScreen() {
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-2/3" />
         </section>
+      </main>
+    );
+  }
+
+  // A failed request must not fall through to the demo ledger below: showing
+  // invented tax figures during an outage is worse than showing nothing.
+  if (state.status === 'error') {
+    return (
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3.5 p-4 md:py-7">
+        <h1 className="pt-1 text-[22px] font-bold tracking-tight text-foreground">{t('title')}</h1>
+        <ErrorCard onRetry={reload} />
       </main>
     );
   }

@@ -3,13 +3,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PositionsPayload } from '@/src/server/portfolios';
 
-// Client view of /api/positions: 'signed-out' | 'empty' (no portfolio or no
-// positions yet) | live payload. Screens fall back to demo data outside the
-// 'data' state so the app stays demoable without an account.
+// Client view of /api/positions: 'signed-out' | 'error' | 'empty' (no
+// portfolio or no positions yet) | live payload. Screens fall back to demo
+// data outside the 'data' state so the app stays demoable without an account.
+//
+// 'error' is separate from 'signed-out' on purpose, and the distinction is
+// load-bearing: only a 401 means signed out. Folding every failure into
+// 'signed-out' once put the Google sign-in wall in front of a signed-in user
+// because a deploy had outrun its migration and this endpoint was returning
+// 500 — the app told them to log in, and logging in changed nothing.
 
 export type PortfolioState =
   | { status: 'loading' }
   | { status: 'signed-out' }
+  | { status: 'error' }
   | { status: 'empty' }
   | {
       status: 'data';
@@ -45,7 +52,7 @@ export function usePortfolioPositions(marketId: string, refreshMs = 30_000) {
     } catch {
       // Keep whatever we had; a transient failure shouldn't flip the UI.
       if (gen.current === mine) {
-        setState((s) => (s.status === 'loading' ? { status: 'signed-out' } : s));
+        setState((s) => (s.status === 'loading' ? { status: 'error' } : s));
       }
     }
   }, [marketId]);
