@@ -31,7 +31,7 @@ import { usePortfolioPositions } from '@/components/use-portfolio';
 import { useTax } from '@/components/use-tax';
 import { getMarket } from '@/src/markets/registry';
 import { demo } from '@/src/demo/data';
-import { fmtDate, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
+import { fmtDate, fmtMoneySigned, fmtNum, fmtPct } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 const ranges = ['1D', '1M', '6M', 'YTD', '1Y', 'All'] as const;
@@ -219,7 +219,7 @@ export function HomeScreen() {
                   dir="ltr"
                   className={cn('text-[22px] font-semibold tracking-tight tabular-nums', up ? 'text-gain' : 'text-loss')}
                 >
-                  {fmtSigned(p.dayChange, nl)} ({fmtPct(p.dayChangePct, nl)})
+                  {fmtMoneySigned(p.dayChange, market.currency, nl)} ({fmtPct(p.dayChangePct, nl)})
                 </span>
                 <span className="text-xs text-muted-foreground">{t('home.today')}</span>
               </p>
@@ -231,7 +231,7 @@ export function HomeScreen() {
                     p.allTimeChange >= 0 ? 'text-gain' : 'text-loss',
                   )}
                 >
-                  {fmtSigned(p.allTimeChange, nl)} ({fmtPct(p.allTimePct, nl)})
+                  {fmtMoneySigned(p.allTimeChange, market.currency, nl)} ({fmtPct(p.allTimePct, nl)})
                 </span>
                 <span className="text-xs text-muted-foreground">{t('home.allTimeWord')}</span>
               </p>
@@ -417,11 +417,11 @@ export function HomeScreen() {
                 </p>
                 <p className="private flex items-baseline gap-4 tabular-nums">
                   <span className={cn('text-lg font-semibold', up ? 'text-gain' : 'text-loss')}>
-                    <span dir="ltr">{fmtSigned(p.dayChange, nl)} ({fmtPct(p.dayChangePct, nl)})</span>{' '}
+                    <span dir="ltr">{fmtMoneySigned(p.dayChange, market.currency, nl)} ({fmtPct(p.dayChangePct, nl)})</span>{' '}
                     <span className="text-xs font-normal text-muted-foreground">{t('home.today')}</span>
                   </span>
                   <span className={cn('text-lg font-semibold', p.allTimeChange >= 0 ? 'text-gain' : 'text-loss')}>
-                    <span dir="ltr">{fmtSigned(p.allTimeChange, nl)} ({fmtPct(p.allTimePct, nl)})</span>{' '}
+                    <span dir="ltr">{fmtMoneySigned(p.allTimeChange, market.currency, nl)} ({fmtPct(p.allTimePct, nl)})</span>{' '}
                     <span className="text-xs font-normal text-muted-foreground">{t('home.allTimeWord')}</span>
                   </span>
                 </p>

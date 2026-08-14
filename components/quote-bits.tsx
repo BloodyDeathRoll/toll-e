@@ -37,7 +37,7 @@ export function ChangePill({
           ? 'bg-muted/40 text-muted-foreground'
           : variant === 'filled'
             ? pct >= 0
-              ? 'bg-gain-surface text-black'
+              ? 'bg-gain-surface text-white'
               : 'bg-loss-surface text-white'
             : pct >= 0
               ? 'bg-gain/10 text-gain'

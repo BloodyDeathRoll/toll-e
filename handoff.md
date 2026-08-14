@@ -1,118 +1,114 @@
-# Session Handoff — 2026-08-13
+# Session Handoff — 2026-08-14
 
 ## Goal
-Diagnose a reported bug — a buy of 21 SNDK showed as 210 shares at 124.90 on the
-stock page — and wire that page's position card to the real portfolio.
+Give the Performance screen a year dropdown above both cards (scoping the data,
+defaulting to the current year), and iterate on the dropdown / settings visuals
+from screenshots the user kept sending.
 
 ## Current State
-Done and pushed: `06cf85b` is head, tree clean except `handoff.md`.
-Green: `pnpm lint`, `pnpm typecheck`, 107 Vitest, **13/13** `pnpm test:e2e`.
+Everything is committed and pushed to `main` (`8757e03`). Only `handoff.md` is
+dirty. Green at the last check: `pnpm lint`, `pnpm typecheck`, **107/107 Vitest**.
 
-The stock page's "YOUR POSITION" card now reads the real book. Verified in the
-running app with a throwaway Playwright spec (signed in as the e2e user, booked
-21 SNDK @ 1250 on 07/27, read the rendered card, deleted the transaction):
+The 107 is unchanged — no test was added for any of this session's work, and
+the year-picker change to `getPerformance` has **no test coverage**.
 
-```
-Day's gain +2,359.56 (+8.84%) | Total gain +2,801.61 (+10.67%)
-Shares 21 | Avg cost 1,250.00 | Market value 29,051.61 | Tax if sold $700.40
-```
+Three commits went out:
+- `a1818cc` — Performance year picker, dropdown styling, sign-out row, settings
+  hydration fix.
+- `29dc604` — last session's eight Dream proposals (were sitting uncommitted).
+- `8757e03` — the lime `--series-*` ramp.
 
-Internally consistent: 21 × 1,383.41 = 29,051.61; gain = that − 26,250; tax =
-25% of gain; day's gain = 21 × the live change. `/stock/TSLA` (not held) renders
-no card at all.
+Still pending from the previous session, untouched:
+- **[HIGH] `quote-batch-partial.diff`** (Dream 2026-08-13) — `getQuotes` joins
+  batches with `Promise.all`, so one failed batch discards every batch that
+  answered. Ships its own test with 3 assertions.
+- All four 08-14 Dream findings: `performance-shield-year`,
+  `validate-sell-available`, `tax-refund-rounding`, `preview-pool-after`.
+- Proposal 1, `performance-positions-concurrent.diff` — skipped by request, NOT
+  rejected; nothing was written to the ledger about it.
 
-Known broken / not done (all carried forward, none touched this session):
-- **TASE prices are in agorot.** Yahoo returns `currency: ILA`, e.g. `TEVA.TA`
-  = 10950 meaning ₪109.50. Nothing handles `ILA`; IL portfolios are labelled
-  `ILS` with `₪`. **Every TASE figure on screen is 100× too large.** Phase 0 of
-  the commissions plan; blocks any percentage fee with a shekel floor.
-- **No commission input exists** and `app/api/portfolios/[id]/tax/preview/route.ts:34`
-  hardcodes `commission: 0`, so the sell preview understates cost.
-- `taxIfSold` on the stock card is a **flat-rate estimate** — it ignores the
-  loss-carryforward shield, same as Home. A true figure needs the tax preview
-  endpoint.
-- The rest of the stock page (key stats fallbacks, next event, the `stock`
-  fixture from `getDemoStock`) is still demo-backed where live data is missing.
-- Custody-fee valuation will be an estimate — `price_history` is only populated
-  when someone views a daily chart (`src/market-data/index.ts:108`).
-- 320px viewports overflow (Home 14px, stock 25px). Left alone deliberately;
-  360/390/412 measure 0px.
-- `docs/israeli-commissions-plan.md` is a plan only — **nothing in it is built**.
-- EN/HE message files are 457 keys each, no drift, but there is still **no
-  parity test**.
-- A dev server runs on :3000 (LAN: 192.168.1.133:3000).
+A dev server is running on `0.0.0.0:3000` (started this session, `pnpm dev -H
+0.0.0.0`). Network URL http://192.168.1.133:3000.
 
 ## Active Files
-- `app/[locale]/(app)/stock/[symbol]/stock-screen.tsx` — the only file changed.
-  Position card + day's gain now come from `/api/positions`.
-
-Read but unchanged, and the references that mattered:
-- `components/use-portfolio.ts` — `usePortfolioPositions(marketId)`; states are
-  `loading | signed-out | empty | data`.
-- `src/server/portfolios.ts` — `getPositions`, the `PositionsPayload` shape.
-- `src/engine/portfolio/index.ts:190` — `positionView`, the shared position math.
-- `components/holdings-table.tsx:240` — `positionRows`, the established
-  `taxIfSold = max(0, gain) × rate` convention this reused.
-- `src/demo/data.ts:113` — the SNDK fixture row that was being displayed.
+- `src/server/performance.ts` — `thisYear` is always added to `yearSet` and is
+  the default `selectedYear`.
+- `app/[locale]/(app)/performance/performance-screen.tsx` — `Dropdown` moved
+  above both cards; donut card gated on `data.year === thisYear`; heading is
+  `t('realized')`.
+- `src/i18n/messages/{en,he}.json` — `perf.realizedIn` replaced by
+  `perf.realized` ("Realized" / "מומש"). It had no other caller.
+- `components/dropdown.tsx` — 15px text, `bg-card-lighter` at rest,
+  `hover:bg-card-hover`, active row `text-gain` whole (icon + name + tick).
+- `app/[locale]/(app)/settings/settings-screen.tsx` — `mounted` flag; `user` is
+  `undefined` until mount; Sign out sits on a row across from the name and
+  wears the dropdown's shape with `text-loss`.
+- `app/globals.css` — `--color-card-lighter` and `--color-card-hover` wired into
+  `@theme inline`; `--series-1..5` repainted lime→green→teal→slate.
 
 ## Changes Made This Session
-1. **Diagnosis.** The card was sourced entirely from `getDemoHolding(marketId,
-   symbol)` with a fallback to the *other* market's row (`stock-screen.tsx:60`).
-   Every figure on screen matched `src/demo/data.ts:113` byte-for-byte —
-   210 · 124.90 · 29,218.98 · +2,989.98 (+11.31%). The 210 was never the user's
-   21 scaled; it is a hardcoded design value that happens to sit near it.
-   One number was a hybrid, which is what made it look like a scaling bug:
-   `daysGain = holding.shares * change` — demo shares × the *live* quote change,
-   210 × 99.005 = 20,791.05, exactly what was shown.
-2. **Wiring (06cf85b).** `usePortfolioPositions(market.id)` — the portfolio of
-   the market the *instrument* trades in, not the browsed lens, which answers
-   from the wrong book for a US symbol viewed under the IL tab.
-3. **Market value struck at the page's own price** (`live ? shares * price :
-   position.marketValue`) so the card cannot disagree with the headline above
-   it; the server's figure stands in when there is no live quote.
-4. **Demo only when signed out.** Someone signed in who does not hold the symbol
-   now gets no card, rather than someone else's shares. Deliberately *not* the
-   house convention — Home falls back to demo on `loading` too — because a flash
-   of a fake position is the very bug being fixed.
-5. **Tax rate is the portfolio's.** `taxIfSoldNote` hardcoded `rate: 25`; it
-   reads `portfolio.taxRatePct` now, and the whole tax block hides at 0% per the
-   plan's invariant. Both the desktop grid and the mobile card.
-6. **Total cost** reads the engine's `totalCost` instead of `shares × avgCost` —
-   they diverge once commissions land.
+1. **Year picker.** Was at the foot of the second card and only rendered when
+   `years.length > 1`. Moved above both cards, always rendered when there is
+   data. Heading dropped its `{year}` — the picker says it once.
+2. **Current year is always the default**, even with nothing sold in it. Landing
+   on an older year because this one is quiet is a silent answer; an explicit
+   zero is an answer.
+3. **Donut is current-year only.** The user's call when asked: allocation is
+   "holdings as they stand" and has no reading for a past year. This avoided
+   reconstructing historical positions + closing prices server-side.
+4. **Palette:** user picked a brand-lime ramp from a preview. It was applied,
+   then **reverted in the tree by the user**, then re-applied at the end of the
+   session when they reported the donut still looked wrong. It is now committed.
+5. **Settings hydration.** `disabled={!user}` flipped mid-hydration — verified
+   the SSR HTML renders `disabled=""` while better-auth answers from its client
+   cache on the first client render. Fixed at the source (`user` gated on
+   `mounted`) rather than patching the one attribute React reported, since
+   `active={...user?.defaultMarket}`, the Sign out/Sign in branch and the
+   `signInForPrefs` note are all the same class of bug.
+6. **Colour choices the user drove**, in order: `bg-well` → `bg-card` + shadow →
+   stronger shadow → no shadow + `--card-lighter` → `hover:bg-card-hover`.
+   Active-row colour went `text-brand` → `text-primary` → `text-gain` (lime
+   `--primary` is a surface colour and vanishes as text on a light menu).
 
 ## Failed Attempts
-- **Chasing a 10× scaling bug.** 21 → 210 and 1250 → 124.90 both looked like a
-  factor of ten, and `'21' + 0 === '210'` is a real JS trap with Drizzle numeric
-  columns (they come back as strings). It was a coincidence — the demo row is
-  just those numbers. Check the fixtures before theorising about arithmetic.
-- **`npx playwright test --testDir <path>`** — not a valid flag. Copy the
-  throwaway spec into `e2e/` and delete it after.
-- Carried forward from the previous session, still hard constraints:
-  - **`scrollIntoView` on every focus event** in the tx form — a field owns
-    several focusable things, so the page jumps under a finger that never left.
-    Key the scroll to a *change of field*.
-  - **The prefill-claim-key idiom for commission** — a commission depends on
-    shares, so a claim key containing `shares` is invalidated by every keystroke
-    and clobbers a hand-typed value. Use a `'profile' | 'manual'` ownership flag.
-  - **Measuring layout with a bare `document.querySelector`** — both the mobile
-    and desktop branches render (one `display:none`). Filter on
-    `offsetParent !== null` and measure the specific element.
-  - **Testing the Tax screen with no sales** — it renders the empty state, not
-    the shield card. Create a buy/sell pair via the API first.
+- **The dev server served stale i18n JSON.** `perf.realized` existed in both
+  message files on disk, but the running server kept shipping `realizedIn` in
+  the client payload — for **both** locales. `touch`ing `he.json`, `en.json`
+  and `src/i18n/request.ts` did **not** invalidate Turbopack's cache of the
+  `await import('./messages/${locale}.json')`. Only a full dev-server restart
+  fixed it. Verified after restart by curling `/en/performance` and
+  `/he/performance` and grepping the payload.
+- **Two screenshots showed stale renders**, not bugs — the `self-end` on Sign
+  out was already on disk and `.self-end` was already in the served CSS chunk.
+  Checking `stat -c %y` on the file against the screenshot timestamp settled it
+  faster than re-reading the code.
+- `next dev` has **no `--host` flag**; it is `-H/--hostname`, and it already
+  defaults to `0.0.0.0`. A second `next dev` in the same directory exits with
+  "Another next dev server is already running".
+- Chaining `sleep` in Bash to wait on a background process is blocked by the
+  harness — use `run_in_background` and poll the output file.
 
 ## Next Step
-Unchanged from last session — start the commissions work at **Phase 0** of
-`docs/israeli-commissions-plan.md`: normalize `ILA` → `ILS` at the provider
-boundary in `src/market-data/yahoo.ts` (`toQuote` ~line 114, plus the chart and
-summary mappers) — divide price-like fields by 100 and report `ILS`. Add a
-Vitest for the conversion. Ship it as its own commit; every TASE figure on
-screen changes by 100×.
+Pull the pending **[HIGH]**:
+`DREAM_ROOT=/home/shahar/Projects/Dream /home/shahar/Projects/Dream/bin/review-apply.sh toll-e 2026-08-13`
+and select `3` for `quote-batch-partial.diff`. Its shipped test is in that
+report's `tests/`. Note `review-apply.sh`'s runner never runs this repo's tests
+(it only routes `.js|.mjs|.py`) — run `pnpm test` yourself.
 
-Then Phase 1: `src/brokers/registry.ts` + `fees.ts` (pure, framework-free —
-`src/markets/registry.ts` and `scheduleFor` at `src/markets/calendar.ts:93-99`
-are the templates), with the 12 institutions from
-`docs/israeli-commissions-spec.md`.
+Known-broken, reported but not fixed (user said they would handle the palette):
+- **`app/globals.css` dark block: `--secondary:` has no value**, just a comment.
+  CSS consumes to the next `;`, so `--secondary` gets junk and
+  `--secondary-foreground` is never defined in dark at all.
+- `app/globals.css` still has `.tabular-nums.bg-gain-surface.text` matching
+  nothing, and `--sidebar-accent: #fff` in dark (left over from a hover test).
 
-Smaller, independent: the `commission: 0` in
-`app/api/portfolios/[id]/tax/preview/route.ts:34` is a two-line fix, worth doing
-whenever the form gains its commission field.
+Carried in from earlier sessions, none re-verified today:
+- **Phase 0** of `docs/israeli-commissions-plan.md` — normalize `ILA` → `ILS` at
+  the provider boundary in `src/market-data/yahoo.ts` (`toQuote` ~line 114, plus
+  the chart and summary mappers), divide price-like fields by 100. Every TASE
+  figure on screen is currently 100× too large.
+- `commission: 0` hardcoded at
+  `app/api/portfolios/[id]/tax/preview/route.ts:34`; `taxIfSold` ignores the
+  shield; 320px overflow; no EN/HE message-parity test.
+- `app/manifest.ts:15-16` and `app/[locale]/layout.tsx:29` still carry the old
+  `#0b0b0b`; `toll-e-plan.md:98` still says "theme (dark default, light later)".

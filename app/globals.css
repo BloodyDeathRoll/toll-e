@@ -55,7 +55,7 @@
   --loss-foreground: #ffffff;
   /* Filled change-pill surfaces (green/red badges). One red across the whole
      app, both themes: #ff4453. */
-  --gain-surface: #b9ef06;
+  --gain-surface: #127a21;
   --loss-surface: #ff4453;
   /* After-hours crescent. */
   --moon: #faab00;
@@ -117,12 +117,12 @@
   --brand: #7dac4a; /* accent/warning — links & active nav in dark */
   --subtle: rgba(255, 255, 255, 0.72);
   --faint: rgba(255, 255, 255, 0.4);
-  --gain: #00b91c;
+  --gain: #29ff49;
   --gain-foreground: #ffffff;
   --loss: #ff4453;
   --loss-foreground: #ffffff;
-  --gain-surface: #a4fd55;
-  --loss-surface: #ff4453;
+  --gain-surface: #127a21;
+  --loss-surface: hsl(358, 100%, 50%);
   --moon: #9a9a9a;
   /* Black desk: the shadow does nothing here, so the hairline is the only
      thing separating the phone from it. */
