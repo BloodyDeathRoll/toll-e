@@ -231,13 +231,7 @@
     "offsetByPool": "Offset by earlier losses this year",
     "taxRow": "Tax",
     "cannotSell": "You cannot sell more than you hold — you have {shares} shares",
-    "commission": "Commission",
-    "minApplied": "min {amount} applied",
-    "perShareRate": "{amount}/share",
-    "lowestTierAssumed": "lowest tier assumed",
-    "noMarketRate": "no rate for this market",
-    "noBrokerSet": "No broker set",
-    "setBroker": "Set one"
+    "brokerFees": "Broker fees"
   },
   "taxPage": {
     "title": "Tax",
@@ -495,7 +489,8 @@
     "monthlyAmount": "Monthly",
     "annualPct": "Annual (%)",
     "accountCreation": "Account creation",
-    "accountCreationHint": "Monthly account fees count from this date — set it back to include earlier months."
+    "accountCreationHint": "Monthly account fees count from this date — set it back to include earlier months.",
+    "clear": "Clear"
   },
   "install": {
     "sectionTitle": "App",

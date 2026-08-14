@@ -231,13 +231,7 @@
     "offsetByPool": "קוזז בהפסדים קודמים השנה",
     "taxRow": "מס",
     "cannotSell": "אי אפשר למכור יותר ממה שברשותך — יש לך {shares} מניות",
-    "commission": "עמלה",
-    "minApplied": "הוחל מינימום {amount}",
-    "perShareRate": "{amount} למניה",
-    "lowestTierAssumed": "הונחה המדרגה הנמוכה",
-    "noMarketRate": "אין תעריף לשוק זה",
-    "noBrokerSet": "לא הוגדר ברוקר",
-    "setBroker": "להגדרה"
+    "brokerFees": "עמלות ברוקר"
   },
   "taxPage": {
     "title": "מס",
@@ -495,7 +489,8 @@
     "monthlyAmount": "חודשי",
     "annualPct": "שנתי (%)",
     "accountCreation": "פתיחת החשבון",
-    "accountCreationHint": "דמי הטיפול החודשיים נספרים מתאריך זה — הזיזו אחורה כדי לכלול חודשים קודמים."
+    "accountCreationHint": "דמי הטיפול החודשיים נספרים מתאריך זה — הזיזו אחורה כדי לכלול חודשים קודמים.",
+    "clear": "ניקוי"
   },
   "install": {
     "sectionTitle": "אפליקציה",

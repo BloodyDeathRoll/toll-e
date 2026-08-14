@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, ChevronDown, ChevronUp, Search } from 'lucide-react';
-import { Link, useRouter } from '@/src/i18n/navigation';
+import { useRouter } from '@/src/i18n/navigation';
 import { ActionBar } from '@/components/app-shell/action-bar';
 import { useMarket } from '@/components/app-shell/market-context';
 import { DatePicker } from '@/components/date-picker';
@@ -15,12 +15,11 @@ import { tradeCommission } from '@/src/brokers/fees';
 import { applyOverrides } from '@/src/brokers/overrides';
 import { brokers, scheduleFor } from '@/src/brokers/registry';
 import { getMarket } from '@/src/markets/registry';
-import { fmtNum, fmtRatePct, fmtSigned } from '@/lib/format';
+import { fmtNum, fmtSigned } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 export function TxScreen() {
   const t = useTranslations('tx');
-  const locale = useLocale();
   const router = useRouter();
   const { marketId } = useMarket();
   const market = getMarket(marketId);
@@ -162,39 +161,6 @@ export function TxScreen() {
    */
   const commission = editTxId ? (storedCommission ?? 0) : suggestedAmount;
 
-  // The small line under the total that names where the number came from:
-  // "Meitav Trade · 0.08% · min ₪4.65 applied". The rate shown is the one
-  // the suggestion actually used — for bank tiers, the resolved tier's.
-  const marketFee = schedule ? (marketId === 'IL' ? schedule.taseTrade : schedule.usTrade) : undefined;
-  const feeSourceLine = (() => {
-    if (!broker) return null;
-    const parts = [locale === 'he' ? broker.nameHe : broker.name];
-    if (!marketFee) {
-      parts.push(t('noMarketRate'));
-      return parts.join(' · ');
-    }
-    let min: number | undefined;
-    if (marketFee.type === 'pct') {
-      parts.push(fmtRatePct(marketFee.pct, nl));
-      min = marketFee.min;
-    } else if (marketFee.type === 'per_share') {
-      parts.push(t('perShareRate', { amount: `${sym}${fmtNum(marketFee.perShare, nl)}` }));
-      min = marketFee.min;
-    } else {
-      const tier = marketFee.tiers.find((x) => x.id === suggested?.tier?.id) ?? marketFee.tiers[0];
-      parts.push(fmtRatePct(tier.pct, nl));
-      min = tier.min;
-      // With one tier there is nothing to assume — a collapsed custom rate
-      // or a flat bank figure resolves the same at any portfolio value.
-      if (suggested?.tier && !suggested.tier.pinned && marketValue === undefined && marketFee.tiers.length > 1) {
-        parts.push(t('lowestTierAssumed'));
-      }
-    }
-    if (suggested?.minApplied && min !== undefined) {
-      parts.push(t('minApplied', { amount: `${sym}${fmtNum(min, nl)}` }));
-    }
-    return parts.join(' · ');
-  })();
   /** Persisted audit trail: 'profile:<brokerId>@<effectiveFrom>'. */
   const commissionSourceValue = broker
     ? `profile:${broker.id}${schedule?.effectiveFrom ? `@${schedule.effectiveFrom}` : ''}`
@@ -561,40 +527,16 @@ export function TxScreen() {
       {stepper(t('pricePerShare'), price, onPriceEdit, 0.1)}
 
       {/* Total — shares × price, the figure the form has always shown. The
-          commission is stated under it rather than folded in: it is not
-          something you are choosing here, and the engine applies it to
-          basis or proceeds itself. */}
-      <div className="mx-6 flex flex-col gap-2 border-t border-border py-6">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-base font-medium text-foreground">{t('total')}</span>
-          <span dir="ltr" className="private text-base font-bold text-foreground tabular-nums">
-            {sym}
-            {fmtNum((shares || 0) * (price || 0), nl)}
-          </span>
-        </div>
-        {/* The fee: shown, never typed. It comes from the broker profile —
-            or, on an edit, from what the transaction already stored. */}
-        <div className="flex items-baseline justify-between gap-3 text-xs text-muted-foreground">
-          {feeSourceLine ? (
-            <>
-              <span dir="ltr" className="min-w-0 truncate">
-                {t('commission')} · {feeSourceLine}
-              </span>
-              <span dir="ltr" className="private shrink-0 tabular-nums">
-                {sym}
-                {fmtNum(commission, nl)}
-              </span>
-            </>
-          ) : (
-            <span>
-              {t('noBrokerSet')}
-              {' — '}
-              <Link href="/onboarding" className="text-primary underline underline-offset-2">
-                {t('setBroker')}
-              </Link>
-            </span>
-          )}
-        </div>
+          commission is not stated here: it is not something you choose on
+          this form, and spelling out the rate that produced it turned a
+          money field into a paragraph. It appears as one row in the tax
+          card below. */}
+      <div className="mx-6 flex items-center justify-between gap-3 border-t border-border py-6">
+        <span className="text-base font-medium text-foreground">{t('total')}</span>
+        <span dir="ltr" className="private text-base font-bold text-foreground tabular-nums">
+          {sym}
+          {fmtNum((shares || 0) * (price || 0), nl)}
+        </span>
       </div>
 
       {/* Sell-time tax preview — shown only once the engine has answered, and
@@ -649,6 +591,18 @@ export function TxScreen() {
                 {fmtNum(serverPreview.taxDelta, nl)}
               </span>
             </div>
+            {/* The fee, as one line and no more: what it cost, next to what
+                the sale cost in tax. The rate that produced it belongs to the
+                broker profile, not to this card. */}
+            {commission > 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t('brokerFees')}</span>
+                <span dir="ltr" className="text-foreground">
+                  {sym}
+                  {fmtNum(commission, nl)}
+                </span>
+              </div>
+            )}
           </div>
         </section>
       )}

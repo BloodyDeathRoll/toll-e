@@ -42,6 +42,8 @@ export function OnboardingScreen() {
   // Reached from Settings after answering, the flow is an editor and may go
   // back; as the first-run gate it may not.
   const editing = state.status === 'data';
+  /** A broker is actually set — not merely answered ("later" stores null). */
+  const hasBroker = state.status === 'data' && state.profile.brokerId !== null;
 
   const finish = async (brokerId: string | null, overrides?: FeeOverrides, accountOpenedAt?: string) => {
     setBusy(true);
@@ -125,13 +127,16 @@ export function OnboardingScreen() {
               </span>
             </button>
           ))}
+          {/* Same action, two meanings. With no broker set this is "not
+              now"; with one set, arriving here from Settings, the only thing
+              it can do is remove the broker you have — so it says so. */}
           <button
             type="button"
             disabled={busy}
             onClick={() => void finish(null)}
             className="self-start pt-2 text-sm text-primary underline underline-offset-4 disabled:opacity-50"
           >
-            {t('skip')}
+            {hasBroker ? t('clear') : t('skip')}
           </button>
         </div>
       )}
