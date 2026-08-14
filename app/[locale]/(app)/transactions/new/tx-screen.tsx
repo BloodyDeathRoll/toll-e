@@ -54,10 +54,17 @@ export function TxScreen() {
   /** 'profile' = tracks the schedule; 'manual' = the user owns this number. */
   const [commissionSource, setCommissionSource] = useState<'profile' | 'manual'>('profile');
 
-  const results = useSearch(symbolQuery, marketId).slice(0, 6);
+  const searchHits = useSearch(symbolQuery, marketId);
   const { quotes } = useQuotes(symbol ? [symbol] : []);
   const live = symbol ? quotes[symbol] : undefined;
   const { state, reload } = usePortfolioPositions(marketId);
+  // What you already hold outranks the provider's ranking: most entries on
+  // this form are follow-on trades in an existing position. Stable sort, so
+  // each group keeps the provider's order within itself.
+  const ownedSymbols = new Set(state.status === 'data' ? state.data.positions.map((p) => p.symbol) : []);
+  const results = [...searchHits]
+    .sort((a, b) => Number(ownedSymbols.has(b.symbol)) - Number(ownedSymbols.has(a.symbol)))
+    .slice(0, 6);
   const position =
     state.status === 'data' ? state.data.positions.find((p) => p.symbol === symbol) : undefined;
 

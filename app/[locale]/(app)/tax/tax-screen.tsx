@@ -374,12 +374,11 @@ export function TaxScreen() {
         <AppHeader />
         <h1 className="sr-only">{t('title')}</h1>
 
-        {/* The two shields, which are not the same thing and are routinely
-            taken for one: the broker's runs inside the year and settles at
-            source, the tax authority's crosses years and settles at filing.
-            Each carries the one sentence that tells them apart. */}
+        {/* Only the brokerage shield up top — the figure that changes what the
+            broker withholds this year. The IRS shield's presentation is being
+            reworked (write-up coming) and is hidden here until then. */}
         <section className="mx-6 mb-5 flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
-          <ShieldRows pool={view.poolLeft} shield={view.shieldLeft} sym={sym} numberLocale={nl} />
+          <ShieldRows pool={view.poolLeft} shield={view.shieldLeft} sym={sym} numberLocale={nl} poolOnly />
         </section>
 
         <UnderlineTabs

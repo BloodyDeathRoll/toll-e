@@ -436,7 +436,8 @@
     "accountLevelNote": "ברמת החשבון — נגבה פעם אחת על כל התיקים, בכל שוק שמוצג.",
     "custodyEstNote": "אומדן לפי תעריף הקטלוג ושחזור שווי בסוף כל רבעון — לא תיעוד של חיוב בפועל.",
     "quartersAtCost": "{atCost} מתוך {quarters} רבעונים הוערכו לפי עלות.",
-    "alreadyReflected": "כבר משוקלל למעלה"
+    "alreadyReflected": "כבר משוקלל למעלה",
+    "monthNet": "נטו לחודש"
   },
   "settings": {
     "title": "הגדרות",

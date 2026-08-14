@@ -78,7 +78,15 @@ export function PnlPane({
 
           {monthRows.map((m) => {
             const open = openMonth === m.month;
-            const afterTax = m.net - m.tax;
+            // The account fee is part of the month's bottom line here (user
+            // decision 2026-08-14): an ended month that didn't offset the
+            // minimum paid it, and the month's figure should say so. Trade
+            // commissions stay OUT — they are already inside gains/losses.
+            // The fee is always 0 for the still-running month.
+            const monthTotal = m.net - m.tax - m.accountFee;
+            // A flat month is a fact, not good news — zero renders white.
+            const totalColor =
+              monthTotal > 0 ? 'text-gain' : monthTotal < 0 ? 'text-loss' : 'text-foreground';
             return (
               <div key={m.month} className="border-b border-border py-4">
                 <button
@@ -102,12 +110,9 @@ export function PnlPane({
                   {!open && (
                     <span
                       dir="ltr"
-                      className={cn(
-                        'private self-start text-xl font-bold tabular-nums',
-                        afterTax >= 0 ? 'text-gain' : 'text-loss',
-                      )}
+                      className={cn('private self-start text-xl font-bold tabular-nums', totalColor)}
                     >
-                      {signed(afterTax, data.displayCurrency)}
+                      {signed(monthTotal, data.displayCurrency)}
                     </span>
                   )}
                 </button>
@@ -117,10 +122,10 @@ export function PnlPane({
                       dir="ltr"
                       className={cn(
                         'private self-start text-[28px] font-bold tracking-tight tabular-nums',
-                        afterTax >= 0 ? 'text-gain' : 'text-loss',
+                        totalColor,
                       )}
                     >
-                      {signed(afterTax, data.displayCurrency)}
+                      {signed(monthTotal, data.displayCurrency)}
                     </p>
                     {/* One line per sell action: what it realized, and what it
                         left after the tax withheld on it. */}
@@ -166,40 +171,30 @@ export function PnlPane({
                       <Row label={tt('gains')} value={money(m.gains, data.displayCurrency)} />
                       <Row label={tt('losses')} value={money(neg(m.losses), data.displayCurrency)} />
                       <Row label={t('paidCol')} value={money(-m.tax, data.displayCurrency)} />
+                      {/* A charged account fee foots into the month — but
+                          ONLY the fee. Trade commissions must stay outside:
+                          they are already inside m.gains/m.losses (the
+                          engine folds them into basis and proceeds before
+                          matching), so footing them in would double-count. */}
+                      {m.accountFee > 0 && (
+                        <Row label={t('accountFees')} value={money(-m.accountFee, data.displayCurrency)} />
+                      )}
                       <div className="h-px bg-border" />
                       <Row
-                        label={t('netAfterTax')}
-                        value={money(afterTax, data.displayCurrency)}
+                        label={t('monthNet')}
+                        value={money(monthTotal, data.displayCurrency)}
                         bold
                         big
                       />
                     </div>
-                    {/* LOAD-BEARING: these two rows sit OUTSIDE the footing
-                        above, on purpose, and must stay there. Trade
-                        commissions are ALREADY inside m.gains/m.losses — the
-                        engine folds them into basis and proceeds before
-                        matching — so adding them again would double-count.
-                        The account fee is in nothing above, but afterTax =
-                        net − tax means one thing across the whole app, and
-                        redefining this month's bottom line would change every
-                        number the user has ever seen. Do not "fix" this by
-                        footing them in. */}
-                    {(m.costs > 0 || m.accountFee > 0) && (
+                    {m.costs > 0 && (
                       <>
                         <div className="h-px bg-border" />
                         <div className="flex flex-col gap-[7px] text-xs tabular-nums">
-                          {m.costs > 0 && (
-                            <Row
-                              label={`${t('tradeCommissions')} · ${t('alreadyReflected')}`}
-                              value={money(m.costs, data.displayCurrency)}
-                            />
-                          )}
-                          {m.accountFee > 0 && (
-                            <Row
-                              label={t('accountFees')}
-                              value={money(-m.accountFee, data.displayCurrency)}
-                            />
-                          )}
+                          <Row
+                            label={`${t('tradeCommissions')} · ${t('alreadyReflected')}`}
+                            value={money(m.costs, data.displayCurrency)}
+                          />
                         </div>
                       </>
                     )}

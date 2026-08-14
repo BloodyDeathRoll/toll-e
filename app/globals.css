@@ -137,6 +137,19 @@
   --series-5: #7d8896;
 }
 
+/* Native form controls — the date input's calendar popup above all. The
+   browser takes exactly two orders here: `color-scheme` picks the popup's
+   light/dark chrome, and `accent-color` is what Chrome paints the selected
+   day (and any checkbox/radio) with. Finer control than that would mean
+   building a calendar of our own. */
+:root {
+  color-scheme: light;
+  accent-color: var(--primary);
+}
+.dark {
+  color-scheme: dark;
+}
+
 .text-primary-foreground{
   color: #000;
 }

@@ -20,6 +20,7 @@ export function ShieldRows({
   shield,
   sym,
   numberLocale,
+  poolOnly,
 }: {
   /** Realized losses still in this year's at-source pool. */
   pool: number;
@@ -27,11 +28,17 @@ export function ShieldRows({
   shield: number;
   sym: string;
   numberLocale: string;
+  /**
+   * Show only the brokerage row. The IRS shield's presentation is being
+   * reworked against a coming write-up; the Tax screen's top card hides it
+   * until then.
+   */
+  poolOnly?: boolean;
 }) {
   const t = useTranslations('taxPage');
   const rows = [
     { label: t('brokerageShield'), note: t('brokerageShieldInfo'), value: pool },
-    { label: t('irsShield'), note: t('irsShieldInfo'), value: shield },
+    ...(poolOnly ? [] : [{ label: t('irsShield'), note: t('irsShieldInfo'), value: shield }]),
   ];
   return (
     <>

@@ -436,7 +436,8 @@
     "accountLevelNote": "Account-level — charged once across all portfolios, whatever market is on screen.",
     "custodyEstNote": "An estimate from the catalogue rate and reconstructed quarter-end values — not a record of a charge.",
     "quartersAtCost": "{atCost} of {quarters} quarters valued at cost.",
-    "alreadyReflected": "already reflected above"
+    "alreadyReflected": "already reflected above",
+    "monthNet": "Net for the month"
   },
   "settings": {
     "title": "Settings",
