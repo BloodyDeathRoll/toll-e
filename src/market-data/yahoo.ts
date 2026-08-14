@@ -95,6 +95,19 @@ const ms = (t: Date | number | string | undefined): number | undefined =>
   t === undefined ? undefined : new Date(t).getTime();
 
 /**
+ * Yahoo quotes TASE in agorot under the pseudo-currency 'ILA' (₪109.50
+ * arrives as `10950`), while the rest of the app — portfolio values,
+ * commission floors quoted in real shekels — speaks ILS. The unit is
+ * corrected here at the provider boundary so 'ILA' never escapes: every
+ * money-denominated field is divided by 100 and the currency reported as
+ * ILS. Ratios (percent change, P/E, beta) and counts (volume) pass through.
+ */
+const AGOROT_PER_ILS = 100;
+const ilaFactor = (currency: string | undefined): number => (currency === 'ILA' ? AGOROT_PER_ILS : 1);
+const ilaCurrency = (currency: string | undefined): string | undefined =>
+  currency === 'ILA' ? 'ILS' : currency;
+
+/**
  * The extended-session print, when there is one newer than the regular close.
  *
  * The stamp decides this, never `marketState`, whatever the state names
@@ -137,26 +150,29 @@ export function extendedOf(q: YQuote): Quote['extended'] {
   return candidates.sort((a, b) => b.asOf - a.asOf)[0];
 }
 
-function toQuote(q: YQuote): Quote {
+export function toQuote(q: YQuote): Quote {
+  const f = ilaFactor(q.currency);
+  const money = (v: number | undefined) => (v === undefined ? undefined : v / f);
+  const ext = extendedOf(q);
   return {
     symbol: q.symbol,
     name: q.shortName ?? q.longName ?? q.symbol,
-    currency: q.currency ?? 'USD',
+    currency: ilaCurrency(q.currency) ?? 'USD',
     exchange: q.fullExchangeName ?? q.exchange,
-    price: q.regularMarketPrice ?? 0,
-    change: q.regularMarketChange ?? 0,
+    price: (q.regularMarketPrice ?? 0) / f,
+    change: (q.regularMarketChange ?? 0) / f,
     changePct: q.regularMarketChangePercent ?? 0,
-    previousClose: q.regularMarketPreviousClose,
-    open: q.regularMarketOpen,
-    dayLow: q.regularMarketDayLow,
-    dayHigh: q.regularMarketDayHigh,
-    wk52Low: q.fiftyTwoWeekLow,
-    wk52High: q.fiftyTwoWeekHigh,
+    previousClose: money(q.regularMarketPreviousClose),
+    open: money(q.regularMarketOpen),
+    dayLow: money(q.regularMarketDayLow),
+    dayHigh: money(q.regularMarketDayHigh),
+    wk52Low: money(q.fiftyTwoWeekLow),
+    wk52High: money(q.fiftyTwoWeekHigh),
     volume: q.regularMarketVolume,
     avgVolume: q.averageDailyVolume3Month,
-    marketCap: q.marketCap,
+    marketCap: money(q.marketCap),
     marketState: q.marketState ? (phaseMap[q.marketState] ?? 'closed') : undefined,
-    extended: extendedOf(q),
+    extended: ext && { ...ext, price: ext.price / f, change: ext.change / f },
     asOf: ms(q.regularMarketTime),
   };
 }
@@ -178,14 +194,15 @@ export class YahooProvider implements MarketDataProvider {
           : new Date(Date.now() - spec.back);
 
     const res = await yf.chart(symbol, { period1, interval: spec.interval });
+    const f = ilaFactor(res.meta.currency);
     let points = res.quotes
       .filter((p) => p.close != null)
       .map((p) => ({
         t: new Date(p.date).getTime(),
-        close: p.close as number,
-        open: p.open ?? undefined,
-        high: p.high ?? undefined,
-        low: p.low ?? undefined,
+        close: (p.close as number) / f,
+        open: p.open != null ? p.open / f : undefined,
+        high: p.high != null ? p.high / f : undefined,
+        low: p.low != null ? p.low / f : undefined,
         volume: p.volume ?? undefined,
       }));
 
@@ -204,11 +221,14 @@ export class YahooProvider implements MarketDataProvider {
 
     return {
       symbol,
-      currency: res.meta.currency ?? 'USD',
+      currency: ilaCurrency(res.meta.currency) ?? 'USD',
       range,
       interval: spec.interval,
       timezone: res.meta.exchangeTimezoneName ?? 'UTC',
-      previousClose: sessionPrevClose ?? res.meta.chartPreviousClose ?? undefined,
+      // sessionPrevClose comes off already-converted points; the meta
+      // fallback is raw provider data and needs the factor itself.
+      previousClose:
+        sessionPrevClose ?? (res.meta.chartPreviousClose != null ? res.meta.chartPreviousClose / f : undefined),
       points,
     };
   }
@@ -304,23 +324,27 @@ export class YahooProvider implements MarketDataProvider {
     const detail = res.summaryDetail;
     const stats = res.defaultKeyStatistics;
     const earningsDate = res.calendarEvents?.earnings?.earningsDate?.[0];
+    const f = ilaFactor(price?.currency);
+    const money = (v: number | undefined) => (v === undefined ? undefined : v / f);
 
     return {
       symbol,
       name: price?.longName ?? price?.shortName ?? symbol,
-      currency: price?.currency ?? 'USD',
+      currency: ilaCurrency(price?.currency) ?? 'USD',
       exchange: price?.exchangeName,
       sector: res.summaryProfile?.sector,
       industry: res.summaryProfile?.industry,
       description: res.summaryProfile?.longBusinessSummary,
       stats: {
-        marketCap: price?.marketCap ?? detail?.marketCap,
+        marketCap: money(price?.marketCap ?? detail?.marketCap),
         peTtm: detail?.trailingPE,
-        epsTtm: stats?.trailingEps,
+        // Per-share figures share the quote's unit, so EPS converts with the
+        // price and P/E stays coherent.
+        epsTtm: money(stats?.trailingEps),
         dividendYieldPct: detail?.dividendYield !== undefined ? detail.dividendYield * 100 : undefined,
         beta: detail?.beta,
-        wk52Low: detail?.fiftyTwoWeekLow,
-        wk52High: detail?.fiftyTwoWeekHigh,
+        wk52Low: money(detail?.fiftyTwoWeekLow),
+        wk52High: money(detail?.fiftyTwoWeekHigh),
       },
       nextEarningsDate: earningsDate ? new Date(earningsDate).toISOString().slice(0, 10) : undefined,
     };
