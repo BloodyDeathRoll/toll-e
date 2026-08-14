@@ -64,13 +64,15 @@
      against the backdrop, not against the app's own surfaces. */
   --backdrop: #dcdfe6;
   --device-edge: rgb(0 0 0 / 0.08);
-  /* Categorical series (chart overlays) — dataviz-validated fixed order;
-     never cycled, never reused for gain/loss/status. */
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  --series-3: #1baf7a;
-  --series-4: #4a3aa7;
-  --series-5: #e87ba4;
+  /* Categorical series (chart overlays) — the brand lime walked down through
+     green and teal to slate, so a breakdown reads as one family rather than
+     five unrelated signals. Fixed order, never cycled; the dark end is
+     neutral enough never to be taken for the loss red. */
+  --series-1: #b9ef06;
+  --series-2: #73c93f;
+  --series-3: #3f9a63;
+  --series-4: #2f6f6e;
+  --series-5: #55606b;
 }
 
 /* Dark palette — Figma "#DesignDark" frame variables. */
@@ -126,11 +128,13 @@
      thing separating the phone from it. */
   --backdrop: #000000;
   --device-edge: rgb(255 255 255 / 0.1);
-  --series-1: #3987e5;
-  --series-2: #d95926;
-  --series-3: #199e70;
-  --series-4: #9085e9;
-  --series-5: #d55181;
+  /* Same five hues, lifted so the dark end still separates from a near-black
+     card. */
+  --series-1: #a8ee2e;
+  --series-2: #6fd05a;
+  --series-3: #46ac7d;
+  --series-4: #3f8a89;
+  --series-5: #7d8896;
 }
 
 .text-primary-foreground{
