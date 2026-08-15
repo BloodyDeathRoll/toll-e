@@ -264,7 +264,7 @@
     "poolShield": "Tax shield",
     "poolShieldInfo": "Your brokerage's tax shield: previous realized losses are subtracted from future realized gains, so your broker withholds less at source. Applicable to the current year. At the end of the year the balance is aggregated with IRS tax shield.",
     "irsShield": "IRS tax shield",
-    "irsShieldInfo": "Eligible for a tax return if year ends in realized gains",
+    "irsShieldInfo": "What the tax authority had registered when this year opened: 25% of earlier years' net losses, carried forward indefinitely. A year that ends in gains draws it down at filing, and the tax already withheld at source comes back as a refund.",
     "lossShieldLeft": "Loss shield left",
     "usedInFull": "{amount} carried from {year}, used in full",
     "recentSales": "Recent sales",

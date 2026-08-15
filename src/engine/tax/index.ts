@@ -240,6 +240,19 @@ export function computeTax(txs: EngineTx[], rules: TaxRuleSet): TaxComputation {
   };
 }
 
+/**
+ * The registered shield as a given year *opened* — the last filed year before
+ * it carried out, and nothing since. This is the reading a year-scoped surface
+ * wants: the year is filed against the balance it inherited, not against
+ * `shieldRemaining`, which is where every year on record has left it.
+ *
+ * Read off the prior year rather than `shieldIn` because a year with no sales
+ * gets no ledger at all, and such a year still opened with a balance.
+ */
+export function shieldEnteringYear(tax: TaxComputation, year: number): number {
+  return tax.years.filter((y) => y.year < year).at(-1)?.shieldOut ?? 0;
+}
+
 export interface SellPreview {
   proceeds: number;
   costBasis: number;

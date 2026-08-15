@@ -155,6 +155,24 @@ export function PerformanceScreen() {
           />
         )}
 
+        {data && (
+          /* What the tax authority had registered when the selected year
+             opened — last year's balance plus whatever last year's own result
+             added to or drew from it. It is a standing figure the year is
+             filed against rather than a result of the year, so it sits in its
+             own card directly under the picker, the way the Tax screen gives
+             the brokerage shield its own card. */
+          <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
+            <ShieldRows
+              show="irs"
+              pool={data.totals.pool}
+              shield={data.totals.irsShield}
+              sym={market.currencySymbol}
+              numberLocale={nl}
+            />
+          </section>
+        )}
+
         {data && data.year === thisYear && slices.length > 0 && (
           /* Where the money is — the holdings as they stand, which is the only
              sense a breakdown of a portfolio has. It therefore has no reading
@@ -293,10 +311,13 @@ export function PerformanceScreen() {
 
             <div className="h-px bg-border" />
 
-            {/* What is standing between the next gain and a tax bill, in the
-                two forms it takes. Same pair, same code, as the Tax screen. */}
+            {/* What is standing between the next gain and a tax bill inside
+                this year — the broker's half, which is the half the year's
+                own figures move. The registered shield is a card of its own
+                above, reported as the year opened rather than as it stands. */}
             <div className="flex flex-col gap-3">
               <ShieldRows
+                show="brokerage"
                 pool={data.totals.pool}
                 shield={data.totals.shield}
                 sym={market.currencySymbol}

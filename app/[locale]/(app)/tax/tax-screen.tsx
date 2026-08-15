@@ -390,7 +390,7 @@ export function TaxScreen() {
             broker withholds this year. The IRS shield's presentation is being
             reworked (write-up coming) and is hidden here until then. */}
         <section className="mx-6 mb-5 flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
-          <ShieldRows pool={view.poolLeft} shield={view.shieldLeft} sym={sym} numberLocale={nl} poolOnly />
+          <ShieldRows pool={view.poolLeft} shield={view.shieldLeft} sym={sym} numberLocale={nl} show="pool" />
         </section>
 
         <UnderlineTabs

@@ -3,7 +3,7 @@ import 'server-only';
 import { and, asc, eq } from 'drizzle-orm';
 import { db } from '@/src/db';
 import { portfolios } from '@/src/db/schema';
-import { computeTax } from '@/src/engine/tax';
+import { computeTax, shieldEnteringYear } from '@/src/engine/tax';
 import { getFx, getSummary } from '@/src/market-data';
 import { OTHER_SLICE } from '@/src/allocation';
 import { getUserCosts } from './costs';
@@ -29,6 +29,13 @@ export interface PerformancePortfolio {
   /** taxPaid − taxOwed, back in next year's filing. */
   taxRefund: number;
   shieldRemaining: number;
+  /**
+   * Registered shield as it stood *entering* the selected year — the previous
+   * year's carry-out, and nothing else. It is what the year is filed against,
+   * so it is the reading a year-scoped screen wants; `shieldRemaining` is the
+   * balance after every year on record.
+   */
+  shieldEntering: number;
   /** Realized losses still in this year's at-source pool, native currency. */
   poolLeft: number;
   /** Same figures in the display currency. */
@@ -111,6 +118,10 @@ export interface PerformancePayload {
    * at source before the year is out, `shield` is what the tax authority has
    * registered and settles at filing. See the mechanic at the top of
    * src/engine/tax/index.ts.
+   *
+   * `shield` is the balance as it stands today; `irsShield` is the balance the
+   * *selected* year opened with. Pick by what the surface reports on — a card
+   * under a year picker means the latter.
    */
   totals: {
     realized: number;
@@ -120,6 +131,7 @@ export interface PerformancePayload {
     taxRefund: number;
     pool: number;
     shield: number;
+    irsShield: number;
   };
   portfolios: PerformancePortfolio[];
   /** Combined month rows in the display currency. */
@@ -240,6 +252,7 @@ export async function getPerformance(
       taxOwed: round2(taxOwed),
       taxRefund: round2(taxRefund),
       shieldRemaining: tax.shieldRemaining,
+      shieldEntering: shieldEnteringYear(tax, selectedYear),
       // The pool as the year's last active month left it — the same reading
       // previewSell reports as `poolAfter`.
       poolLeft: ledger && ledger.months.length > 0 ? ledger.months[ledger.months.length - 1].poolOut : 0,
@@ -373,6 +386,9 @@ export async function getPerformance(
       ),
       shield: round2(
         perPortfolio.reduce((s, p) => s + convert(p.shieldRemaining, p.currency), 0),
+      ),
+      irsShield: round2(
+        perPortfolio.reduce((s, p) => s + convert(p.shieldEntering, p.currency), 0),
       ),
     },
     portfolios: perPortfolio,

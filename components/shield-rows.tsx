@@ -20,7 +20,7 @@ export function ShieldRows({
   shield,
   sym,
   numberLocale,
-  poolOnly,
+  show = 'both',
 }: {
   /** Realized losses still in this year's at-source pool. */
   pool: number;
@@ -29,22 +29,29 @@ export function ShieldRows({
   sym: string;
   numberLocale: string;
   /**
-   * Show only the brokerage row. The IRS shield's presentation is being
-   * reworked against a coming write-up; the Tax screen's top card hides it
-   * until then.
+   * Which rows to render:
+   *  - `both` (default) — the pair, each naming whose shield it is.
+   *  - `brokerage` / `irs` — one row, still qualified, because the other
+   *    shield is elsewhere on the same screen (Performance gives each a card).
+   *  - `pool` — the brokerage row alone and unqualified, for the Tax screen,
+   *    where the IRS shield does not appear at all.
    */
-  poolOnly?: boolean;
+  show?: 'both' | 'brokerage' | 'irs' | 'pool';
 }) {
   const t = useTranslations('taxPage');
-  // Alone, the row is simply "Tax shield" — the qualifier only earns its
-  // keep when there are two shields to tell apart, and the pair is what the
-  // tooltip is for. Beside the IRS row it goes back to naming its own.
-  const rows = poolOnly
-    ? [{ label: t('poolShield'), note: t('poolShieldInfo'), value: pool }]
-    : [
-        { label: t('brokerageShield'), note: t('brokerageShieldInfo'), value: pool },
-        { label: t('irsShield'), note: t('irsShieldInfo'), value: shield },
-      ];
+  // Alone on its screen, the row is simply "Tax shield" — the qualifier only
+  // earns its keep when there are two shields to tell apart, and the pair is
+  // what the tooltip is for. Beside the IRS shield it names its own again.
+  const brokerage = { label: t('brokerageShield'), note: t('brokerageShieldInfo'), value: pool };
+  const irs = { label: t('irsShield'), note: t('irsShieldInfo'), value: shield };
+  const rows =
+    show === 'pool'
+      ? [{ label: t('poolShield'), note: t('poolShieldInfo'), value: pool }]
+      : show === 'brokerage'
+        ? [brokerage]
+        : show === 'irs'
+          ? [irs]
+          : [brokerage, irs];
   return (
     <>
       {rows.map((r) => (

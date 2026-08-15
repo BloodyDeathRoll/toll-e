@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeTax, previewSell } from './index';
+import { computeTax, previewSell, shieldEnteringYear } from './index';
 import { computePortfolio, type EngineTx } from '../portfolio';
 
 let seq = 0;
@@ -165,6 +165,34 @@ describe('computeTax — the registered shield, across years', () => {
       refundNextYear: 10_000,
     });
     expect(shieldRemaining).toBe(0);
+  });
+
+  it('reports the shield each year opened with — the Performance card’s figure', () => {
+    // The worked example behind the card: 200k lost in 2024 registers 50k;
+    // 2025's 80k of gains draw 20k of it down at filing, so 2025 opens at 50k
+    // and 2026 opens at 30k. 2026 has no sales of its own and still opens
+    // with a balance, which is why the figure comes off the prior year.
+    const tax = computeTax(
+      [
+        tx('BUY', 'A', '2024-01-05', 1_000, 300),
+        tx('SELL', 'A', '2024-11-10', 1_000, 100), // 2024: −200,000 → registers 50,000
+        tx('BUY', 'B', '2024-02-01', 1_000, 100),
+        tx('SELL', 'B', '2025-09-10', 1_000, 180), // 2025: +80,000 → 20,000 withheld
+      ],
+      RATE,
+    );
+    expect(tax.years.find((y) => y.year === 2024)!).toMatchObject({ registered: 50_000, shieldOut: 50_000 });
+    expect(tax.years.find((y) => y.year === 2025)!).toMatchObject({
+      paid: 20_000,
+      shieldIn: 50_000,
+      shieldUsed: 20_000,
+      owed: 0,
+      refundNextYear: 20_000, // the refund the following filing sends back
+      shieldOut: 30_000,
+    });
+    expect(shieldEnteringYear(tax, 2024)).toBe(0);
+    expect(shieldEnteringYear(tax, 2025)).toBe(50_000);
+    expect(shieldEnteringYear(tax, 2026)).toBe(30_000);
   });
 
   it('reproduces the design ledger month for month', () => {
