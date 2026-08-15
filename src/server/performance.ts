@@ -367,8 +367,21 @@ export async function getPerformance(
   }
   months.sort((a, b) => a.month - b.month);
 
+  // A commission belongs to the trade that paid it, so it belongs to that
+  // trade's portfolio — unlike the account and custody fees, which are per
+  // account and stay as `getUserCosts` (deliberately unscoped) reports them.
+  // Taking the year total from the ledger instead put another market's
+  // commissions on a market-scoped screen, above month rows that do not
+  // contain them: the card and the months it sits over stopped footing.
+  const tradeCommissions: Record<string, number> = {};
+  for (const acc of monthCommissions.values()) {
+    for (const [ccy, amount] of Object.entries(acc)) {
+      tradeCommissions[ccy] = round2((tradeCommissions[ccy] ?? 0) + amount);
+    }
+  }
+
   const tradeCommissionsConverted = round2(
-    Object.entries(ledger.tradeCommissions).reduce((s, [ccy, amount]) => s + convert(amount, ccy), 0),
+    Object.entries(tradeCommissions).reduce((s, [ccy, amount]) => s + convert(amount, ccy), 0),
   );
   const accountFeeConverted = ledger.accountFee
     ? round2(convert(ledger.accountFee.amount, ledger.accountFee.currency))
@@ -377,7 +390,7 @@ export async function getPerformance(
     ? round2(convert(ledger.custody.amount, ledger.custody.currency))
     : 0;
   const costs: PerformanceCosts = {
-    tradeCommissions: ledger.tradeCommissions,
+    tradeCommissions,
     tradeCommissionsConverted,
     accountFee: ledger.accountFee ? { ...ledger.accountFee, converted: accountFeeConverted } : null,
     custody: ledger.custody ? { ...ledger.custody, converted: custodyConverted } : null,
