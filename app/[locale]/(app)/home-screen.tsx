@@ -14,6 +14,7 @@ import { PerformanceChart, type OverlayRow } from '@/components/performance-char
 import { PortfolioChart } from '@/components/portfolio-chart';
 import { RangePills, rangeToChart, type RangeOption } from '@/components/range-pills';
 import { ChangePill, AfterHours } from '@/components/quote-bits';
+import { NoPriceBadge } from '@/components/no-price-badge';
 import { DevLogin } from '@/components/dev-login';
 import { ErrorCard } from '@/components/error-card';
 import { GoogleButton } from '@/components/google-button';
@@ -369,6 +370,9 @@ export function HomeScreen() {
               const quote = holdingQuotes[h.symbol];
               const hSeries = holdingCharts[h.symbol];
               const dayPct = quote?.changePct ?? h.dayChangePct;
+              // The live hook can succeed where the server read failed, so the
+              // row is only unpriced when neither produced a quote.
+              const unpriced = Boolean((h as { unpriced?: boolean }).unpriced) && !quote;
               return (
                 <RowLink
                   key={h.symbol}
@@ -400,8 +404,16 @@ export function HomeScreen() {
                       <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
                         {fmtNum(quote?.price ?? h.price, nl)}
                       </span>
-                      <ChangePill pct={dayPct} numberLocale={nl} className="text-[16px]" />
-                      <AfterHours quote={quote} numberLocale={nl} />
+                      {unpriced ? (
+                        // A 0% pill here would be a claim about today that no
+                        // quote supports.
+                        <NoPriceBadge show />
+                      ) : (
+                        <>
+                          <ChangePill pct={dayPct} numberLocale={nl} className="text-[16px]" />
+                          <AfterHours quote={quote} numberLocale={nl} />
+                        </>
+                      )}
                     </span>
                   </span>
                 </RowLink>

@@ -405,7 +405,9 @@
     "stale": "Stale",
     "delayed": "Delayed",
     "retry": "Try again",
-    "close": "Close"
+    "close": "Close",
+    "noPrice": "No price",
+    "noPriceHint": "Price unavailable — shown at cost"
   },
   "perf": {
     "title": "Performance",

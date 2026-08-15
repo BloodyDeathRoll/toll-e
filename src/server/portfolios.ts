@@ -64,7 +64,13 @@ export async function listTransactions(portfolioId: string): Promise<Transaction
 export interface PositionsPayload {
   portfolioId: string;
   currency: string;
-  positions: Array<PositionView & { name?: string; dayChangePct?: number }>;
+  /**
+   * `unpriced` marks a holding shown at its own cost basis because no quote
+   * came back for it. Without the flag that row is indistinguishable from a
+   * real quote on a flat day — same price, zero day change — so the screen
+   * would present stale cost as today's market value.
+   */
+  positions: Array<PositionView & { name?: string; dayChangePct?: number; unpriced?: boolean }>;
   totals: {
     marketValue: number;
     totalCost: number;
@@ -90,7 +96,13 @@ export async function getPositions(
   const { holdings } = computePortfolio(txs);
 
   const symbols = holdings.map((h) => h.symbol);
-  const quotes = symbols.length ? await getQuotes(symbols) : [];
+  // A quote miss is already survivable per symbol (below: price falls back to
+  // the lot cost). The whole call failing is the same condition, only wider —
+  // Yahoo down AND nothing usable in price_history — and it must degrade the
+  // same way rather than take every positions screen down with it. The FX
+  // chain in market-data/fallback.ts carries a last resort for exactly this
+  // reason; quotes had none.
+  const quotes = symbols.length ? await getQuotes(symbols).catch(() => []) : [];
   const bySymbol = new Map(quotes.map((q) => [q.symbol, q]));
 
   const positions = holdings
@@ -100,7 +112,7 @@ export async function getPositions(
         price: q?.price ?? h.avgCost,
         previousClose: q?.previousClose,
       });
-      return { ...view, name: q?.name, dayChangePct: q?.changePct };
+      return { ...view, name: q?.name, dayChangePct: q?.changePct, unpriced: q ? undefined : true };
     })
     .sort((a, b) => b.marketValue - a.marketValue);
 

@@ -5,6 +5,7 @@ import { Check } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { MAX_OVERLAYS } from '@/components/performance-chart';
 import { MoreLink } from '@/components/more-link';
+import { NoPriceBadge } from '@/components/no-price-badge';
 import { SessionSparkline } from '@/components/charts';
 import { StaleBadge } from '@/components/stale-badge';
 import { useCharts, useQuotes } from '@/components/use-market-data';
@@ -24,6 +25,8 @@ export interface HoldingRow {
   totalGain: number;
   totalGainPct: number;
   taxIfSold: number;
+  /** No quote came back server-side — `price` is the lot cost, not a market price. */
+  unpriced?: boolean;
 }
 
 const COLS = 'grid-cols-[1.1fr_76px_0.8fr_0.7fr_0.9fr_0.6fr_1fr_0.9fr_0.9fr_0.8fr]';
@@ -169,6 +172,9 @@ export function HoldingsTable({
             const price = q?.price ?? h.price;
             const chg = q?.changePct ?? h.dayChangePct ?? 0;
             const series = sparks[h.symbol];
+            // The live hook can succeed where the server read failed, so the
+            // row is only unpriced when neither produced a quote.
+            const unpriced = Boolean(h.unpriced) && !q;
             return (
               <>
                 <span className="flex justify-end">
@@ -187,9 +193,17 @@ export function HoldingsTable({
                   )}
                 </span>
                 <span dir="ltr" className="text-end text-foreground">{fmtNum(price, nl)}</span>
-                <span dir="ltr" className={cn('text-end', chg >= 0 ? 'text-gain' : 'text-loss')}>
-                  {fmtPct(chg, nl)}
-                </span>
+                {unpriced ? (
+                  // A 0.00% change here would be a claim about today that no
+                  // quote supports.
+                  <span className="flex justify-end">
+                    <NoPriceBadge show />
+                  </span>
+                ) : (
+                  <span dir="ltr" className={cn('text-end', chg >= 0 ? 'text-gain' : 'text-loss')}>
+                    {fmtPct(chg, nl)}
+                  </span>
+                )}
                 <span dir="ltr" className="private text-end text-foreground">
                   {fmtNum(h.shares * h.avgCost, nl)}
                 </span>
@@ -247,10 +261,12 @@ export function positionRows(
     dayChangePct?: number;
     totalGain: number;
     totalGainPct: number;
+    unpriced?: boolean;
   }>,
   taxRatePct: number,
 ): HoldingRow[] {
   return positions.map((p) => ({
+    unpriced: p.unpriced,
     symbol: p.symbol,
     name: p.name,
     shares: p.shares,
