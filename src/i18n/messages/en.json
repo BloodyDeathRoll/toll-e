@@ -301,6 +301,7 @@
     "refundIn": "Refund in {year}",
     "offsetByPool": "Offset by earlier losses",
     "taxRow": "Tax",
+    "taxRowAt": "Tax ({rate}%)",
     "withheldThisYear": "Withheld this year",
     "withheldAtRate": "Withheld at {rate}%",
     "trueLiability": "Actually owed · filed {date}",

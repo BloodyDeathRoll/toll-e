@@ -499,10 +499,13 @@ export function TaxScreen() {
                         {m.poolUsed > 0 && (
                           <Row label={t('offsetByPool')} value={`${sym}${fmtNum(-m.poolUsed, nl)}`} />
                         )}
-                        <Row label={t('rate')} value={`${view.ratePct}%`} />
                         <div className="h-px bg-border" />
+                        {/* The rate rides on the total rather than standing as
+                            a row of its own: on its own it is a line with no
+                            money on it, and the only figure it explains is
+                            the one right under it. */}
                         <Row
-                          label={t('taxRow')}
+                          label={t('taxRowAt', { rate: view.ratePct })}
                           value={m.paid === null ? t('shielded') : `${sym}${fmtNum(m.paid, nl)}`}
                           bold
                           big

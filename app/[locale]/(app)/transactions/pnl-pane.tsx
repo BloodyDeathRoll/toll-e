@@ -55,6 +55,12 @@ export function PnlPane({ data, query = '' }: { data: PerformancePayload; query?
   // this list is made of.
   const monthLabel = (m: PerformancePayload['months'][number]) =>
     `${fmtMonth(m.month, locale, 'long')} ${data.year}`;
+  // The rate the withholding was computed at, named on the row it produced.
+  // Only when the scoped portfolios agree on one: two rates behind a single
+  // converted figure is not something a bracket can say.
+  const rates = new Set(data.portfolios.map((p) => p.ratePct));
+  const taxLabel =
+    rates.size === 1 ? tt('taxRowAt', { rate: [...rates][0] }) : tt('taxRow');
   const monthRows = [...data.months]
     .filter((m) =>
       lineMatches(
@@ -159,7 +165,7 @@ export function PnlPane({ data, query = '' }: { data: PerformancePayload; query?
                     <div className="flex flex-col gap-[7px] text-sm tabular-nums">
                       <Row label={tt('gains')} value={money(m.gains, data.displayCurrency)} />
                       <Row label={tt('losses')} value={money(neg(m.losses), data.displayCurrency)} />
-                      <Row label={tt('taxRow')} value={money(-m.tax, data.displayCurrency)} />
+                      <Row label={taxLabel} value={money(-m.tax, data.displayCurrency)} />
                       {/* A charged account fee foots into the month — but
                           ONLY the fee. Trade commissions must stay outside:
                           they are already inside m.gains/m.losses (the
@@ -182,12 +188,18 @@ export function PnlPane({ data, query = '' }: { data: PerformancePayload; query?
                         />
                       )}
                       <div className="h-px bg-border" />
-                      <Row
-                        label={t('monthNet')}
-                        value={money(monthTotal, data.displayCurrency)}
-                        bold
-                        big
-                      />
+                      {/* The month's bottom line sits as far below the rule as
+                          it does above the month's own border — the 7px flex
+                          gap alone left it crowding the rows it sums while
+                          the 16px under it read as open space. */}
+                      <div className="pt-[9px]">
+                        <Row
+                          label={t('monthNet')}
+                          value={money(monthTotal, data.displayCurrency)}
+                          bold
+                          big
+                        />
+                      </div>
                     </div>
                     {m.costs > 0 && (
                       <>

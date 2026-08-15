@@ -201,7 +201,11 @@ export function TxScreen() {
   // happen (a registered shield returns as next year's refund, it never
   // reduces `paid`). No preview, no card: an estimate nobody can act on is
   // worse than the blank it replaced.
-  const portfolioId = state.status === 'data' ? state.data.portfolio.id : null;
+  // The portfolio the sale belongs to — on an edit that is the one it was
+  // opened from, exactly as the save uses, not whichever the market lens
+  // happens to be showing.
+  const portfolioId =
+    editPortfolioId ?? (state.status === 'data' ? state.data.portfolio.id : null);
   interface Preview {
     proceeds: number;
     costBasis: number;
@@ -234,7 +238,17 @@ export function TxScreen() {
       const res = await fetch(`/api/portfolios/${portfolioId}/tax/preview`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol, shares, pricePerShare: price, tradeDate, commission }),
+        body: JSON.stringify({
+          symbol,
+          shares,
+          pricePerShare: price,
+          tradeDate,
+          commission,
+          // On an edit, the sale being previewed is the one already on record:
+          // the server drops it before pricing, or the ledger would be asked
+          // about a sale that happens twice.
+          ...(editTxId ? { excludeTxId: editTxId } : {}),
+        }),
       });
       if (!alive) return;
       // A refusal (overselling, most often) is the one case that does take the
@@ -246,7 +260,7 @@ export function TxScreen() {
       alive = false;
       clearTimeout(id);
     };
-  }, [type, portfolioId, symbol, shares, price, tradeDate, commission]);
+  }, [type, portfolioId, symbol, shares, price, tradeDate, commission, editTxId]);
 
   const avgCost = serverPreview ? serverPreview.costBasis / shares : undefined;
   // Only this year's earlier losses reduce what the broker withholds now; a

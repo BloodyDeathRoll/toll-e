@@ -301,6 +301,7 @@
     "refundIn": "החזר ב-{year}",
     "offsetByPool": "קוזז בהפסדים קודמים",
     "taxRow": "מס",
+    "taxRowAt": "מס ({rate}%)",
     "withheldThisYear": "נוכה השנה",
     "withheldAtRate": "נוכה ב-{rate}%",
     "trueLiability": "החוב בפועל · הגשה {date}",

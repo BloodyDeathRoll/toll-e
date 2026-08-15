@@ -19,6 +19,8 @@ export interface PerformancePortfolio {
   name: string;
   market: string;
   currency: string;
+  /** The portfolio's tax rate — what the withheld figures were computed at. */
+  ratePct: number;
   /** Native currency figures for the selected year (unrealized is "now"). */
   realized: number;
   unrealized: number;
@@ -255,6 +257,7 @@ export async function getPerformance(
       name: p.name,
       market: p.market,
       currency: p.currency,
+      ratePct: Number(p.taxRatePct),
       realized: round2(realized),
       unrealized: round2(unrealized),
       taxPaid: round2(taxPaid),
