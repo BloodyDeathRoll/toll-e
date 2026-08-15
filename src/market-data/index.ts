@@ -165,14 +165,31 @@ export async function getFinancials(symbol: string): Promise<StockFinancials> {
   return cached(`financials:${symbol}`, TTL.financials, () => yahoo(() => provider.getFinancials(symbol)));
 }
 
+/**
+ * A rate has to be a positive finite number. Nothing else is a degraded rate
+ * — it is a wrong one, and silently: `makeConvert(0, 'ILS')` zeroes every USD
+ * figure on the page and `makeConvert(0, 'USD')` turns every ILS one into
+ * Infinity. The adapter can produce exactly that (`regularMarketPrice ?? 0`),
+ * which is the "invent a rate" the fallback chain exists to avoid.
+ */
+const usableRate = (fx: FxRate) => Number.isFinite(fx.rate) && fx.rate > 0;
+
 export async function getFx(pair: string): Promise<FxRate> {
   return cached(`fx:${pair}`, TTL.fx, async () => {
     let fx: FxRate;
     try {
       fx = await yahoo(() => provider.getFx(pair));
+      // An unusable answer is an outage, not an answer: take the same route a
+      // thrown one takes, down the BoI → ECB → persisted chain.
+      if (!usableRate(fx)) throw new Error(`unusable rate for ${pair}: ${fx.rate}`);
     } catch {
       fx = await getFxFallback(pair);
     }
+    // Every link exhausted and still no rate. Failing here is loud, and loud
+    // beats a page of zeroes and infinities — and beats writing the bad rate
+    // to fx_rates, where `onConflictDoNothing` would make it the day's answer
+    // for good.
+    if (!usableRate(fx)) throw new Error(`no usable rate for ${pair}`);
     persistFx(fx);
     return fx;
   });
