@@ -372,16 +372,16 @@ export class YahooProvider implements MarketDataProvider {
       100,
     );
     // Two classes of junk survive the indexed floors and need the live data
-    // to catch: symbols that did not actually trade today (Yahoo test
-    // tickers report volume 0 but sit in the index), and TASE debt series —
-    // bonds and makam the screener tags EQUITY, recognizable by the digits
-    // in their series names (GOI0728, LUM-B188) that real equity tickers
-    // never carry.
+    // to catch: symbols that did not actually trade today (Yahoo test tickers
+    // report volume 0 but sit in the index), and whatever listings the market
+    // itself says are not equity — `moverExcludeSymbol` in the registry, which
+    // is where a per-market rule belongs.
     const base = (sym: string) =>
       market.symbolSuffix && sym.endsWith(market.symbolSuffix)
         ? sym.slice(0, -market.symbolSuffix.length)
         : sym;
-    const sane = (q: Quote) => (q.volume ?? 0) > 0 && !/\d/.test(base(q.symbol));
+    const sane = (q: Quote) =>
+      (q.volume ?? 0) > 0 && !market.moverExcludeSymbol?.test(base(q.symbol));
     return quotes
       .filter((q) => sane(q) && s.keep(q))
       .sort(s.rank)

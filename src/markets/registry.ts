@@ -32,6 +32,13 @@ export interface MarketDef {
    */
   moverMinVolume: number;
   moverMinPrice: number;
+  /**
+   * Listings to drop from the movers boards by symbol, tested against the
+   * base symbol (the suffix stripped). A market rule, so it lives here rather
+   * than in the provider adapter: leaving it in yahoo.ts meant adding a market
+   * silently inherited another market's listing conventions.
+   */
+  moverExcludeSymbol?: RegExp;
 }
 
 const h = (hh: number, mm: number) => hh * 60 + mm;
@@ -172,6 +179,11 @@ export const markets: Record<string, MarketDef> = {
     numberLocale: 'he-IL',
     moverMinVolume: 5_000,
     moverMinPrice: 100, // agorot — ₪1 (see the field's unit note)
+    // TASE debt series — bonds and makam the screener tags EQUITY — carry
+    // digits in their series names (GOI0728, LUM-B188) that real equity
+    // tickers never do. US omits this deliberately: a digit in a US ticker
+    // is just a ticker.
+    moverExcludeSymbol: /\d/,
   },
 };
 
