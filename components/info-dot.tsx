@@ -58,7 +58,7 @@ export function InfoDot({
         <span
           role="tooltip"
           className={cn(
-            'absolute top-full z-50 mt-1 w-56 rounded-[20px] bg-well p-4 text-sm normal-case tracking-normal text-muted-foreground shadow-lg',
+            'absolute top-full z-50 mt-1 w-56 rounded-[20px] bg-card-lighter p-4 text-sm normal-case tracking-normal text-foreground shadow-lg',
             align === 'end' ? 'end-0' : 'start-0',
           )}
         >
