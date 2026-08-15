@@ -161,7 +161,14 @@ export function PnlPane({ data, query = '' }: { data: PerformancePayload; query?
                         </div>
                       ))}
                     </div>
-                    <div className="h-px bg-border" />
+                    {/* Rules get room on both sides, as on the Tax screen: the
+                        7px that separates two rows does not separate two
+                        groups. Uneven margins for even gaps — a line box
+                        carries more empty space under its glyphs than over
+                        them — measured off the ink until every gap beside a
+                        rule reads the same 25px the month's own border leaves
+                        under the total. */}
+                    <div className="mt-[14px] mb-3 h-px bg-border" />
                     <div className="flex flex-col gap-[7px] text-sm tabular-nums">
                       <Row label={tt('gains')} value={money(m.gains, data.displayCurrency)} />
                       <Row label={tt('losses')} value={money(neg(m.losses), data.displayCurrency)} />
@@ -187,23 +194,20 @@ export function PnlPane({ data, query = '' }: { data: PerformancePayload; query?
                           }
                         />
                       )}
-                      <div className="h-px bg-border" />
-                      {/* The month's bottom line sits as far below the rule as
-                          it does above the month's own border — the 7px flex
-                          gap alone left it crowding the rows it sums while
-                          the 16px under it read as open space. */}
-                      <div className="pt-[9px]">
-                        <Row
-                          label={t('monthNet')}
-                          value={money(monthTotal, data.displayCurrency)}
-                          bold
-                          big
-                        />
-                      </div>
+                      <div className="mt-[13px] mb-[15px] h-px bg-border" />
+                      <Row
+                        label={t('monthNet')}
+                        value={money(monthTotal, data.displayCurrency)}
+                        bold
+                        big
+                      />
                     </div>
                     {m.costs > 0 && (
                       <>
-                        <div className="h-px bg-border" />
+                        {/* Same band as the rules above it — this one closes
+                            the month too, and a tighter rule right under the
+                            total would read as a different kind of line. */}
+                        <div className="mt-[11px] mb-[14px] h-px bg-border" />
                         <div className="flex flex-col gap-[7px] text-xs tabular-nums">
                           <Row
                             label={`${t('tradeCommissions')} · ${t('alreadyReflected')}`}

@@ -489,7 +489,20 @@ export function TaxScreen() {
                             loss as a positive number — the one place in the
                             app that did. */}
                         <Row label={t('realizedLosses')} value={`${sym}${fmtNum(m.losses ?? 0, nl)}`} />
-                        <div className="h-px bg-border" />
+                        {/* A rule earns room on both sides of it. The 7px flex
+                            gap that separates two rows is not enough to
+                            separate two *groups* — it left every rule pressed
+                            against the line above it while the month's own
+                            border gave the last row 25px of air.
+
+                            The margins are uneven because the gaps they open
+                            are not: a line box carries more empty space under
+                            its glyphs than over them, and each row here is a
+                            different size. These four numbers were measured
+                            off the rendered ink until every gap either side of
+                            a rule reads 25px, the same as the one under the
+                            month's total. */}
+                        <div className="mt-[10px] mb-[13px] h-px bg-border" />
                         <Row label={t('taxable')} value={`${sym}${fmtNum(m.net, nl)}`} bold />
                         <div className="flex justify-end">
                           <MoreLink href="/transactions">{t('transactionsDetails')}</MoreLink>
@@ -499,7 +512,7 @@ export function TaxScreen() {
                         {m.poolUsed > 0 && (
                           <Row label={t('offsetByPool')} value={`${sym}${fmtNum(-m.poolUsed, nl)}`} />
                         )}
-                        <div className="h-px bg-border" />
+                        <div className="mt-3 mb-[15px] h-px bg-border" />
                         {/* The rate rides on the total rather than standing as
                             a row of its own: on its own it is a line with no
                             money on it, and the only figure it explains is
