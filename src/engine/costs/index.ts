@@ -131,10 +131,18 @@ export function computeCosts(input: CostsInput): CostsLedger {
   }
   const accountTotal = [...accountFeeByMonth.values()].reduce((s, v) => s + v, 0);
 
-  // Custody: apply the schedule to each supplied quarter valuation.
+  // Custody: apply the schedule to each supplied quarter valuation — but only
+  // for quarters the account existed for. The fee clock binds both fees: a
+  // bank cannot charge custody on a quarter that ended before the account was
+  // opened any more than it can charge a monthly fee for it. The valuations
+  // come from the transaction history, which can (and often does) start years
+  // before the broker relationship that is being priced.
   let custody: CostsLedger['custody'] = null;
   if (schedule?.custodyFee && input.valuations?.length) {
-    const inYear = input.valuations.filter((v) => v.year === year);
+    const quarterEnd = (q: 1 | 2 | 3 | 4) => monthEnd(q * 3);
+    const inYear = input.valuations.filter(
+      (v) => v.year === year && (!feeClockStart || quarterEnd(v.quarter) >= feeClockStart),
+    );
     if (inYear.length) {
       const amount = inYear.reduce((s, v) => s + custodyFeeFor(schedule, v.value), 0);
       const atCost = inYear.filter((v) => v.basis === 'cost').length;

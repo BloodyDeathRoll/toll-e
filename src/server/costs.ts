@@ -48,7 +48,12 @@ export async function getUserCosts(userId: string, year: number, usdIlsRate: num
     })),
   );
   const today = new Date().toISOString().slice(0, 10);
-  const schedule = resolveSchedule(profile, today);
+  // A broker's schedules are effective-dated and resolved last-wins, for the
+  // same reason the market calendars are: a backdated view must be priced with
+  // the tariff in force then, not the one in force now. Resolve at the year
+  // being reported; only the current year resolves at the clock. (`today` still
+  // governs which quarters have ended — that is a different question.)
+  const schedule = resolveSchedule(profile, year < Number(today.slice(0, 4)) ? `${year}-12-31` : today);
 
   // Trade commissions carry their trade's currency — the portfolio's.
   const costsTxs: CostsTx[] = portfolios.flatMap((p) =>
