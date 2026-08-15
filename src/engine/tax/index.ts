@@ -225,7 +225,15 @@ export function computeTax(txs: EngineTx[], rules: TaxRuleSet): TaxComputation {
       shieldLossOut: round2(layers.reduce((s, l) => s + layerLoss(l), 0)),
       registered: round2(registered),
       owed: round2(owed),
-      refundNextYear: round2(paid - owed),
+      // The pool only carries forward, so the months can only over-withhold
+      // relative to what the year finally owes: a refund is never negative.
+      // The two sides round on different conventions, though — `paid` foots to
+      // the month table (each month rounded, then summed) while `owed` comes
+      // off the unrounded `taxable × rate` — and a handful of months that each
+      // round down is enough to drive the difference a cent below zero. Foot
+      // the refund to the two figures actually printed beside it, and hold it
+      // at the floor the mechanic guarantees.
+      refundNextYear: Math.max(0, round2(round2(paid) - round2(owed))),
       months,
       sales,
     });
@@ -261,7 +269,7 @@ export interface SellPreview {
   poolUsed: number;
   /** Tax withheld at source because of this sale — the cash leaving now. */
   taxDelta: number;
-  /** Intra-year pool left after the sale. */
+  /** Intra-year pool left immediately after the sale's own month. */
   poolAfter: number;
   /** Registered shield left — untouched by an at-source sale, shown for context. */
   shieldAfter: number;
@@ -286,16 +294,31 @@ export function previewSell(
   const yWith = withSale.years.find((y) => y.year === year)!;
   const ev = yWith.sales.find((s) => s.saleTxId === candidate.id)!;
 
-  const poolUsed = (y: YearLedger | undefined) =>
-    (y?.months ?? []).reduce((s, m) => s + m.poolUsed, 0);
-  const poolAfter = (y: YearLedger | undefined) =>
-    y && y.months.length > 0 ? y.months[y.months.length - 1].poolOut : 0;
+  // Both figures below are anchored to the sale's own month, not the year.
+  // Backdating is a first-class operation (the preview route takes any
+  // `tradeDate`), so a later month's activity must not be read back onto this
+  // sale.
+  const month = Number(candidate.tradeDate.slice(5, 7));
+  // The pool THIS sale draws down is its own month's. Summing every month's
+  // poolUsed attributes to the candidate any pool it merely *created* that a
+  // later month then consumed — so a backdated losing sale, which by
+  // construction consumes nothing (a loss month's poolUsed is 0), was reported
+  // as having used the whole pool it had just fed.
+  const poolUsedIn = (y: YearLedger | undefined) =>
+    (y?.months ?? []).find((m) => m.month === month)?.poolUsed ?? 0;
+  // The pool as this sale leaves it, which is the last month at or before the
+  // sale's own — not the year's last month. A sale dated before an existing one
+  // would otherwise report a pool that a later month has already spent.
+  const poolAfter = (y: YearLedger | undefined) => {
+    const upto = (y?.months ?? []).filter((m) => m.month <= month);
+    return upto.length > 0 ? upto[upto.length - 1].poolOut : 0;
+  };
 
   return {
     proceeds: round2(ev.proceeds),
     costBasis: round2(ev.costBasis),
     gain: round2(ev.gain),
-    poolUsed: round2(poolUsed(yWith) - poolUsed(yWithout)),
+    poolUsed: round2(poolUsedIn(yWith) - poolUsedIn(yWithout)),
     taxDelta: round2(yWith.paid - (yWithout?.paid ?? 0)),
     poolAfter: round2(poolAfter(yWith)),
     shieldAfter: withSale.shieldRemaining,
