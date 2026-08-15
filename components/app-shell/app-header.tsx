@@ -7,6 +7,7 @@ import { Link, useRouter } from '@/src/i18n/navigation';
 import { MarketPicker } from './market-picker';
 import { useMarket } from './market-context';
 import { SearchResults } from './search-results';
+import { suggest, useSearchScope } from './search-scope';
 import { useSearch } from '@/components/use-market-data';
 import { cn } from '@/lib/utils';
 
@@ -31,11 +32,19 @@ export function AppHeader({
   const { marketId } = useMarket();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [globalQuery, setGlobalQuery] = useState('');
   const [focused, setFocused] = useState(false);
+  // A ledger screen claims the input for its own lines; everywhere else it is
+  // the symbol typeahead. Only the source of the query changes — the pill,
+  // the placeholder slot and the collapsing market selector are the same
+  // control either way.
+  const { scope, query: scopedQuery, setQuery: setScopedQuery } = useSearchScope();
+  const query = scope ? scopedQuery : globalQuery;
+  const setQuery = scope ? setScopedQuery : setGlobalQuery;
   const searching = query.trim().length > 0;
   const expanded = focused || searching;
-  const results = useSearch(query, marketId).slice(0, 12);
+  const results = useSearch(scope ? '' : query, marketId).slice(0, 12);
+  const suggestions = scope ? suggest(scope.terms, query) : [];
 
   // Tax lives on the tab bar now, so the menu carries what the bar dropped —
   // including Performance, which is a screen of its own again: the two cards
@@ -65,12 +74,14 @@ export function AppHeader({
         <input
           type="search"
           value={query}
-          placeholder={t('nav.search')}
+          placeholder={scope?.placeholder ?? t('nav.search')}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && results[0]) {
+            // Enter goes to the first hit — but a scoped search has nowhere to
+            // go: its results are the screen already under the input.
+            if (e.key === 'Enter' && !scope && results[0]) {
               setQuery('');
               router.push(`/stock/${encodeURIComponent(results[0].symbol)}`);
             }
@@ -138,8 +149,27 @@ export function AppHeader({
       )}
     </header>
 
+    {/* A scoped search completes rather than answers: the answer is the list
+        below, already narrowing as you type. The strip offers the terms its
+        own lines carry, so tapping one is guaranteed to leave something on
+        screen. */}
+    {scope && suggestions.length > 0 && (
+      <div className="flex gap-2 overflow-x-auto px-6 pb-3 md:hidden">
+        {suggestions.map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setQuery(s)}
+            className="shrink-0 rounded-full bg-card-lighter px-3 py-1.5 text-sm whitespace-nowrap text-foreground"
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+    )}
+
     {/* Results stand in for the screen, as in the frame — not a dropdown. */}
-    {searching && (
+    {searching && !scope && (
       <div className="app-frame fixed inset-x-0 bottom-0 top-[91px] z-40 overflow-y-auto bg-background md:hidden">
         <SearchResults
           results={results}

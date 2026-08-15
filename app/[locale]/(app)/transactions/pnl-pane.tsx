@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ChevronDown, Triangle } from 'lucide-react';
 import { useMarket } from '@/components/app-shell/market-context';
+import { lineMatches } from '@/components/app-shell/search-scope';
 import { displaySymbol, getMarket } from '@/src/markets/registry';
 import { fmtDate, fmtMoney, fmtMonth, fmtNum } from '@/lib/format';
 import type { PerformancePayload } from '@/src/server/performance';
@@ -20,7 +21,7 @@ import { cn } from '@/lib/utils';
  * moment the list grew past a screen. The figures themselves stay in the
  * default ink, unsigned; the triangle says which way.
  */
-export function PnlPane({ data }: { data: PerformancePayload }) {
+export function PnlPane({ data, query = '' }: { data: PerformancePayload; query?: string }) {
   const t = useTranslations('perf');
   const tt = useTranslations('taxPage');
   const locale = useLocale();
@@ -49,7 +50,21 @@ export function PnlPane({ data }: { data: PerformancePayload }) {
   // Negating a zero prints "-$0.00"; a month with no losses reads as a plain
   // zero.
   const neg = (v: number) => (v > 0 ? -v : 0);
-  const monthRows = [...data.months].sort((a, b) => b.month - a.month);
+  // A month is kept if the search names it, or names anything sold inside it —
+  // the row you are looking for is a month either way, since that is the unit
+  // this list is made of.
+  const monthLabel = (m: PerformancePayload['months'][number]) =>
+    `${fmtMonth(m.month, locale, 'long')} ${data.year}`;
+  const monthRows = [...data.months]
+    .filter((m) =>
+      lineMatches(
+        query,
+        monthLabel(m),
+        fmtMonth(m.month, locale, 'short'),
+        ...m.sales.flatMap((s) => [displaySymbol(s.symbol, market), s.portfolio, s.date]),
+      ),
+    )
+    .sort((a, b) => b.month - a.month);
   // The portfolio name only earns its place once there is more than one.
   const showPortfolio = data.portfolios.length > 1;
 
@@ -69,6 +84,8 @@ export function PnlPane({ data }: { data: PerformancePayload }) {
 
       {data.months.length === 0 ? (
         <p className="py-6 text-sm text-muted-foreground">{t('noSalesYear')}</p>
+      ) : monthRows.length === 0 ? (
+        <p className="py-6 text-sm text-muted-foreground">{t('noMatches', { query: query.trim() })}</p>
       ) : (
         <section className="flex flex-col">
           {monthRows.map((m) => {
@@ -142,14 +159,27 @@ export function PnlPane({ data }: { data: PerformancePayload }) {
                     <div className="flex flex-col gap-[7px] text-sm tabular-nums">
                       <Row label={tt('gains')} value={money(m.gains, data.displayCurrency)} />
                       <Row label={tt('losses')} value={money(neg(m.losses), data.displayCurrency)} />
-                      <Row label={t('paidCol')} value={money(-m.tax, data.displayCurrency)} />
+                      <Row label={tt('taxRow')} value={money(-m.tax, data.displayCurrency)} />
                       {/* A charged account fee foots into the month — but
                           ONLY the fee. Trade commissions must stay outside:
                           they are already inside m.gains/m.losses (the
                           engine folds them into basis and proceeds before
                           matching), so footing them in would double-count. */}
-                      {m.accountFee > 0 && (
-                        <Row label={t('accountFees')} value={money(-m.accountFee, data.displayCurrency)} />
+                      {/* A month whose commissions covered the fee still gets
+                          the line: the fee existed and the trading paid for
+                          it, which is the offset broker's whole bargain.
+                          Dropping the row would read as "no fee here", and
+                          leaving the amount would claim a charge nobody
+                          collected. */}
+                      {(m.accountFee > 0 || m.accountFeeOffset) && (
+                        <Row
+                          label={t('accountFees')}
+                          value={
+                            m.accountFeeOffset
+                              ? t('feeIncluded')
+                              : money(-m.accountFee, data.displayCurrency)
+                          }
+                        />
                       )}
                       <div className="h-px bg-border" />
                       <Row

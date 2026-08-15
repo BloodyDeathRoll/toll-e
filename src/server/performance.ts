@@ -78,6 +78,12 @@ export interface PerformanceMonth {
    * collected yet, and at an offset broker later trades can still cover it.
    */
   accountFee: number;
+  /**
+   * The month's fee was covered by its own commissions — the offset broker's
+   * bargain, and the reason `accountFee` is 0 here rather than one of the
+   * several reasons a month simply has no fee.
+   */
+  accountFeeOffset: boolean;
   sales: PerformanceSale[];
 }
 
@@ -178,7 +184,10 @@ export async function getPerformance(
   const convert = makeConvert(fx.rate, displayCurrency);
 
   const perPortfolio: PerformancePortfolio[] = [];
-  const monthAcc = new Map<number, Omit<PerformanceMonth, 'costs' | 'costsNative' | 'accountFee'>>();
+  const monthAcc = new Map<
+    number,
+    Omit<PerformanceMonth, 'costs' | 'costsNative' | 'accountFee' | 'accountFeeOffset'>
+  >();
   const yearSet = new Set<number>();
 
   // One read and one tax run per portfolio, held for both passes. The two
@@ -306,6 +315,7 @@ export async function getPerformance(
 
   const ledger = await ledgerPromise;
   const ledgerAccountFee = new Map(ledger.months.map((m) => [m.month, m.accountFee]));
+  const feeOffsetMonths = new Set(ledger.months.filter((m) => m.accountFeeOffset).map((m) => m.month));
   const feeCurrency = ledger.accountFee?.currency ?? 'ILS';
 
   const months: PerformanceMonth[] = [...monthAcc.values()].map((m) => {
@@ -321,6 +331,7 @@ export async function getPerformance(
       ),
       costsNative,
       accountFee: round2(convert(ledgerAccountFee.get(m.month) ?? 0, feeCurrency)),
+      accountFeeOffset: feeOffsetMonths.has(m.month),
       // Newest first, matching the month order the screen lists them in.
       sales: [...m.sales].sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1)),
     };
@@ -347,6 +358,7 @@ export async function getPerformance(
       costs: round2(Object.entries(costsNative).reduce((s, [ccy, amount]) => s + convert(amount, ccy), 0)),
       costsNative,
       accountFee: round2(convert(fee, feeCurrency)),
+      accountFeeOffset: false,
       sales: [],
     });
   }

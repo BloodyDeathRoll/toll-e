@@ -38,6 +38,24 @@ describe('computeCosts — account fee', () => {
     expect(feeByMonth.get(5)).toBe(15);
     // March through July = 0 + 9 + 3 × 15 — August is still running.
     expect(ledger.accountFee).toEqual({ amount: 54, currency: 'ILS' });
+    // March charged nothing because its trading covered the fee — which the
+    // ledger says out loud, so the screen can read "Included" rather than
+    // dropping the line as if no fee existed.
+    const offsetByMonth = new Map(ledger.months.map((m) => [m.month, m.accountFeeOffset]));
+    expect(offsetByMonth.get(3)).toBe(true);
+    expect(offsetByMonth.get(4)).toBe(false); // part-paid is still a charge
+    expect(offsetByMonth.get(5)).toBe(false);
+  });
+
+  it('a fee that cannot be offset is never reported as covered', () => {
+    const ledger = computeCosts(
+      base({
+        schedule: sched('meitav-trade'),
+        txs: [ctx('2026-03-10', 200)],
+        commissionsInFeeCurrency: { 3: 200 },
+      }),
+    );
+    expect(ledger.months.every((m) => !m.accountFeeOffset)).toBe(true);
   });
 
   it('charges a non-offset fee in full regardless of commissions', () => {

@@ -53,6 +53,14 @@ export interface MonthCosts {
   tradeCommissions: Record<string, number>;
   /** Account fee actually charged that month (post offset/waiver), fee currency. */
   accountFee: number;
+  /**
+   * The month owed an account fee and the commissions it paid covered it, so
+   * nothing was charged. Distinct from every other reason `accountFee` is 0 —
+   * a running month, a waived one, a broker with no fee at all — because this
+   * is the one where the fee was real and the trading absorbed it, which is
+   * worth saying rather than leaving as a missing line.
+   */
+  accountFeeOffset: boolean;
 }
 
 export interface CostsLedger {
@@ -106,6 +114,7 @@ export function computeCosts(input: CostsInput): CostsLedger {
     return `${year}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
   };
   const accountFeeByMonth = new Map<number, number>();
+  const offsetMonths = new Set<number>();
   const feeClockStart = input.accountOpenedAt ?? input.firstTradeDate;
   if (feeDef && schedule && feeClockStart) {
     for (let m = 1; m <= 12; m++) {
@@ -113,9 +122,11 @@ export function computeCosts(input: CostsInput): CostsLedger {
       if (monthEnd(m) < feeClockStart) continue; // before the account existed
       if (input.accountFeeWaivedUntil && monthEnd(m) <= input.accountFeeWaivedUntil) continue;
       // The offset is what makes "actually collected" true or false: a month
-      // whose commissions reached the fee charges 0 and never shows.
+      // whose commissions reached the fee charges 0 — and is remembered as
+      // having been covered, not as having had no fee.
       const fee = accountFeeFor(schedule, input.commissionsInFeeCurrency?.[m] ?? 0);
       if (fee > 0) accountFeeByMonth.set(m, round2(fee));
+      else if (accountFeeFor(schedule, 0) > 0) offsetMonths.add(m);
     }
   }
   const accountTotal = [...accountFeeByMonth.values()].reduce((s, v) => s + v, 0);
@@ -143,7 +154,12 @@ export function computeCosts(input: CostsInput): CostsLedger {
     const trade = byMonth.get(m);
     const fee = accountFeeByMonth.get(m) ?? 0;
     if (!trade && fee === 0) continue;
-    months.push({ month: m, tradeCommissions: trade ?? {}, accountFee: fee });
+    months.push({
+      month: m,
+      tradeCommissions: trade ?? {},
+      accountFee: fee,
+      accountFeeOffset: offsetMonths.has(m),
+    });
   }
 
   return {

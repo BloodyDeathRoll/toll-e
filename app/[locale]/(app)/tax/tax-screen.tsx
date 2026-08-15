@@ -9,6 +9,7 @@ import { ErrorCard } from '@/components/error-card';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { ShieldRows } from '@/components/shield-rows';
 import { useMarket } from '@/components/app-shell/market-context';
+import { lineMatches, useScopedSearch } from '@/components/app-shell/search-scope';
 import { MoreLink, MoreButton } from '@/components/more-link';
 import { ReserveBar } from '@/components/reserve-bar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -111,6 +112,27 @@ export function TaxScreen() {
   const real = state.status === 'data' ? state.data : null;
   const demoTax = demo[marketId].tax;
   const demoMonthlyPaid = demoTax.months.reduce((s, m) => s + (m.tax ?? 0), 0);
+
+  // The header's search answers with this screen's own lines while it is up
+  // (components/app-shell/search-scope.tsx). The vocabulary is every month,
+  // year and sold symbol in the ledger — read off `real` here, above the
+  // early returns below, because a hook cannot sit after them.
+  const query = useScopedSearch(
+    real
+      ? [
+          ...new Set(
+            real.years.flatMap((y) => [
+              String(y.year),
+              // The label the accordion rows carry; the desktop table spells
+              // the month out in full, and both forms match on filtering.
+              ...y.months.map((m) => `${fmtMonth(m.month, locale, 'short')} ${y.year}`),
+              ...y.sales.map((s) => displaySymbol(s.symbol, market)),
+            ]),
+          ),
+        ]
+      : [],
+    t('searchTax'),
+  );
 
   if (state.status === 'loading') {
     return (
@@ -283,6 +305,26 @@ export function TaxScreen() {
       ? t('lossCarriedFrom', { year: view.carriedFromYear })
       : t('shieldApplied');
 
+  // What the search leaves standing. A month keeps its place if the query
+  // names the month or anything sold in it; a year, if it names the year.
+  // Both layouts filter from here — the navbar's box is scoped to this screen
+  // just as the mobile header's pill is.
+  const salesIn = (month: number) =>
+    view.sales.filter((s) => Number(s.date.slice(5, 7)) === month).map((s) => s.label);
+  const monthsShown = view.months.filter((m) =>
+    lineMatches(
+      query,
+      `${fmtMonth(m.month, locale, 'long')} ${view.year}`,
+      `${fmtMonth(m.month, locale, 'short')} ${view.year}`,
+      ...salesIn(m.month),
+    ),
+  );
+  const salesShown = view.sales.filter((s) =>
+    lineMatches(query, s.label, fmtDate(s.date, locale), `${fmtMonth(Number(s.date.slice(5, 7)), locale, 'long')} ${view.year}`),
+  );
+  const yearsShown = yearRows.filter((y) => lineMatches(query, String(y.year)));
+  const searching = query.trim() !== '';
+
   const yearToggle = (
     <div className="flex max-w-full gap-0.5 overflow-x-auto rounded-lg border border-border bg-card p-[3px]" dir="ltr">
       {view.years.map((y) => (
@@ -325,7 +367,7 @@ export function TaxScreen() {
 
   const salesList = (
     <>
-      {view.sales.map((s) => (
+      {salesShown.map((s) => (
         <div key={s.id} className="border-t border-border">
           <button
             type="button"
@@ -375,7 +417,7 @@ export function TaxScreen() {
 
   // Mobile month accordions: newest first. Each one reports its own month and
   // nothing else — the year-to-date picture lives on the Yearly tab.
-  const monthRows = [...view.months].sort((a, b) => b.month - a.month);
+  const monthRows = [...monthsShown].sort((a, b) => b.month - a.month);
   const openMonthEff = openMonth === undefined ? (monthRows[0]?.month ?? null) : openMonth;
   const openYearEff = openYearState === undefined ? (yearRows[0]?.year ?? null) : openYearState;
 
@@ -403,6 +445,11 @@ export function TaxScreen() {
 
         {mobileTab === 'monthly' && (
           <section ref={monthlyRef} className="flex scroll-mt-4 flex-col px-6 pt-6">
+            {searching && monthRows.length === 0 && (
+              <p className="py-2 text-sm text-muted-foreground">
+                {t('noMatches', { query: query.trim() })}
+              </p>
+            )}
             {monthRows.map((m) => {
               const open = openMonthEff === m.month;
               const label = `${fmtMonth(m.month, locale, 'short')} ${view.year}`;
@@ -455,7 +502,7 @@ export function TaxScreen() {
                         <Row label={t('rate')} value={`${view.ratePct}%`} />
                         <div className="h-px bg-border" />
                         <Row
-                          label={t('withheldThisMonth')}
+                          label={t('taxRow')}
                           value={m.paid === null ? t('shielded') : `${sym}${fmtNum(m.paid, nl)}`}
                           bold
                           big
@@ -471,7 +518,12 @@ export function TaxScreen() {
 
         {mobileTab === 'yearly' && (
           <section className="flex flex-col px-6 pt-6">
-            {yearRows.map((y) => {
+            {searching && yearsShown.length === 0 && (
+              <p className="py-2 text-sm text-muted-foreground">
+                {t('noMatches', { query: query.trim() })}
+              </p>
+            )}
+            {yearsShown.map((y) => {
               const open = openYearEff === y.year;
               return (
                 <div key={y.year} className="border-b border-border py-4">
@@ -674,7 +726,12 @@ export function TaxScreen() {
                 <span className="text-end">{t('net')}</span>
                 <span className="text-end">{t('withheldAtRate', { rate: view.ratePct })}</span>
               </div>
-              {view.months.map((m) => (
+              {searching && monthsShown.length === 0 && (
+                <p className="border-t border-border px-6 py-4 text-sm text-muted-foreground">
+                  {t('noMatches', { query: query.trim() })}
+                </p>
+              )}
+              {monthsShown.map((m) => (
                 <div
                   key={m.month}
                   className="grid grid-cols-[1fr_1fr_1fr_1fr_1.2fr] border-t border-border px-6 py-[13px] text-sm tabular-nums"

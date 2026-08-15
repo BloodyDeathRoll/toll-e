@@ -285,6 +285,8 @@
     "emptyBody": "המס מחושב ממכירות. אחרי שתתעדו מכירה, יופיעו כאן הדוח השנתי, הפירוט החודשי ומגן ההפסדים.",
     "emptyCta": "תיעוד מכירה",
     "salesIn": "מכירות ב־{year}",
+    "searchTax": "חיפוש בשורות המס",
+    "noMatches": "אין שורות מס שתואמות “{query}”.",
     "tabs": {
       "monthly": "חודשי",
       "yearly": "שנתי"
@@ -298,7 +300,7 @@
     "withheldAtSource": "נוכה במקור",
     "refundIn": "החזר ב-{year}",
     "offsetByPool": "קוזז בהפסדים קודמים",
-    "withheldThisMonth": "נוכה החודש",
+    "taxRow": "מס",
     "withheldThisYear": "נוכה השנה",
     "withheldAtRate": "נוכה ב-{rate}%",
     "trueLiability": "החוב בפועל · הגשה {date}",
@@ -328,7 +330,8 @@
       "amount": "סכום",
       "action": "פעולה"
     },
-    "noneInYear": "אין עסקאות ב־{year}."
+    "noneInYear": "אין עסקאות ב־{year}.",
+    "noMatches": "אין עסקאות שתואמות “{query}”."
   },
   "lists": {
     "editList": "עריכת רשימה",
@@ -419,17 +422,19 @@
     "taxPaidCard": "מס ששולם",
     "shouldHavePaid": "היה צריך לשלם",
     "refundIn": "החזר ב-{year}",
-    "paidCol": "שולם",
     "realized": "מומש",
     "netAfterTax": "נטו אחרי מס",
     "afterTax": "אחרי מס {amount}",
     "noSalesYear": "אין מכירות בשנה הזו.",
+    "noMatches": "אין במסך הזה שורות שתואמות \u201c{query}\u201d.",
+    "searchActivity": "חיפוש בפעילות",
     "sectors": "סקטורים",
     "otherSlice": "אחר",
     "unrealizedNote": "על פוזיציות פתוחות, נכון להיום",
     "costsTitle": "עלויות",
     "tradeCommissions": "עמלות מסחר",
     "accountFees": "דמי טיפול",
+    "feeIncluded": "כלול",
     "custodyEstimated": "דמי משמרת (אומדן)",
     "costsTotal": "סך עלויות",
     "commissionsInPnlNote": "כבר משוקללות ברווחים ובהפסדים למעלה — עמלות נכללות בעלות ובתמורה לפני ההתאמה.",

@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Check, ChevronDown, Trash2 } from 'lucide-react';
 import { Link } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
+import { lineMatches } from '@/components/app-shell/search-scope';
 import { ErrorCard } from '@/components/error-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMarket } from '@/src/markets/registry';
@@ -45,7 +46,17 @@ const sorters: Record<SortKey, (a: TxRow, b: TxRow) => number> = {
  * rather than a page — the screen's header, its summary card and the tab strip
  * above it belong to transactions-screen.tsx, which shows this beside the P&L.
  */
-export function JournalPane({ year }: { year?: number | null } = {}) {
+export function JournalPane({
+  year,
+  query = '',
+  onTerms,
+}: {
+  year?: number | null;
+  /** The header's scoped search — see components/app-shell/search-scope.tsx. */
+  query?: string;
+  /** Report the words on these rows back up, so the header can complete them. */
+  onTerms?: (terms: string[]) => void;
+} = {}) {
   const t = useTranslations('journal');
   const locale = useLocale();
   const { marketId } = useMarket();
@@ -125,7 +136,6 @@ export function JournalPane({ year }: { year?: number | null } = {}) {
     state.status === 'data'
       ? state.txs.filter((tx) => year == null || tx.tradeDate.startsWith(String(year)))
       : [];
-  const sorted = [...inYear].sort(sorters[sort]);
 
   // Month captions only make sense while the list is in date order; under any
   // other sort the dates jump around and the caption would lie about its rows.
@@ -134,6 +144,19 @@ export function JournalPane({ year }: { year?: number | null } = {}) {
     new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(
       new Date(`${iso}T00:00:00`),
     );
+  const typeLabel = (type: TxRow['type']) => t(type === 'BUY' ? 'buy' : 'sell');
+
+  // Everything a reader can see on one of these rows — what the header's
+  // search completes from, and what it matches against.
+  const termsOf = (tx: TxRow) => [tx.symbol, typeLabel(tx.type), monthLabel(tx.tradeDate)];
+  const termKey = inYear.flatMap(termsOf).join('|');
+  useEffect(() => {
+    onTerms?.(termKey === '' ? [] : [...new Set(termKey.split('|'))]);
+  }, [termKey, onTerms]);
+
+  const sorted = [...inYear]
+    .filter((tx) => lineMatches(query, ...termsOf(tx), fmtDate(tx.tradeDate, locale)))
+    .sort(sorters[sort]);
 
   return (
     <div className="flex flex-col pt-4">
@@ -146,13 +169,16 @@ export function JournalPane({ year }: { year?: number | null } = {}) {
               type="button"
               onClick={() => setSortOpen((v) => !v)}
               aria-expanded={sortOpen}
-              className="flex items-center gap-1 rounded-full bg-well px-3 py-2 text-sm font-medium text-foreground"
+              // `--card-lighter`, like every other dropdown in the app: a
+              // control that opens a menu is the same object here as in the
+              // header, whatever shape its trigger takes.
+              className="flex items-center gap-1 rounded-full bg-card-lighter px-3 py-2 text-sm font-medium text-foreground"
             >
               {t(`sort.${sort}`)}
               <ChevronDown className="size-4" aria-hidden />
             </button>
             {sortOpen && (
-              <div className="absolute end-0 top-full z-50 mt-1.5 flex w-40 flex-col gap-4 rounded-[20px] bg-well p-6 shadow-lg">
+              <div className="absolute end-0 top-full z-50 mt-1.5 flex w-40 flex-col gap-4 rounded-[20px] bg-card-lighter p-6 shadow-lg">
                 {sortKeys.map((k) => (
                   <button
                     key={k}
@@ -213,8 +239,14 @@ export function JournalPane({ year }: { year?: number | null } = {}) {
         </section>
       )}
 
-      {state.status === 'data' && sorted.length === 0 && year != null && (
-        <p className="px-6 py-6 text-sm text-muted-foreground">{t('noneInYear', { year })}</p>
+      {state.status === 'data' && sorted.length === 0 && (
+        <p className="px-6 py-6 text-sm text-muted-foreground">
+          {query.trim() !== ''
+            ? t('noMatches', { query: query.trim() })
+            : year != null
+              ? t('noneInYear', { year })
+              : t('empty')}
+        </p>
       )}
 
       {state.status === 'data' && (
@@ -239,7 +271,7 @@ export function JournalPane({ year }: { year?: number | null } = {}) {
                       tx.type === 'BUY' ? 'bg-gain/10 text-gain' : 'bg-primary/10 text-primary',
                     )}
                   >
-                    {t(tx.type === 'BUY' ? 'buy' : 'sell')}
+                    {typeLabel(tx.type)}
                   </span>
                   <Link
                     href={`/transactions/new?edit=${tx.id}&portfolio=${state.portfolioId}`}

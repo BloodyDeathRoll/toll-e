@@ -1,14 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
 import { useMarket } from '@/components/app-shell/market-context';
+import { useScopedSearch } from '@/components/app-shell/search-scope';
 import { Dropdown } from '@/components/dropdown';
 import { ErrorCard } from '@/components/error-card';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { displaySymbol, getMarket } from '@/src/markets/registry';
+import { fmtMonth } from '@/lib/format';
 import type { PerformancePayload } from '@/src/server/performance';
 import { JournalPane } from './journal-screen';
 import { PnlPane } from './pnl-pane';
@@ -38,10 +41,15 @@ const tabs = ['pnl', 'list'] as const;
 export function TransactionsScreen() {
   const t = useTranslations('perf');
   const tj = useTranslations('journal');
+  const locale = useLocale();
   const { marketId } = useMarket();
+  const market = getMarket(marketId);
   const [state, setState] = useState<State>({ status: 'loading' });
   const [year, setYear] = useState<number | null>(null);
   const [tab, setTab] = useState<(typeof tabs)[number]>('pnl');
+  // The journal fetches its own rows, so the words on them can only come back
+  // up from it — the header's vocabulary has to cover both tabs.
+  const [journalTerms, setJournalTerms] = useState<string[]>([]);
   // Only the newest request may write state: the lens hydrates a beat after
   // mount, so the previous market's request is often still in flight.
   const gen = useRef(0);
@@ -76,6 +84,27 @@ export function TransactionsScreen() {
   }, [load]);
 
   const data = state.status === 'data' ? state.data : null;
+
+  // Everything a reader can see on a line of the tab that is up: the P&L's
+  // months, the symbols sold in them and the portfolio each came from, or the
+  // journal's own rows. Per tab rather than both at once, so a suggestion is
+  // never a term that would leave the visible list empty. The panes filter by
+  // the same query, which is what makes the header answer with activity and
+  // nothing else.
+  const terms =
+    tab === 'list'
+      ? journalTerms
+      : [
+          ...new Set(
+            (data?.months ?? []).flatMap((m) => [
+              // The label as the row itself carries it, so a suggestion reads
+              // like the line it will leave standing.
+              `${fmtMonth(m.month, locale, 'short')} ${data!.year}`,
+              ...m.sales.flatMap((s) => [displaySymbol(s.symbol, market), s.portfolio]),
+            ]),
+          ),
+        ];
+  const query = useScopedSearch(terms, t('searchActivity'));
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col">
@@ -143,9 +172,9 @@ export function TransactionsScreen() {
       />
 
       {tab === 'pnl' ? (
-        data && <PnlPane data={data} />
+        data && <PnlPane data={data} query={query} />
       ) : (
-        <JournalPane year={year ?? data?.year ?? null} />
+        <JournalPane year={year ?? data?.year ?? null} query={query} onTerms={setJournalTerms} />
       )}
     </main>
   );

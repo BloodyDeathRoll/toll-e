@@ -285,6 +285,8 @@
     "emptyBody": "Tax is computed from sales. Once you record a sell, the yearly ledger, monthly breakdown, and loss shield show up here.",
     "emptyCta": "Record a sale",
     "salesIn": "Sales in {year}",
+    "searchTax": "Search tax lines",
+    "noMatches": "No tax lines match \u201c{query}\u201d.",
     "tabs": {
       "monthly": "Monthly",
       "yearly": "Yearly"
@@ -298,7 +300,7 @@
     "withheldAtSource": "Withheld at source",
     "refundIn": "Refund in {year}",
     "offsetByPool": "Offset by earlier losses",
-    "withheldThisMonth": "Withheld this month",
+    "taxRow": "Tax",
     "withheldThisYear": "Withheld this year",
     "withheldAtRate": "Withheld at {rate}%",
     "trueLiability": "Actually owed · filed {date}",
@@ -328,7 +330,8 @@
       "amount": "Amount",
       "action": "Action"
     },
-    "noneInYear": "No transactions in {year}."
+    "noneInYear": "No transactions in {year}.",
+    "noMatches": "No transactions match “{query}”."
   },
   "lists": {
     "editList": "Edit list",
@@ -419,17 +422,19 @@
     "taxPaidCard": "Tax paid",
     "shouldHavePaid": "Should have paid",
     "refundIn": "Refund in {year}",
-    "paidCol": "Paid",
     "realized": "Realized",
     "netAfterTax": "Net after tax",
     "afterTax": "after {amount} tax",
     "noSalesYear": "No sales in this year.",
+    "noMatches": "Nothing on this screen matches \u201c{query}\u201d.",
+    "searchActivity": "Search this activity",
     "sectors": "Sectors",
     "otherSlice": "Other",
     "unrealizedNote": "On open positions, as of today",
     "costsTitle": "Costs",
     "tradeCommissions": "Trade commissions",
     "accountFees": "Account fees",
+    "feeIncluded": "Included",
     "custodyEstimated": "Custody fee (estimated)",
     "costsTotal": "Total costs",
     "commissionsInPnlNote": "Already reflected in the gains and losses above — commissions are folded into cost basis and proceeds before matching.",
