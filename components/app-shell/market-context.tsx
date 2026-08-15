@@ -23,8 +23,9 @@ export function MarketProvider({
   defaultMarketId?: string;
   children: React.ReactNode;
 }) {
-  // Market ↔ language travel together (design: picking ₪ ILS switches to
-  // Hebrew), so the SSR default lens follows the locale.
+  // The two are independent controls now — a flag picks the market, Account
+  // picks the language — but the locale is still the best guess for a browser
+  // that has never chosen a market, so it seeds the SSR default lens.
   const locale = useLocale();
   const [marketId, setMarketId] = useState(
     defaultMarketId ?? (locale === 'he' ? 'IL' : 'US'),

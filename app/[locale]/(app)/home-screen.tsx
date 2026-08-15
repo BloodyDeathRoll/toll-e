@@ -205,7 +205,7 @@ export function HomeScreen() {
   if (state.status === 'error') {
     return (
       <main className="flex flex-1 flex-col">
-        <AppHeader currency />
+        <AppHeader market />
         <div className="px-4 pt-2">
           <ErrorCard onRetry={reload} />
         </div>
@@ -217,7 +217,7 @@ export function HomeScreen() {
     <main className="flex flex-1 flex-col">
       {/* ---------- Mobile (Figma HP frame) ---------- */}
       <div className="flex flex-col md:hidden">
-        <AppHeader currency />
+        <AppHeader market />
 
         {/* Portfolio value */}
         {loading && <div className="px-6">{valueSkeleton}</div>}

@@ -261,6 +261,8 @@
     "gainsMinusLosses": "{gains} gains − {losses} losses",
     "brokerageShield": "Brokerage tax shield",
     "brokerageShieldInfo": "Previous realized losses are subtracted from future realized gains",
+    "poolShield": "Tax shield",
+    "poolShieldInfo": "Your brokerage's tax shield: previous realized losses are subtracted from future realized gains, so your broker withholds less at source. It runs inside the year and does not carry past December.",
     "irsShield": "IRS tax shield",
     "irsShieldInfo": "Eligible for a tax return if year ends in realized gains",
     "lossShieldLeft": "Loss shield left",

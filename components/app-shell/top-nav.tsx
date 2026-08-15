@@ -2,7 +2,6 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/src/i18n/navigation';
-import { LangCurrencyPicker } from './lang-currency';
 import { MarketMenu } from './market-menu';
 import { useMarket } from './market-context';
 import { SearchBox } from './search-box';
@@ -73,8 +72,10 @@ export function TopNav() {
           iconClassName="start-4 size-4"
         />
 
+        {/* Market only. Language is not a header control any more — it is set
+            at the onboarding gate and changed from Account, so the chrome
+            never offers two ways to move the same setting. */}
         <div className="ms-auto flex items-center gap-3.5">
-          <LangCurrencyPicker compact />
           <MarketMenu />
           <PrivacyToggle />
           <ThemeToggle />

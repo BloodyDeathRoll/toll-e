@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChartLine, Gauge, FileText, List, Menu, Search, Shield, X } from 'lucide-react';
 import { Link, useRouter } from '@/src/i18n/navigation';
-import { LangCurrencyPicker } from './lang-currency';
+import { MarketPicker } from './market-picker';
 import { useMarket } from './market-context';
 import { SearchResults } from './search-results';
 import { useSearch } from '@/components/use-market-data';
@@ -13,18 +13,18 @@ import { cn } from '@/lib/utils';
 /**
  * Mobile global header (Components/header): hamburger menu and search pill.
  *
- * The language × display-currency selector belongs to the home screen alone
- * (`currency`); everywhere else the search takes that room. Typing slides the
- * selector out and opens the full-page typeahead over the screen, per the
- * "HP search auto complete" frame. Screens can add their own trailing control
- * via `action` (e.g. Watchlists' create button).
+ * The market selector belongs to the home screen alone (`market`); everywhere
+ * else the search takes that room. Typing slides the selector out and opens
+ * the full-page typeahead over the screen, per the "HP search auto complete"
+ * frame. Screens can add their own trailing control via `action` (e.g.
+ * Watchlists' create button).
  */
 export function AppHeader({
   action,
-  currency = false,
+  market = false,
 }: {
   action?: React.ReactNode;
-  currency?: boolean;
+  market?: boolean;
 }) {
   const t = useTranslations();
   const router = useRouter();
@@ -80,10 +80,10 @@ export function AppHeader({
         />
       </div>
 
-      {/* The currency selector yields its room to a search in progress.
+      {/* The market selector yields its room to a search in progress.
           overflow-hidden only while collapsing: leaving it on would clip the
           selector's own dropdown, which made the control look dead. */}
-      {currency && !action && (
+      {market && !action && (
         <div
           className={cn(
             // max-width, not width: 'auto' is not interpolatable, so a
@@ -94,7 +94,7 @@ export function AppHeader({
           )}
           aria-hidden={expanded}
         >
-          <LangCurrencyPicker />
+          <MarketPicker />
         </div>
       )}
       {action}

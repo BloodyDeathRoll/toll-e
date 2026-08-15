@@ -17,6 +17,7 @@ export function Dropdown({
   onPick,
   disabled,
   showName,
+  fullWidth,
 }: {
   options: Array<{ value: string; badge?: React.ReactNode; name: string }>;
   active: string;
@@ -24,6 +25,13 @@ export function Dropdown({
   disabled?: boolean;
   /** Spell the name out on the trigger, not just in the menu. */
   showName?: boolean;
+  /**
+   * Span the container, name at the start and chevron at the end. For a
+   * control that governs the whole page below it (the year pickers) rather
+   * than sitting in a row of settings — a page-wide scope reads as a
+   * page-wide control, not a chip hiding in a corner.
+   */
+  fullWidth?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -41,7 +49,7 @@ export function Dropdown({
   const hasBadges = options.some((o) => o.badge !== undefined);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className={cn('relative', fullWidth && 'w-full')}>
       <button
         type="button"
         disabled={disabled}
@@ -50,15 +58,24 @@ export function Dropdown({
         onClick={() => setOpen((v) => !v)}
         className={cn(
           'flex h-[48px] items-center gap-2 rounded-lg border border-border bg-card-lighter px-4 text-[15px] text-foreground hover:bg-card-hover',
+          fullWidth && 'w-full',
           disabled && 'opacity-50',
         )}
       >
         {current?.badge}
         {showName && <span>{current?.name}</span>}
-        <ChevronDown className="size-4 text-muted-foreground" aria-hidden />
+        <ChevronDown
+          className={cn('size-4 text-muted-foreground', fullWidth && 'ms-auto')}
+          aria-hidden
+        />
       </button>
       {open && (
-        <div className="absolute end-0 top-full z-50 mt-1.5 flex max-h-[280px] min-w-[180px] flex-col gap-3 overflow-y-auto rounded-[20px] bg-card-lighter p-5">
+        <div
+          className={cn(
+            'absolute end-0 top-full z-50 mt-1.5 flex max-h-[280px] min-w-[180px] flex-col gap-3 overflow-y-auto rounded-[20px] bg-card-lighter p-5',
+            fullWidth && 'start-0',
+          )}
+        >
           {options.map((o) => (
             <button
               key={o.value}

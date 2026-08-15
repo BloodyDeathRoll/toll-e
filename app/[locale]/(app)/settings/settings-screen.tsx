@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/src/i18n/navigation';
 import { AppHeader } from '@/components/app-shell/app-header';
@@ -114,13 +115,16 @@ export function SettingsScreen() {
           <Dropdown
             options={marketIds.map((id) => ({
               value: id,
-              badge: getMarket(id).currencySymbol,
+              badge: (
+                <Image src={getMarket(id).flag} alt="" width={16} height={15} aria-hidden />
+              ),
               name: tm(`nationality.${id}`),
             }))}
             active={defaultMarket ?? user?.defaultMarket ?? 'US'}
             onPick={pickMarket}
             disabled={!user}
-            // The symbol alone is too thin a label — say whose market it is.
+            // Flag plus nationality, the same pairing as the header picker —
+            // whose market, not which currency.
             showName
           />,
         )}

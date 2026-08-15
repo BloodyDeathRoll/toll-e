@@ -36,10 +36,15 @@ export function ShieldRows({
   poolOnly?: boolean;
 }) {
   const t = useTranslations('taxPage');
-  const rows = [
-    { label: t('brokerageShield'), note: t('brokerageShieldInfo'), value: pool },
-    ...(poolOnly ? [] : [{ label: t('irsShield'), note: t('irsShieldInfo'), value: shield }]),
-  ];
+  // Alone, the row is simply "Tax shield" — the qualifier only earns its
+  // keep when there are two shields to tell apart, and the pair is what the
+  // tooltip is for. Beside the IRS row it goes back to naming its own.
+  const rows = poolOnly
+    ? [{ label: t('poolShield'), note: t('poolShieldInfo'), value: pool }]
+    : [
+        { label: t('brokerageShield'), note: t('brokerageShieldInfo'), value: pool },
+        { label: t('irsShield'), note: t('irsShieldInfo'), value: shield },
+      ];
   return (
     <>
       {rows.map((r) => (

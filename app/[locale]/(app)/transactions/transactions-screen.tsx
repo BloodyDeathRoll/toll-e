@@ -122,12 +122,13 @@ export function TransactionsScreen() {
       {/* The year scopes the whole screen — both the P&L's months and the
           journal's rows — so it sits above the tabs it governs. */}
       {data && (
-        <div className="flex justify-end px-4 pb-2">
+        <div className="px-4 pb-2">
           <Dropdown
             options={data.years.map((y) => ({ value: String(y), name: String(y) }))}
             active={String(year ?? data.year)}
             onPick={(y) => setYear(Number(y))}
             showName
+            fullWidth
           />
         </div>
       )}

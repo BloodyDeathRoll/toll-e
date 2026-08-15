@@ -146,14 +146,13 @@ export function PerformanceScreen() {
             buried under the second one: it governs the page, so it reads as
             the page's own control. */}
         {data && (
-          <div className="flex justify-end">
-            <Dropdown
-              options={data.years.map((y) => ({ value: String(y), name: String(y) }))}
-              active={String(data.year)}
-              onPick={(y) => setYear(Number(y))}
-              showName
-            />
-          </div>
+          <Dropdown
+            options={data.years.map((y) => ({ value: String(y), name: String(y) }))}
+            active={String(data.year)}
+            onPick={(y) => setYear(Number(y))}
+            showName
+            fullWidth
+          />
         )}
 
         {data && data.year === thisYear && slices.length > 0 && (

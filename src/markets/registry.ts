@@ -9,6 +9,12 @@ export interface MarketDef {
   id: string; // 'US', 'IL', later 'UK', 'EU', 'JP'…
   currency: string; // ISO 4217
   currencySymbol: string;
+  /**
+   * The market's flag, served from /public/flags. Flags identify the *market*
+   * now — the header picker is flags-only — so a new market brings its own
+   * rather than the UI mapping ids to files.
+   */
+  flag: string;
   /** Provider symbols for the homepage index strip, in display order. */
   indexes: string[];
   calendar: TradingCalendar;
@@ -146,6 +152,7 @@ export const markets: Record<string, MarketDef> = {
     id: 'US',
     currency: 'USD',
     currencySymbol: '$',
+    flag: '/flags/us.svg',
     // First three feed the homepage trio; the strip shows all of them.
     indexes: ['^GSPC', '^IXIC', '^DJI', '^RUT', '^VIX'],
     calendar: usCalendar,
@@ -157,6 +164,7 @@ export const markets: Record<string, MarketDef> = {
     id: 'IL',
     currency: 'ILS',
     currencySymbol: '₪',
+    flag: '/flags/il.svg',
     // Yahoo quirk: TA-125 needs the caret prefix, TA-35/TA-90 don't.
     indexes: ['TA35.TA', '^TA125.TA', 'TA90.TA'],
     calendar: ilCalendar,
