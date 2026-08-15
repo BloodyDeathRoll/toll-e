@@ -141,6 +141,14 @@ export function computePortfolio(txs: EngineTx[]): PortfolioComputation {
  * Would adding `candidate` (a SELL) keep the timeline valid? Checks the
  * running balance from the candidate's date forward, so backdated sells
  * that starve later sells are rejected too. `excludeTxId` supports edits.
+ *
+ * On a refusal, `available` is the largest sale the timeline *would* accept at
+ * the candidate's date — not the raw balance standing there. The two differ
+ * exactly when a later sale is what forces the refusal, and it is the number
+ * the caller prints: the API forwards it as `{ error: 'oversell', available }`
+ * and the UI renders "You only hold {available} shares on that date". Reporting
+ * the raw balance made that message contradict the refusal it explains — "you
+ * only hold 100" beside a rejected sale of 50.
  */
 export function validateSell(
   txs: EngineTx[],
@@ -153,10 +161,24 @@ export function validateSell(
   ]);
   let balance = 0;
   let availableAtCandidate = 0;
+  // The tightest the balance gets from the candidate's slot onward with the
+  // candidate itself left out — i.e. how many shares are free to sell there.
+  let headroom = Infinity;
+  let reached = false;
   for (const tx of timeline) {
-    if (tx.id === candidate.id) availableAtCandidate = balance;
+    if (tx.id === candidate.id) {
+      availableAtCandidate = balance;
+      reached = true;
+      headroom = Math.min(headroom, balance);
+      continue; // the candidate's own shares are what `headroom` is measuring
+    }
     balance += tx.type === 'BUY' ? tx.shares : -tx.shares;
-    if (balance < -EPS) return { ok: false, available: Math.max(0, availableAtCandidate) };
+    if (reached) headroom = Math.min(headroom, balance);
+    // Already invalid before the candidate — nothing can be sold here.
+    if (!reached && balance < -EPS) return { ok: false, available: 0 };
+  }
+  if (candidate.shares > headroom + EPS) {
+    return { ok: false, available: Math.max(0, Number.isFinite(headroom) ? headroom : 0) };
   }
   return { ok: true, available: availableAtCandidate };
 }
