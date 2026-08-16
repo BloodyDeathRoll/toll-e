@@ -138,13 +138,19 @@ export async function search(query: string, marketId?: string): Promise<SearchRe
   // queries outright and knows no Hebrew names, so the catalogue is the only
   // path to Israeli listings by Hebrew name or ticker — and it also catches
   // Latin queries the provider misses ('poali' → POLI.TA).
-  const local: SearchResult[] = searchTase(query).map((e) => ({
-    symbol: e.symbol,
-    name: hasHebrew(query) ? e.heName : e.name,
-    exchange: 'Tel Aviv',
-    type: e.type,
-    market: 'IL',
-  }));
+  // Skipped outright when the lens is another market: its rows would only be
+  // filtered away below, and their presence would wrongly downgrade a provider
+  // outage to "no results" for a market the catalogue says nothing about.
+  const local: SearchResult[] =
+    marketId && marketId !== 'IL'
+      ? []
+      : searchTase(query).map((e) => ({
+          symbol: e.symbol,
+          name: hasHebrew(query) ? e.heName : e.name,
+          exchange: 'Tel Aviv',
+          type: e.type,
+          market: 'IL',
+        }));
   let remote: SearchResult[] = [];
   if (!hasHebrew(query)) {
     // A provider outage degrades to catalogue-only rather than failing the
@@ -157,11 +163,10 @@ export async function search(query: string, marketId?: string): Promise<SearchRe
   // Provider rows win the dedupe: their names carry the fuller legal form.
   const results = [...remote, ...local.filter((r) => !seen.has(r.symbol))];
   if (!marketId) return results;
-  // Active market's listings surface first — the lens orders, never filters
-  // (toll-e-plan.md §2.2).
-  return [...results].sort(
-    (a, b) => Number(b.market === marketId) - Number(a.market === marketId),
-  );
+  // The lens filters: browsing TASE, a US ticker is not a result at all, and
+  // vice versa. Listings on an exchange we do not carry (market undefined)
+  // are nobody's, so they never surface either.
+  return results.filter((r) => r.market === marketId);
 }
 
 /** Leading instruments in a sector or industry, largest first. */

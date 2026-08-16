@@ -177,7 +177,7 @@ export function useFx(pair: string) {
   return useJson<FxRate>(`/api/market/fx?pair=${pair}`);
 }
 
-/** Debounced typeahead search, active-market results first. */
+/** Debounced typeahead search, scoped to `marketId` — other markets' listings are not results. */
 export function useSearch(query: string, marketId: string) {
   const [debounced, setDebounced] = useState('');
   useEffect(() => {
