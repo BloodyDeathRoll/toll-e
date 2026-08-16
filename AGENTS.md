@@ -24,7 +24,7 @@ Investment tracking web app for Israeli investors: Yahoo-Finance-grade portfolio
 
 ## Architecture invariants (expensive to retrofit — honor from the first commit)
 
-- **Markets are data, not code.** `src/markets/registry.ts` defines each market (`id`, `currency`, `currencySymbol`, `indexes`, `calendar`, `symbolSuffix`, `numberLocale`); tab bar, index strip, search priority, badges, formatting all render from it. DB stores market ids and ISO currency codes as **strings, never enums**.
+- **Markets are data, not code.** `src/markets/registry.ts` defines each market (`id`, `currency`, `currencySymbol`, `indexes`, `calendar`, `symbolSuffix`, `numberLocale`); tab bar, index strip, search universe, badges, formatting all render from it. DB stores market ids and ISO currency codes as **strings, never enums**. The market tab is a **data wall** (`toll-e-plan.md` §2.2): search returns only the active market's listings, and watchlists are grouped per market.
 - **Money is always `(amount, currency)`, never a bare number.**
 - **Tax is derived, never stored.** Pure deterministic engine: `f(transactions, taxProfile) → {lots, realizedEvents, monthlyLedger, yearlyLedger, shield}`. FIFO lot matching, lots split on partial sells, indefinite loss-carryforward shield, rate default 25%, 0% hides all tax UI. Recompute on any edit/backdate/rate change.
 - **Tax is per-portfolio and native-currency.** No FX inside the engine; conversion only at the presentation layer (Performance page), native primary + converted in brackets. Persist the FX rate used for any converted display.

@@ -47,9 +47,9 @@ type MarketDef = {
 }
 ```
 
-- The tab bar, homepage index strip, search-universe priority, market-state badges, and default formatting are all registry-driven. Adding a market = adding a registry entry + calendar + verifying provider symbol coverage; zero changes to portfolio, tax, or UI code.
+- The tab bar, homepage index strip, search universe, market-state badges, and default formatting are all registry-driven. Adding a market = adding a registry entry + calendar + verifying provider symbol coverage; zero changes to portfolio, tax, or UI code.
 - DB columns store market ids and ISO currency codes as strings (no enums to migrate). Money is always stored as `(amount, currency)` — never a bare number.
-- The tab switch is a *lens*, not a data wall: it controls which indexes/portfolios/search results are surfaced first. Each portfolio belongs to one market and its native currency.
+- The tab switch is a **data wall**, not a soft lens: search returns only the active market's listings (a US ticker is not a result while browsing TASE, and vice versa; listings on exchanges the registry does not carry never surface at all), and watchlists are grouped per market — a list belongs to the market it was created under and appears nowhere else. Indexes and portfolios follow the same tab. Each portfolio belongs to one market and its native currency.
 - FX is a first-class service (`fx_rates` per currency pair, daily) so any future currency slots in.
 
 ### 2.3 Feature map by screen (from the Yahoo reference)
