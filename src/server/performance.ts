@@ -208,6 +208,16 @@ export async function getPerformance(
   for (const { tax } of computed) {
     for (const y of tax.years) yearSet.add(y.year);
   }
+  // A year is offered because something HAPPENED in it, not because something
+  // was sold in it. The tax engine only ever lists years with sales (it has
+  // nothing else to say about the others), but this payload also carries the
+  // Costs card — commissions and the account-level fee ledger — and those are
+  // real, collected charges in a year the user only bought in. Without the
+  // trade years the picker cannot reach them, and `selectedYear` below
+  // silently rewrites an explicit request for such a year back to today's.
+  for (const { txs } of computed) {
+    for (const tx of txs) yearSet.add(Number(tx.tradeDate.slice(0, 4)));
+  }
   // The current year is always offered and is always the default, whether or
   // not anything has been sold in it yet — "nothing realized this year" is an
   // answer, and silently landing on an older year is not.
