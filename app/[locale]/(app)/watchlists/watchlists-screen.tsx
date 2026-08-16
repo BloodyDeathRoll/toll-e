@@ -15,7 +15,7 @@ import { ChangePill, NO_VALUE } from '@/components/quote-bits';
 import { useQuotes, useSearch } from '@/components/use-market-data';
 import { useWatchlists, type WatchlistData } from '@/components/use-watchlists';
 import { demoWatchlists } from '@/src/demo/data';
-import { HOLDINGS_LIST } from '@/src/watchlists/constants';
+import { HOLDINGS_LIST, listInMarket } from '@/src/watchlists/constants';
 import { getMarket, displaySymbol, marketForSymbol } from '@/src/markets/registry';
 import { fmtNum } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -67,15 +67,19 @@ export function WatchlistsScreen({
      *  to nothing need different words. */
     total: number;
   }> = real
-    ? real.map((l) => ({
-        id: l.id,
-        name: l.name === HOLDINGS_LIST ? t('holdings') : l.name,
-        // A list can hold tickers from several markets; the selected market
-        // decides which of them are on screen.
-        symbols: l.symbols.filter((s) => marketForSymbol(s).id === marketId),
-        managed: l.name === HOLDINGS_LIST,
-        total: l.symbols.length,
-      }))
+    ? real
+        // One group per market: only the selected market's lists (plus
+        // market-agnostic ones — Holdings and legacy) are on screen.
+        .filter((l) => listInMarket(l, marketId))
+        .map((l) => ({
+          id: l.id,
+          name: l.name === HOLDINGS_LIST ? t('holdings') : l.name,
+          // A market-agnostic list can hold tickers from several markets; the
+          // selected market decides which of them are on screen.
+          symbols: l.symbols.filter((s) => marketForSymbol(s).id === marketId),
+          managed: l.name === HOLDINGS_LIST,
+          total: l.symbols.length,
+        }))
     : demoWatchlists.map((w, i) => ({
         id: `demo-${i}`,
         name: w.name,
@@ -118,7 +122,8 @@ export function WatchlistsScreen({
         marketId={marketId}
         onBack={toBrowse}
         onSave={async (listName, symbols) => {
-          const created = await createList(listName);
+          // Born into the market it was created under — lists group per market.
+          const created = await createList(listName, marketId);
           if (created && symbols.length) await patchList(created.id, { symbols });
           toBrowse();
           if (created) setCollapsed(new Set());
@@ -325,7 +330,8 @@ function EditList({
   const [name, setName] = useState(list.name);
   const [searchOpen, setSearchOpen] = useState(addOpen && !managed);
   const [query, setQuery] = useState('');
-  const results = useSearch(query, marketId)
+  // Add-ticker search looks in the list's own market, not the browsing lens.
+  const results = useSearch(query, list.market ?? marketId)
     .filter((r) => !list.symbols.includes(r.symbol))
     .slice(0, 6);
 

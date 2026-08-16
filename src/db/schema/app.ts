@@ -84,6 +84,13 @@ export const watchlists = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
+    /**
+     * Registry market id (string, never an enum — src/markets/registry.ts).
+     * Lists are per-market: a list created while browsing TASE holds TASE
+     * tickers. NULL = market-agnostic — Holdings (mirrors positions across
+     * markets) and lists from before market scoping.
+     */
+    market: text('market'),
     sortOrder: integer('sort_order').notNull().default(0),
     displayCurrency: text('display_currency'),
     displayMode: text('display_mode', { enum: ['pct', 'price', 'mcap'] })

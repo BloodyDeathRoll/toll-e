@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Check } from 'lucide-react';
 import { useWatchlists, type WatchlistData } from '@/components/use-watchlists';
-import { HOLDINGS_LIST } from '@/src/watchlists/constants';
+import { HOLDINGS_LIST, listInMarket } from '@/src/watchlists/constants';
+import { marketForSymbol } from '@/src/markets/registry';
 import { cn } from '@/lib/utils';
 
 /**
@@ -27,7 +28,10 @@ export function WatchlistSheet({
 }) {
   const t = useTranslations('lists');
   const { createList, patchList, reload } = useWatchlists();
-  const editable = lists.filter((l) => l.name !== HOLDINGS_LIST);
+  // Watchlists are grouped per market: a TASE ticker only offers TASE lists,
+  // and a list created here is born into the symbol's market.
+  const marketId = marketForSymbol(symbol).id;
+  const editable = lists.filter((l) => l.name !== HOLDINGS_LIST && listInMarket(l, marketId));
   const holdings = lists.find((l) => l.name === HOLDINGS_LIST && l.symbols.includes(symbol));
   const [picked, setPicked] = useState<Set<string>>(
     () => new Set(editable.filter((l) => l.symbols.includes(symbol)).map((l) => l.id)),
@@ -68,7 +72,7 @@ export function WatchlistSheet({
       });
     }
     if (creating && newName.trim()) {
-      const created = await createList(newName.trim());
+      const created = await createList(newName.trim(), marketId);
       if (created) await patchList(created.id, { symbols: [symbol] });
     }
     await reload();

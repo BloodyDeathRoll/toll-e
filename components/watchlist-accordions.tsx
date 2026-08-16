@@ -10,7 +10,7 @@ import { AfterHours, ChangePill, NO_VALUE } from '@/components/quote-bits';
 import { SessionSparkline } from '@/components/charts';
 import { useCharts, useQuotes } from '@/components/use-market-data';
 import { useWatchlists } from '@/components/use-watchlists';
-import { HOLDINGS_LIST } from '@/src/watchlists/constants';
+import { HOLDINGS_LIST, listInMarket } from '@/src/watchlists/constants';
 import { displaySymbol, getMarket, marketForSymbol } from '@/src/markets/registry';
 import { fmtNum } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -29,10 +29,11 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
   const { state, deleteList } = useWatchlists();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
-  // A list can hold tickers from several markets; the selected market decides
-  // which of them are on screen, so ₪ never shows a dollar position.
+  // One group of lists per market: only the selected market's lists render
+  // here. Market-agnostic (legacy) lists show everywhere, with their symbols
+  // filtered to the selected market so ₪ never shows a dollar position.
   const lists = (state.status === 'data' ? state.lists : [])
-    .filter((l) => l.name !== HOLDINGS_LIST)
+    .filter((l) => l.name !== HOLDINGS_LIST && listInMarket(l, marketId))
     .map((l) => ({
       ...l,
       symbols: l.symbols.filter((s) => marketForSymbol(s).id === marketId),

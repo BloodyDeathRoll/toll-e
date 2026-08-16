@@ -1,19 +1,22 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Star } from 'lucide-react';
-import { Link } from '@/src/i18n/navigation';
+import { Link, useRouter } from '@/src/i18n/navigation';
 import { ChangePill } from '@/components/quote-bits';
 import { useQuotes } from '@/components/use-market-data';
 import { useWatchlists } from '@/components/use-watchlists';
+import { WatchlistSheet } from '@/components/watchlist-sheet';
 import { displaySymbol, getMarket } from '@/src/markets/registry';
 import type { SearchResult } from '@/src/market-data/types';
 import { fmtNum } from '@/lib/format';
 
 /**
  * Typeahead results (Figma "HP search auto complete"): a full-page list under
- * the header rather than a dropdown, each row quoted live and starrable
- * straight into the default watchlist.
+ * the header rather than a dropdown, each row quoted live. The star opens the
+ * "include in watchlists" sheet (Figma "Stock click star") — with no lists
+ * yet, the sheet still opens and offers only the create CTA.
  */
 export function SearchResults({
   results,
@@ -28,26 +31,15 @@ export function SearchResults({
   const tn = useTranslations('nav');
   const market = getMarket(marketId);
   const nl = market.numberLocale;
+  const router = useRouter();
   const symbols = results.map((r) => r.symbol);
   const { quotes } = useQuotes(symbols, 60_000);
-  const { state, createList, patchList } = useWatchlists();
+  const { state } = useWatchlists();
   const lists = state.status === 'data' ? state.lists : null;
+  const signedOut = state.status === 'signed-out';
+  const [sheetFor, setSheetFor] = useState<string | null>(null);
 
   const inAny = (symbol: string) => Boolean(lists?.some((l) => l.symbols.includes(symbol)));
-  const toggle = async (symbol: string) => {
-    if (!lists) return;
-    if (lists.length === 0) {
-      const created = await createList(t('newList'));
-      if (created) await patchList(created.id, { symbols: [symbol] });
-      return;
-    }
-    const target = lists.find((l) => l.isDefault === 1) ?? lists[0];
-    await patchList(target.id, {
-      symbols: target.symbols.includes(symbol)
-        ? target.symbols.filter((s) => s !== symbol)
-        : [...target.symbols, symbol],
-    });
-  };
 
   if (results.length === 0) {
     return (
@@ -82,8 +74,8 @@ export function SearchResults({
                 type="button"
                 aria-label={t('addTicker')}
                 aria-pressed={starred}
-                disabled={!lists}
-                onClick={() => void toggle(r.symbol)}
+                disabled={!signedOut && !lists}
+                onClick={() => (signedOut ? router.push('/sign-in') : setSheetFor(r.symbol))}
               >
                 <Star
                   className={starred ? 'size-6 text-primary' : 'size-6 text-faint'}
@@ -95,6 +87,9 @@ export function SearchResults({
           </div>
         );
       })}
+      {sheetFor && lists && (
+        <WatchlistSheet symbol={sheetFor} lists={lists} onClose={() => setSheetFor(null)} />
+      )}
     </section>
   );
 }

@@ -5,6 +5,8 @@ import { useCallback, useEffect, useState } from 'react';
 export interface WatchlistData {
   id: string;
   name: string;
+  /** Registry market id; null = market-agnostic (Holdings, pre-scoping lists). */
+  market: string | null;
   symbols: string[];
   isDefault: number;
 }
@@ -39,11 +41,11 @@ export function useWatchlists() {
     reload();
   }, [reload]);
 
-  const createList = async (name: string): Promise<WatchlistData | null> => {
+  const createList = async (name: string, market?: string): Promise<WatchlistData | null> => {
     const res = await fetch('/api/watchlists', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, market }),
     });
     if (!res.ok) return null;
     const json = await res.json();

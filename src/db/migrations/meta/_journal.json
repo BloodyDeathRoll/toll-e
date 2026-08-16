@@ -29,6 +29,13 @@
       "when": 1786725818730,
       "tag": "0003_stale_franklin_richards",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786898749974,
+      "tag": "0004_cheerful_next_avengers",
+      "breakpoints": true
     }
   ]
 }

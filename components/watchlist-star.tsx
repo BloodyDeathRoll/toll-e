@@ -7,6 +7,8 @@ import { useRouter } from '@/src/i18n/navigation';
 import { useWatchlists, type WatchlistData } from '@/components/use-watchlists';
 import { WatchlistSheet } from '@/components/watchlist-sheet';
 import { demoWatchlists } from '@/src/demo/data';
+import { HOLDINGS_LIST, listInMarket } from '@/src/watchlists/constants';
+import { marketForSymbol } from '@/src/markets/registry';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +26,8 @@ import { cn } from '@/lib/utils';
 export interface SymbolWatchlist {
   signedOut: boolean;
   lists: WatchlistData[] | null;
+  /** Lists the symbol may be put in: its own market's group, Holdings excluded. */
+  pickable: WatchlistData[] | null;
   inAny: boolean;
   isIn: (list: WatchlistData) => boolean;
   toggleIn: (list: WatchlistData) => Promise<void>;
@@ -37,6 +41,11 @@ export function useSymbolWatchlist(symbol: string): SymbolWatchlist {
   const { state, createList, patchList } = useWatchlists();
   const lists = state.status === 'data' ? state.lists : null;
   const signedOut = state.status === 'signed-out';
+  // Watchlists are grouped per market — the picker and the default toggle only
+  // ever touch the symbol's own group.
+  const marketId = marketForSymbol(symbol).id;
+  const pickable =
+    lists?.filter((l) => l.name !== HOLDINGS_LIST && listInMarket(l, marketId)) ?? null;
 
   const isIn = (list: WatchlistData) => list.symbols.includes(symbol);
   const inAny = lists
@@ -50,16 +59,16 @@ export function useSymbolWatchlist(symbol: string): SymbolWatchlist {
   };
 
   const toggleDefault = async () => {
-    if (!lists) return;
-    if (lists.length === 0) {
-      const created = await createList(t('newList'));
+    if (!pickable) return;
+    if (pickable.length === 0) {
+      const created = await createList(t('newList'), marketId);
       if (created) await patchList(created.id, { symbols: [symbol] });
       return;
     }
-    await toggleIn(lists.find((l) => l.isDefault === 1) ?? lists[0]);
+    await toggleIn(pickable.find((l) => l.isDefault === 1) ?? pickable[0]);
   };
 
-  return { signedOut, lists, inAny, isIn, toggleIn, toggleDefault, goSignIn: () => router.push('/sign-in') };
+  return { signedOut, lists, pickable, inAny, isIn, toggleIn, toggleDefault, goSignIn: () => router.push('/sign-in') };
 }
 
 /**
@@ -105,7 +114,7 @@ export function WatchlistMenuButton({ wl }: { wl: SymbolWatchlist }) {
   const t = useTranslations('stock');
   const tLists = useTranslations('lists');
   const tCommon = useTranslations('common');
-  const rows = wl.lists ?? [];
+  const rows = wl.pickable ?? [];
 
   return (
     <DropdownMenu>
