@@ -97,6 +97,8 @@ export interface Summary {
   industry?: string;
   /** The provider's business description — a paragraph, not a tagline. */
   description?: string;
+  /** TASE listings: the company's own Hebrew description (shipped catalogue), not a translation. */
+  heDescription?: string;
   stats: KeyStats;
   nextEarningsDate?: string; // ISO date
 }

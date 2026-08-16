@@ -6,7 +6,7 @@ import { persistDailyCloses, persistFx } from './persist';
 import { YahooProvider } from './yahoo';
 import { localDateIn, sessionWindow } from '@/src/markets/calendar';
 import { getMarket, marketForSymbol } from '@/src/markets/registry';
-import { hasHebrew, searchTase } from '@/src/markets/tase-search';
+import { hasHebrew, searchTase, taseHeAbout } from '@/src/markets/tase-search';
 import type {
   ChartRange,
   ChartSeries,
@@ -188,7 +188,14 @@ export async function getMovers(kind: MoversKind, marketId: string): Promise<Quo
 }
 
 export async function getSummary(symbol: string): Promise<Summary> {
-  return cached(`summary:${symbol}`, TTL.summary, () => yahoo(() => provider.getSummary(symbol)));
+  const summary = await cached(`summary:${symbol}`, TTL.summary, () =>
+    yahoo(() => provider.getSummary(symbol)),
+  );
+  // TASE listings: the provider writes about Israeli companies in English
+  // only; the catalogue carries the company's own Hebrew text, so a Hebrew
+  // reader gets the origin rather than a translation.
+  const heAbout = taseHeAbout(symbol);
+  return heAbout ? { ...summary, heDescription: heAbout } : summary;
 }
 
 export async function getNews(symbol: string): Promise<NewsItem[]> {

@@ -5,20 +5,30 @@ import { useTranslations } from 'next-intl';
 import { Search } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { useMarket } from './market-context';
+import { SearchResults } from './search-results';
 import { suggest, useSearchScope } from './search-scope';
 import { useSearch } from '@/components/use-market-data';
 import { displaySymbol, getMarket } from '@/src/markets/registry';
 import { cn } from '@/lib/utils';
 
-/** Navbar typeahead: /api/market/search with active-market priority. */
+/**
+ * Navbar typeahead, scoped to the active market.
+ *
+ * `fullPageResults` (mobile screens): typing opens the full-page results
+ * screen — the same one the home header opens — instead of a dropdown. Every
+ * search looks the same wherever it starts; the dropdown stays only on the
+ * desktop navbar, where a full-page takeover is not the layout's idiom.
+ */
 export function SearchBox({
   className,
   inputClassName,
   iconClassName,
+  fullPageResults = false,
 }: {
   className?: string;
   inputClassName?: string;
   iconClassName?: string;
+  fullPageResults?: boolean;
 }) {
   const t = useTranslations('nav');
   const router = useRouter();
@@ -32,7 +42,7 @@ export function SearchBox({
   const { scope, query: scopedQuery, setQuery: setScopedQuery } = useSearchScope();
   const query = scope ? scopedQuery : globalQuery;
   const setQuery = scope ? setScopedQuery : setGlobalQuery;
-  const results = useSearch(scope ? '' : query, marketId).slice(0, 8);
+  const results = useSearch(scope ? '' : query, marketId).slice(0, fullPageResults ? 12 : 8);
   const suggestions = scope ? suggest(scope.terms, query) : [];
 
   // Close on outside click.
@@ -101,7 +111,15 @@ export function SearchBox({
         </ul>
       )}
 
-      {open && !scope && results.length > 0 && (
+      {fullPageResults && !scope && query.trim().length > 0 && (
+        // Same takeover as the home header's (top-[88px] = this header's
+        // height: 24px padding + 48px pill + 16px padding).
+        <div className="app-frame fixed inset-x-0 bottom-0 top-[88px] z-40 overflow-y-auto bg-background">
+          <SearchResults results={results} marketId={marketId} onPick={() => setQuery('')} />
+        </div>
+      )}
+
+      {open && !scope && !fullPageResults && results.length > 0 && (
         <ul className="absolute inset-x-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-border bg-popover shadow-[0_12px_32px_rgba(0,0,0,0.55)]">
           {results.map((r, i) => (
             <li key={r.symbol}>

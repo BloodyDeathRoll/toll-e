@@ -15,9 +15,16 @@ export interface TaseCatalogueEntry {
   heSymbol?: string;
   isin?: string;
   type: string; // EQUITY | ETF
+  /** The company's own Hebrew business description (Maya registrar text); shares only. */
+  heAbout?: string;
 }
 
 const entries = catalogue as TaseCatalogueEntry[];
+
+/** Native-Hebrew "about" for a TASE listing, straight from the catalogue. */
+export function taseHeAbout(symbol: string): string | undefined {
+  return entries.find((e) => e.symbol === symbol)?.heAbout;
+}
 
 export const hasHebrew = (s: string) => /[֐-׿]/.test(s);
 

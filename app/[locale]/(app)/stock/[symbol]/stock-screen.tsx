@@ -127,11 +127,15 @@ export function StockScreen({ symbol }: { symbol: string }) {
     exchange: summary?.exchange ?? stock.exchange,
     sector: summary?.sector ?? stock.sector,
   };
-  // The description arrives in English whatever locale asked for it, so a
-  // Hebrew reader gets it translated on the device where that is possible.
-  const about = useOnDeviceTranslation(summary?.description, locale);
+  // An Israeli company's Hebrew description is the origin text (shipped
+  // catalogue), so a Hebrew reader gets that outright — no translation
+  // controls. Everything else arrives in English whatever locale asked for
+  // it, and is translated on the device where that is possible.
+  const heAbout = locale === 'he' ? summary?.heDescription : undefined;
+  const about = useOnDeviceTranslation(heAbout ? undefined : summary?.description, locale);
   const aboutText =
-    about.state === 'done' && !showOriginal ? about.translated : summary?.description;
+    heAbout ??
+    (about.state === 'done' && !showOriginal ? about.translated : summary?.description);
   const eventDate = summary?.nextEarningsDate ?? stock.nextEvent.date;
   const up = changePct >= 0;
 
@@ -482,6 +486,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
             className="min-w-0 flex-1"
             inputClassName="h-[48px] rounded-[20px] border border-field bg-well ps-11 text-base font-medium"
             iconClassName="start-4 size-4"
+            fullPageResults
           />
           <WatchlistStar wl={wl} symbol={symbol} className="size-6" />
           <button

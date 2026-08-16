@@ -43,11 +43,48 @@ async function fetchEntities(lang) {
 /** TASE series symbols use dots (MTF.F100); Yahoo flattens them to dashes. */
 const yahooSymbol = (smb) => `${smb.replace(/\./g, '-')}.TA`;
 
+// Maya (TASE's filings site) serves the company's own Hebrew business
+// description — the registrar's text, not a translation. Same build-time
+// stance as the entity feed: fetched here, shipped as static data.
+const MAYA = 'https://mayaapi.tase.co.il/api/company/details';
+const MAYA_HEADERS = {
+  'X-Maya-With': 'allow',
+  'Accept-Language': 'he-IL',
+  Origin: 'https://maya.tase.co.il',
+  Referer: 'https://maya.tase.co.il/',
+  Accept: 'application/json',
+  'User-Agent': HEADERS['User-Agent'],
+};
+
+async function fetchHeAbout(companyId) {
+  const res = await fetch(`${MAYA}?companyId=${companyId}`, { headers: MAYA_HEADERS });
+  if (!res.ok) return undefined;
+  const d = await res.json().catch(() => null);
+  const text = typeof d?.Description === 'string' ? d.Description.trim() : '';
+  return text || undefined;
+}
+
 const [he, en] = await Promise.all([fetchEntities(0), fetchEntities(1)]);
 const heById = new Map(he.filter((e) => e.Type === 1).map((e) => [e.Id, e]));
 
-const entries = en
-  .filter((e) => e.Type === 1 && KEEP.has(e.SubTypeDesc) && e.Smb)
+const kept = en.filter((e) => e.Type === 1 && KEEP.has(e.SubTypeDesc) && e.Smb);
+
+// One description per company, shares only — an ETF's SubId points at the
+// fund manager, whose description would be the issuer's, not the fund's.
+const companyIds = [...new Set(kept.filter((e) => e.SubTypeDesc === 'Shares').map((e) => e.SubId))];
+const aboutById = new Map();
+const POOL = 8;
+for (let i = 0; i < companyIds.length; i += POOL) {
+  await Promise.all(
+    companyIds.slice(i, i + POOL).map(async (id) => {
+      const text = await fetchHeAbout(id).catch(() => undefined);
+      if (text) aboutById.set(id, text);
+    }),
+  );
+  if (i % 200 < POOL) console.log(`descriptions: ${Math.min(i + POOL, companyIds.length)}/${companyIds.length}`);
+}
+
+const entries = kept
   .map((e) => {
     const h = heById.get(e.Id);
     return {
@@ -58,6 +95,7 @@ const entries = en
       heSymbol: h?.Smb && h.Smb !== e.Smb ? h.Smb : undefined,
       isin: e.ISIN ?? undefined,
       type: e.SubTypeDesc === 'Shares' ? 'EQUITY' : 'ETF',
+      heAbout: e.SubTypeDesc === 'Shares' ? aboutById.get(e.SubId) : undefined,
     };
   })
   .sort((a, b) => a.symbol.localeCompare(b.symbol));
@@ -66,7 +104,8 @@ const dupes = entries.length - new Set(entries.map((e) => e.symbol)).size;
 if (dupes > 0) throw new Error(`${dupes} duplicate symbols after mapping`);
 
 const counts = entries.reduce((m, e) => m.set(e.type, (m.get(e.type) ?? 0) + 1), new Map());
+const withAbout = entries.filter((e) => e.heAbout).length;
 const out = new URL('../src/markets/tase-catalogue.json', import.meta.url);
 const { writeFile } = await import('node:fs/promises');
 await writeFile(out, JSON.stringify(entries, null, 1) + '\n');
-console.log(`wrote ${entries.length} entries (${[...counts].map(([k, v]) => `${v} ${k}`).join(', ')}) → ${out.pathname}`);
+console.log(`wrote ${entries.length} entries (${[...counts].map(([k, v]) => `${v} ${k}`).join(', ')}, ${withAbout} with heAbout) → ${out.pathname}`);
