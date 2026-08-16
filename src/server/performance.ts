@@ -198,10 +198,20 @@ export async function getPerformance(
   // is pure, so a second run answers exactly what the first one did. Reading
   // the portfolios concurrently rather than one after another is the larger
   // win once there is more than one.
+  // The positions read comes along for the ride: it depends on the portfolio
+  // and its transactions and on nothing the year picker decides, and its
+  // `getQuotes` call is the one genuinely slow thing on this path. Left in the
+  // pass below it ran once per portfolio in series, so a two-market user paid
+  // two quote round trips end to end for a page that needs one.
   const computed = await Promise.all(
     rows.map(async (p) => {
       const txs = (await listTransactions(p.id)).map(toEngineTx);
-      return { p, txs, tax: computeTax(txs, { ratePct: Number(p.taxRatePct) }) };
+      return {
+        p,
+        txs,
+        tax: computeTax(txs, { ratePct: Number(p.taxRatePct) }),
+        positions: await getPositions(p, txs),
+      };
     }),
   );
 
@@ -246,9 +256,8 @@ export async function getPerformance(
   /** Symbol → market value in the display currency, for the allocation. */
   const heldValue = new Map<string, number>();
 
-  for (const { p, txs, tax } of computed) {
+  for (const { p, tax, positions } of computed) {
     const ledger = tax.years.find((y) => y.year === selectedYear);
-    const positions = await getPositions(p, txs);
     for (const pos of positions.positions) {
       heldValue.set(pos.symbol, (heldValue.get(pos.symbol) ?? 0) + convert(pos.marketValue, p.currency));
     }
