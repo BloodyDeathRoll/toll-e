@@ -6,6 +6,7 @@ import { persistDailyCloses, persistFx } from './persist';
 import { YahooProvider } from './yahoo';
 import { localDateIn, sessionWindow } from '@/src/markets/calendar';
 import { getMarket, marketForSymbol } from '@/src/markets/registry';
+import { hasHebrew, searchTase } from '@/src/markets/tase-search';
 import type {
   ChartRange,
   ChartSeries,
@@ -133,9 +134,28 @@ export async function getChart(symbol: string, range: ChartRange): Promise<Chart
 }
 
 export async function search(query: string, marketId?: string): Promise<SearchResult[]> {
-  const results = await cached(`search:${query.toLowerCase()}`, TTL.search, () =>
-    yahoo(() => provider.search(query)),
-  );
+  // TASE catalogue hits (local, shipped data): the provider rejects Hebrew
+  // queries outright and knows no Hebrew names, so the catalogue is the only
+  // path to Israeli listings by Hebrew name or ticker — and it also catches
+  // Latin queries the provider misses ('poali' → POLI.TA).
+  const local: SearchResult[] = searchTase(query).map((e) => ({
+    symbol: e.symbol,
+    name: hasHebrew(query) ? e.heName : e.name,
+    exchange: 'Tel Aviv',
+    type: e.type,
+    market: 'IL',
+  }));
+  let remote: SearchResult[] = [];
+  if (!hasHebrew(query)) {
+    // A provider outage degrades to catalogue-only rather than failing the
+    // whole search — but only when the catalogue actually has an answer.
+    const fetch = () =>
+      cached(`search:${query.toLowerCase()}`, TTL.search, () => yahoo(() => provider.search(query)));
+    remote = local.length > 0 ? await fetch().catch(() => []) : await fetch();
+  }
+  const seen = new Set(remote.map((r) => r.symbol));
+  // Provider rows win the dedupe: their names carry the fuller legal form.
+  const results = [...remote, ...local.filter((r) => !seen.has(r.symbol))];
   if (!marketId) return results;
   // Active market's listings surface first — the lens orders, never filters
   // (toll-e-plan.md §2.2).

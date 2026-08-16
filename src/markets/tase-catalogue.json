@@ -1,0 +1,8306 @@
+[
+ {
+  "symbol": "ABOU.TA",
+  "name": "ABOU RESIDENC",
+  "heName": "אבו מגורים",
+  "heSymbol": "אבו",
+  "isin": "IL0011758195",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ABRA.TA",
+  "name": "ABRA",
+  "heName": "אברא",
+  "heSymbol": "אברא",
+  "isin": "IL0011016669",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ACCL.TA",
+  "name": "ACCEL",
+  "heName": "אקסל",
+  "heSymbol": "אקסל",
+  "isin": "IL0007700169",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ACKR.TA",
+  "name": "ACKERSTEIN GRP.",
+  "heName": "קבוצת אקרשטיין",
+  "heSymbol": "אקרש",
+  "isin": "IL0011762056",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ACRO.TA",
+  "name": "ACRO KVUT",
+  "heName": "אקרו",
+  "heSymbol": "אקרו",
+  "isin": "IL0011849028",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ADGR.TA",
+  "name": "ADGAR INV.",
+  "heName": "אדגר",
+  "heSymbol": "אדגר",
+  "isin": "IL0018200837",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AFHL.TA",
+  "name": "AFCON HOLD",
+  "heName": "אפקון החזקות",
+  "heSymbol": "אפהח",
+  "isin": "IL0005780130",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AFPR.TA",
+  "name": "AFI PROPERTIES",
+  "heName": "אפי נכסים",
+  "heSymbol": "אפנכ",
+  "isin": "IL0010913544",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AFRE.TA",
+  "name": "AFRICA RESIDENC",
+  "heName": "אפריקה מגורים",
+  "heSymbol": "אפמג",
+  "isin": "IL0010979487",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AGRD.TA",
+  "name": "AUTONOMOUS",
+  "heName": "אוטונומוס",
+  "heSymbol": "אגרד",
+  "isin": "IL0010834195",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AILN.TA",
+  "name": "AXILION",
+  "heName": "אקסיליון",
+  "heSymbol": "אילנ",
+  "isin": "IL0003830184",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ALAR.TA",
+  "name": "ALARUM",
+  "heName": "אלארום",
+  "heSymbol": "אלאר",
+  "isin": "IL0010838568",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ALBA.TA",
+  "name": "ALBAAD",
+  "heName": "עלבד",
+  "heSymbol": "עלבד",
+  "isin": "IL0006250125",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ALHE.TA",
+  "name": "ALONY HETZ",
+  "heName": "אלוני חץ",
+  "heSymbol": "אלחץ",
+  "isin": "IL0003900136",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ALL.TA",
+  "name": "ALLTRADE",
+  "heName": "אולטרייד",
+  "heSymbol": "אול",
+  "isin": "IL0012369679",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ALLT.TA",
+  "name": "ALLOT",
+  "heName": "אלוט",
+  "heSymbol": "אלוט",
+  "isin": "IL0010996549",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ALMA.TA",
+  "name": "ALMOGIM",
+  "heName": "אלמוגים",
+  "heSymbol": "אלמה",
+  "isin": "IL0011368292",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ALMD.TA",
+  "name": "ALLMED SOLUTION",
+  "heName": "אולמד סולושנס",
+  "heSymbol": "אלמד",
+  "isin": "IL0011014508",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ALMY.TA",
+  "name": "ALMA YESODOT",
+  "heName": "עלמא יסודות",
+  "heSymbol": "עלמא",
+  "isin": "IL0011731457",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ALRE.TA",
+  "name": "ALMADEV REAL",
+  "heName": "עלמדב ריל",
+  "heSymbol": "עלמר",
+  "isin": "IL0012432451",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ALRPR.TA",
+  "name": "ALROV PROPERT",
+  "heName": "אלרוב נדלן",
+  "heSymbol": "אלרנד",
+  "isin": "IL0003870198",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ALTF.TA",
+  "name": "ALTSHULER FIN",
+  "heName": "אלטשולר שחם פנ",
+  "heSymbol": "אלטפ",
+  "isin": "IL0011849366",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ALUMA.TA",
+  "name": "ALUMA INFRASTR'",
+  "heName": "אלומה תשתיות",
+  "heSymbol": "אלומה",
+  "isin": "IL0011816431",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AMAL.TA",
+  "name": "AMAL HOLDINGS",
+  "heName": "עמל הולדינגס",
+  "heSymbol": "עמל",
+  "isin": "IL0012320086",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AMAN.TA",
+  "name": "AMANET",
+  "heName": "אמנת",
+  "heSymbol": "אמנת",
+  "isin": "IL0006540129",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AMD.TA",
+  "name": "AMIAD",
+  "heName": "עמיעד",
+  "heSymbol": "עמעד",
+  "isin": "IL0010943905",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AMOT.TA",
+  "name": "AMOT",
+  "heName": "אמות",
+  "heSymbol": "אמות",
+  "isin": "IL0010972789",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AMPA.TA",
+  "name": "AMPA",
+  "heName": "אמפא",
+  "heSymbol": "אמפא",
+  "isin": "IL0012252008",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AMRK.TA",
+  "name": "AMIR MARK.",
+  "heName": "עמיר שיווק",
+  "heSymbol": "עמשק",
+  "isin": "IL0010922040",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AMRM.TA",
+  "name": "AMRM",
+  "heName": "עמרם",
+  "heSymbol": "עמרם",
+  "isin": "IL0011882003",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AMX.TA",
+  "name": "AUTOMAX",
+  "heName": "אוטומקס",
+  "heSymbol": "אמקס",
+  "isin": "IL0011316978",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ANGL.TA",
+  "name": "ANGEL SALOMON",
+  "heName": "אנגל שלמה",
+  "heSymbol": "אנגלש",
+  "isin": "IL0001800189",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ANLT-F1.TA",
+  "name": "ATF ETF (4D) S&P 500",
+  "heName": "ATF סל (4D)י S&P 500",
+  "heSymbol": "אנלט.ס1",
+  "isin": "IL0012189168",
+  "type": "ETF"
+ },
+ {
+  "symbol": "ANLT-F2.TA",
+  "name": "ATF ETF (4A) S&P 500 Currency Hedged",
+  "heName": "ATF סל (4A)י S&P 500 מנוטרלת מט\"ח",
+  "heSymbol": "אנלט.ס2",
+  "isin": "IL0012189242",
+  "type": "ETF"
+ },
+ {
+  "symbol": "ANLT-F3.TA",
+  "name": "ATF ETF (4A) TA 125 IL",
+  "heName": "ATF סל (4A) ת\"א 125",
+  "heSymbol": "אנלט.ס3",
+  "isin": "IL0012382037",
+  "type": "ETF"
+ },
+ {
+  "symbol": "ANLT-F4.TA",
+  "name": "ATF ETF (4A) TA 200 IL",
+  "heName": "ATF סל (4A) ת\"א 200",
+  "heSymbol": "אנלט.ס4",
+  "isin": "IL0012381047",
+  "type": "ETF"
+ },
+ {
+  "symbol": "ANLT.TA",
+  "name": "ANALYST",
+  "heName": "אנליסט",
+  "heSymbol": "אנלסט",
+  "isin": "IL0010806136",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "APLP.TA",
+  "name": "APOLLO POWER",
+  "heName": "אפולו פאוור",
+  "heSymbol": "אפלפ",
+  "isin": "IL0010821143",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ARAN.TA",
+  "name": "ARAN",
+  "heName": "ארן",
+  "heSymbol": "ארן",
+  "isin": "IL0010852650",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ARBE.TA",
+  "name": "ARBE ROBOTICS",
+  "heName": "ארבה רובוטיקס",
+  "heSymbol": "ארבה",
+  "isin": "IL0011796625",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ARD.TA",
+  "name": "ARAD",
+  "heName": "ארד",
+  "heSymbol": "ארד",
+  "isin": "IL0010916513",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ARDM.TA",
+  "name": "AERODROME GROUP",
+  "heName": "אירודרום קבוצה",
+  "heSymbol": "ארדמ",
+  "isin": "IL0003630105",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ARF.TA",
+  "name": "ASHDOD REFINERY",
+  "heName": "בזא",
+  "heSymbol": "בזא",
+  "isin": "IL0011989105",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ARGO.TA",
+  "name": "ARGO PROP.",
+  "heName": "ארגו פרופרטיז",
+  "heSymbol": "ארגו",
+  "isin": "NL0015000D84",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ARIN.TA",
+  "name": "ARI RAEL ESTATE",
+  "heName": "ארי נדלן",
+  "heSymbol": "ארינ",
+  "isin": "IL0003660136",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ARNG.TA",
+  "name": "AIRENGY TECH",
+  "heName": "אייראנג'י טק",
+  "heSymbol": "ארנג",
+  "isin": "IL0011059073",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ARPT.TA",
+  "name": "AIRPORT CITY",
+  "heName": "ארפורט סיטי",
+  "heSymbol": "ארפט",
+  "isin": "IL0010958358",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ARYT.TA",
+  "name": "ARYT",
+  "heName": "ארית תעשיות",
+  "heSymbol": "ארית",
+  "isin": "IL0005870147",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ASGR.TA",
+  "name": "ASPEN GROUP",
+  "heName": "אספן גרופ",
+  "heSymbol": "אסגר",
+  "isin": "IL0003130155",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ASHG.TA",
+  "name": "ASHTROM GROUP",
+  "heName": "אשטרום קבוצה",
+  "heSymbol": "אשקב",
+  "isin": "IL0011323156",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ASHO.TA",
+  "name": "ASHOT",
+  "heName": "עשות",
+  "heSymbol": "עשות",
+  "isin": "IL0003120172",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ATRY.TA",
+  "name": "ATREYU CAP",
+  "heName": "אטראו שוקי הון",
+  "heSymbol": "אטרא",
+  "isin": "IL0010961063",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AUDC.TA",
+  "name": "AUDIOCODES",
+  "heName": "אודיוקודס",
+  "heSymbol": "אודק",
+  "isin": "IL0010829658",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AUIS.TA",
+  "name": "AUSTRALIA ISR",
+  "heName": "אוסטרליה ישראל",
+  "heSymbol": "אסיש",
+  "isin": "IL0010805229",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AURA.TA",
+  "name": "AURA",
+  "heName": "אאורה",
+  "heSymbol": "אארה",
+  "isin": "IL0003730194",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AUSA-M.TA",
+  "name": "AURA SMART-M",
+  "heName": "אורה סמארט-ש",
+  "heSymbol": "אורה-ש",
+  "isin": "IL0011766198",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AVER.TA",
+  "name": "AVERBUCH",
+  "heName": "אברבוך",
+  "heSymbol": "אברבך",
+  "isin": "IL0006750173",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AVGD.TA",
+  "name": "AVGAD",
+  "heName": "אב-גד",
+  "heSymbol": "אבגד",
+  "isin": "IL0011718181",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AVGL.TA",
+  "name": "AVGOL",
+  "heName": "אבגול",
+  "heSymbol": "אבגל",
+  "isin": "IL0011009573",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AVIA.TA",
+  "name": "AVIATION LINKS",
+  "heName": "קשרי תעופה",
+  "heSymbol": "קשרתע",
+  "isin": "IL0004130139",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AVIV.TA",
+  "name": "AVIV",
+  "heName": "אביב בניה",
+  "heSymbol": "אביב",
+  "isin": "IL0004440181",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AVRT.TA",
+  "name": "AVROT",
+  "heName": "אברות",
+  "heSymbol": "אברות",
+  "isin": "IL0002970106",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AVSR.TA",
+  "name": "AVISROR",
+  "heName": "אביסרור",
+  "heSymbol": "אביס",
+  "isin": "IL0012458514",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AXN.TA",
+  "name": "AXON VISION",
+  "heName": "אקסון ויז'ן",
+  "heSymbol": "אקסנ",
+  "isin": "IL0012275520",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AYAL.TA",
+  "name": "AYALON HOLD.",
+  "heName": "איילון",
+  "heSymbol": "אילון",
+  "isin": "IL0002090152",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AZRG.TA",
+  "name": "AZRIELI GROUP",
+  "heName": "עזריאלי קבוצה",
+  "heSymbol": "עזרל",
+  "isin": "IL0011194789",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AZRM.TA",
+  "name": "AZORIM",
+  "heName": "אזורים",
+  "heSymbol": "אזרם",
+  "isin": "IL0007150118",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "AZRT.TA",
+  "name": "REIT AZORIM LIV",
+  "heName": "ריט אזורים ליוי",
+  "heSymbol": "אזרט",
+  "isin": "IL0011627754",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BARI.TA",
+  "name": "BARAK INVEST",
+  "heName": "ברק בית השקעות",
+  "heSymbol": "ברקב",
+  "isin": "IL0011043630",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BBLS.TA",
+  "name": "BUBBLES",
+  "heName": "באבלס",
+  "heSymbol": "בבלס",
+  "isin": "IL0011051393",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BEZQ.TA",
+  "name": "BEZEQ",
+  "heName": "בזק",
+  "heSymbol": "בזק",
+  "isin": "IL0002300114",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BGRA.TA",
+  "name": "BAGIRA",
+  "heName": "בגירה",
+  "heSymbol": "בגרה",
+  "isin": "IL0012428822",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BHNY.TA",
+  "name": "BEEIO HONEY",
+  "heName": "ביו דבש",
+  "heSymbol": "בדבש",
+  "isin": "IL0010823461",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BIG.TA",
+  "name": "BIG",
+  "heName": "ביג",
+  "heSymbol": "ביג",
+  "isin": "IL0010972607",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BIOV.TA",
+  "name": "BIO VIEW",
+  "heName": "ביו ויו",
+  "heSymbol": "בויו",
+  "isin": "IL0010960495",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BIRM.TA",
+  "name": "BIRMAN",
+  "heName": "בירמן",
+  "heSymbol": "ברמן",
+  "isin": "IL0005300145",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BITC.TA",
+  "name": "BITCORE CAPITAL",
+  "heName": "ביטקור קפיטל",
+  "heSymbol": "ביטק",
+  "isin": "IL0011733768",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BKFR.TA",
+  "name": "BAIT BAKFAR",
+  "heName": "בית בכפר",
+  "heSymbol": "בכפר",
+  "isin": "IL0011836561",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BKRY.TA",
+  "name": "BIKUREY HASHDE",
+  "heName": "בכורי שדה",
+  "heSymbol": "בכרי",
+  "isin": "IL0011726184",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BLDI.TA",
+  "name": "BALADI",
+  "heName": "בלדי",
+  "heSymbol": "בלדי",
+  "isin": "IL0012125394",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BLEG.TA",
+  "name": "BLACKEDGE",
+  "heName": "בלאקאדג'",
+  "heSymbol": "בלקג",
+  "isin": "IL0011723371",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BLGO.TA",
+  "name": "BULIGO",
+  "heName": "בוליגו",
+  "heSymbol": "בלגו",
+  "isin": "IL0011805954",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BLITZ.TA",
+  "name": "BLITZ",
+  "heName": "בליץ",
+  "heSymbol": "בליץ",
+  "isin": "IL0004240102",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BLND.TA",
+  "name": "BLENDER",
+  "heName": "בלנדר",
+  "heSymbol": "בלנד",
+  "isin": "IL0011720971",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BLRN.TA",
+  "name": "BLADE RANGER",
+  "heName": "בלייד ריינג'ר",
+  "heSymbol": "בלרן",
+  "isin": "IL0011705139",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BLRX.TA",
+  "name": "BIOLINE RX",
+  "heName": "ביוליין",
+  "heSymbol": "ביול",
+  "isin": "IL0011015182",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BLSR.TA",
+  "name": "BLUE SQ REAL ES",
+  "heName": "רבוע נדלן",
+  "heSymbol": "רבנד",
+  "isin": "IL0010985658",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BLWV-M.TA",
+  "name": "BLUE WAVE-M",
+  "heName": "בלו וייב-ש",
+  "heSymbol": "בלוב-ש",
+  "isin": "IL0010968902",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BOLT.TA",
+  "name": "BIOLIGHT",
+  "heName": "ביולייט",
+  "heSymbol": "בולט",
+  "isin": "IL0010952237",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BONS.TA",
+  "name": "BONUS BIOGROUP",
+  "heName": "בונוס ביוגרופ",
+  "heSymbol": "בונס",
+  "isin": "IL0004850116",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BOTI.TA",
+  "name": "BONEI TICHON",
+  "heName": "בוני תיכון",
+  "heSymbol": "בנתכ",
+  "isin": "IL0005310128",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BRAM.TA",
+  "name": "BRAM INDUS",
+  "heName": "ברם תעשיות",
+  "heSymbol": "ברם",
+  "isin": "IL0010945157",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BRAN.TA",
+  "name": "BARAN",
+  "heName": "ברן",
+  "heSymbol": "ברן",
+  "isin": "IL0002860133",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BRIH.TA",
+  "name": "RAV BARIACH",
+  "heName": "רב בריח",
+  "heSymbol": "בריח",
+  "isin": "IL0011799934",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BRIL.TA",
+  "name": "BRILL",
+  "heName": "בריל",
+  "heSymbol": "בריל",
+  "isin": "IL0003990145",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BRKT.TA",
+  "name": "BAREKET",
+  "heName": "ברקת",
+  "heSymbol": "ברקת",
+  "isin": "IL0011782765",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BRMG.TA",
+  "name": "BRIMAG",
+  "heName": "ברימאג",
+  "heSymbol": "ברמג",
+  "isin": "IL0010942832",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BRND.TA",
+  "name": "BRAND",
+  "heName": "ברנד",
+  "heSymbol": "ברנד",
+  "isin": "IL0005360115",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BSEN.TA",
+  "name": "BET SHEMESH",
+  "heName": "בית שמש",
+  "heSymbol": "מנבש",
+  "isin": "IL0010815616",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BSTG.TA",
+  "name": "BST GROUP",
+  "heName": "בסט קבוצה",
+  "heSymbol": "בסטק",
+  "isin": "IL0012426503",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BUFT.TA",
+  "name": "BUFF TECH'",
+  "heName": "באפ טכנו'",
+  "heSymbol": "באפט",
+  "isin": "IL0011790438",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BULL-M.TA",
+  "name": "BULL TRADING-M",
+  "heName": "בול מסחר-ש",
+  "heSymbol": "בול-ש",
+  "isin": "IL0011766354",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BVC.TA",
+  "name": "BATM",
+  "heName": "באטמ",
+  "heSymbol": "באטמ",
+  "isin": "IL0010849045",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BVGG.TA",
+  "name": "BAIT VEGAG GL",
+  "heName": "בית וגג",
+  "heSymbol": "ביגג",
+  "isin": "IL0011853624",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BWAY.TA",
+  "name": "BRAINSWAY",
+  "heName": "בריינסוויי",
+  "heSymbol": "ברינ",
+  "isin": "IL0011007189",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "BYON-M.TA",
+  "name": "BEYON 3D-M",
+  "heName": "ביונ תלת מימד-ש",
+  "heSymbol": "ביונ-ש",
+  "isin": "IL0011755613",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CAMT.TA",
+  "name": "CAMTEK",
+  "heName": "קמטק",
+  "heSymbol": "קמטק",
+  "isin": "IL0010952641",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CANF.TA",
+  "name": "CAN FITE BIO",
+  "heName": "כן פייט ביופרמה",
+  "heSymbol": "כנפב",
+  "isin": "IL0010944739",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CAST.TA",
+  "name": "CASTRO",
+  "heName": "קסטרו",
+  "heSymbol": "קסטרו",
+  "isin": "IL0002800162",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CBI.TA",
+  "name": "CLAL BIOTECH",
+  "heName": "כלל ביוטכנו",
+  "heSymbol": "כללבי",
+  "isin": "IL0011042806",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CDEV.TA",
+  "name": "COHEN DEV",
+  "heName": "כהן פיתוח",
+  "heSymbol": "כהנפת",
+  "isin": "IL0008100104",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CEL.TA",
+  "name": "CELLCOM",
+  "heName": "סלקום",
+  "heSymbol": "סלקם",
+  "isin": "IL0011015349",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CGEN.TA",
+  "name": "COMPUGEN",
+  "heName": "קומפיוגן",
+  "heSymbol": "קמפג",
+  "isin": "IL0010852080",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CILO.TA",
+  "name": "CIELO-BLU",
+  "heName": "צילו-בלו",
+  "heSymbol": "צילו",
+  "isin": "IL0011025322",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CION.TA",
+  "name": "CION",
+  "heName": "סיאון",
+  "heSymbol": "סאון",
+  "isin": "US17259U2042",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CISY.TA",
+  "name": "C I SYSTEMS",
+  "heName": "סיאי",
+  "heSymbol": "סיאי",
+  "isin": "IL0004420126",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CLIS.TA",
+  "name": "CLAL INSURANCE",
+  "heName": "כלל עסקי ביטוח",
+  "heSymbol": "כללבט",
+  "isin": "IL0002240146",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CMDR.TA",
+  "name": "COMPUTER DIRECT",
+  "heName": "מיחשוב ישר קב",
+  "heSymbol": "מחשר",
+  "isin": "IL0005070128",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CMER.TA",
+  "name": "MER",
+  "heName": "מר",
+  "heSymbol": "מר",
+  "isin": "IL0003380123",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CNDO.TA",
+  "name": "CANDO DRONES",
+  "heName": "קאנדו דרונס",
+  "heSymbol": "קנדו",
+  "isin": "IL0012445818",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CNGL.TA",
+  "name": "CANADA GLOBAL",
+  "heName": "קנדה גלובל",
+  "heSymbol": "קנגל",
+  "isin": "IL0001060131",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CNTL-M.TA",
+  "name": "CONTINUAL-M",
+  "heName": "קונטיניואל-ש",
+  "heSymbol": "קנטל-ש",
+  "isin": "IL0011822603",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CNZN-M.TA",
+  "name": "CANZON-M",
+  "heName": "קנזון-ש",
+  "heSymbol": "קנזנ-ש",
+  "isin": "IL0010960073",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CPPL.TA",
+  "name": "CITY PEOPLE",
+  "heName": "אנשי העיר",
+  "heSymbol": "אנשי",
+  "isin": "IL0011982662",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CPTP.TA",
+  "name": "CAPITAL POINT",
+  "heName": "קפיטל פוינט",
+  "heSymbol": "קפטל",
+  "isin": "IL0010971468",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CRML.TA",
+  "name": "CARMEL CORP",
+  "heName": "כרמל קורפ",
+  "heSymbol": "כרמל",
+  "isin": "IL0011476855",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CRMT.TA",
+  "name": "CARMIT",
+  "heName": "כרמית",
+  "heSymbol": "כרמת",
+  "isin": "IL0004400169",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CRSM.TA",
+  "name": "CARASSO MOTORS",
+  "heName": "קרסו מוטורס",
+  "heSymbol": "קרסמ",
+  "isin": "IL0011238503",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CRSR.TA",
+  "name": "CARASSO REAL ES",
+  "heName": "קרסו נדלן",
+  "heSymbol": "קרסנ",
+  "isin": "IL0011879629",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CTPL1.TA",
+  "name": "CITRUS PLANT1",
+  "heName": "מטעי הדר 1",
+  "heSymbol": "מטעי1",
+  "isin": "IL0007160190",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CTPL5.TA",
+  "name": "CITRUS PLANT 5",
+  "heName": "מטעי הדר 5",
+  "heSymbol": "מטעי5",
+  "isin": "IL0007160356",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "CYBR.TA",
+  "name": "PALO ALTO",
+  "heName": "פאלו אלטו",
+  "heSymbol": "סיבר",
+  "isin": "US6974351057",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DANE.TA",
+  "name": "DANEL",
+  "heName": "דנאל",
+  "heSymbol": "דנאל",
+  "isin": "IL0003140139",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DANH.TA",
+  "name": "DAN HOTELS",
+  "heName": "דן מלונות",
+  "heSymbol": "דן",
+  "isin": "IL0008220159",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DELG.TA",
+  "name": "DELTA GALIL",
+  "heName": "דלתא גליל",
+  "heSymbol": "דלתג",
+  "isin": "IL0006270347",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DIFI.TA",
+  "name": "DIRECT FINANCE",
+  "heName": "מימון ישיר",
+  "heSymbol": "מישק",
+  "isin": "IL0011681868",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DIMRI.TA",
+  "name": "DIMRI",
+  "heName": "דמרי",
+  "heSymbol": "דמרי",
+  "isin": "IL0010903156",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DIPL.TA",
+  "name": "DIPLOMAT HOLDI.",
+  "heName": "דיפלומט אחזקות",
+  "heSymbol": "דיפל",
+  "isin": "IL0011734915",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DISI.TA",
+  "name": "DISCOUNT INV",
+  "heName": "דיסקונט השקעות",
+  "heSymbol": "דסקש",
+  "isin": "IL0006390137",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DLAS.TA",
+  "name": "DELEK PROPERTY",
+  "heName": "דלק ייזום",
+  "heSymbol": "דליז",
+  "isin": "IL0012437575",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DLEA.TA",
+  "name": "DELEK AUTOMOTIV",
+  "heName": "דלק רכב",
+  "heSymbol": "דלקרכ",
+  "isin": "IL0008290103",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DLEKG.TA",
+  "name": "DELEK GROUP",
+  "heName": "דלק קבוצה",
+  "heSymbol": "דלקקב",
+  "isin": "IL0010841281",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DLPR.TA",
+  "name": "DELEK PROP",
+  "heName": "דלק נכסים",
+  "heSymbol": "דלנכ",
+  "isin": "IL0011962110",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DLTI.TA",
+  "name": "DELTA BRANDS",
+  "heName": "דלתא מותגים",
+  "heSymbol": "דלתי",
+  "isin": "IL0011736993",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DNYA.TA",
+  "name": "DANYA CEBUS",
+  "heName": "דניה סיבוס",
+  "heSymbol": "דניה",
+  "isin": "IL0011731374",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DORL.TA",
+  "name": "DORAL ENERGY",
+  "heName": "דוראל אנרגיה",
+  "heSymbol": "דורל",
+  "isin": "IL0011667685",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DRAL.TA",
+  "name": "DOR ALON",
+  "heName": "דור אלון",
+  "heSymbol": "דראל",
+  "isin": "IL0010932023",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DRSL.TA",
+  "name": "DORSEL",
+  "heName": "דורסל",
+  "heSymbol": "דרסל",
+  "isin": "IL0011906281",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DRTS.TA",
+  "name": "ALPHA TAU",
+  "heName": "אלפא תאו",
+  "heSymbol": "דרטס",
+  "isin": "IL0011839383",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DSCT.TA",
+  "name": "DISCOUNT",
+  "heName": "דיסקונט א",
+  "heSymbol": "דסקנט",
+  "isin": "IL0006912120",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DSIT.TA",
+  "name": "DSIT",
+  "heName": "דיאסאייטי",
+  "heSymbol": "דסיט",
+  "isin": "IL0012380130",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "DUNI.TA",
+  "name": "DUNIEC",
+  "heName": "דוניץ",
+  "heSymbol": "דונץ",
+  "isin": "IL0004000100",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ECNR.TA",
+  "name": "ECONERGY",
+  "heName": "אקונרג'י",
+  "heSymbol": "אקנר",
+  "isin": "IL0011783342",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ECP.TA",
+  "name": "ELECTRA CO PR",
+  "heName": "אלקטרה צריכה",
+  "heSymbol": "אמצ",
+  "isin": "IL0050101299",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "EFCP.TA",
+  "name": "EFFI CAP",
+  "heName": "אפי קפיטל",
+  "heSymbol": "אפקפ",
+  "isin": "IL0011814378",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "EFNC-M.TA",
+  "name": "ERECH FINANCEM",
+  "heName": "ערך פיננסים-ש",
+  "heSymbol": "עפנכ-ש",
+  "isin": "IL0011201618",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ELAD.TA",
+  "name": "ELAD SOFTWARE",
+  "heName": "אלעד תוכנה",
+  "heSymbol": "אלעד",
+  "isin": "IL0012177023",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ELAL.TA",
+  "name": "EL AL",
+  "heName": "אל על",
+  "heSymbol": "אלעל",
+  "isin": "IL0010878242",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ELCO.TA",
+  "name": "ELCO",
+  "heName": "אלקו",
+  "heSymbol": "אלקו",
+  "isin": "IL0006940345",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ELCRE.TA",
+  "name": "ELECTRA REAL E.",
+  "heName": "אלקטרה נדלן",
+  "heSymbol": "אלקנד",
+  "isin": "IL0010940448",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ELDT.TA",
+  "name": "ELDAN TRANS",
+  "heName": "אלדן תחבורה",
+  "heSymbol": "אלדת",
+  "isin": "IL0011348815",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ELLO.TA",
+  "name": "ELLOMAY",
+  "heName": "אלומיי",
+  "heSymbol": "אלומ",
+  "isin": "IL0010826357",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ELMR.TA",
+  "name": "ELMOR",
+  "heName": "אלמור חשמל",
+  "heSymbol": "אלמר",
+  "isin": "IL0011424541",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ELRL.TA",
+  "name": "ELBIT REAL EST",
+  "heName": "אלביט נדל\"ן",
+  "heSymbol": "אלנל",
+  "isin": "IL0010811169",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ELRN.TA",
+  "name": "ELRON",
+  "heName": "אלרון",
+  "heSymbol": "אלרון",
+  "isin": "IL0007490779",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ELSPC.TA",
+  "name": "ELSPEC",
+  "heName": "אלספק",
+  "heSymbol": "אלספק",
+  "isin": "IL0010903644",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ELTR.TA",
+  "name": "ELECTRA",
+  "heName": "אלקטרה",
+  "heSymbol": "אלקטה",
+  "isin": "IL0007390375",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ELWS.TA",
+  "name": "ELECTREON",
+  "heName": "אלקטריאון",
+  "heSymbol": "אלוס",
+  "isin": "IL0003680191",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "EMDV.TA",
+  "name": "EMILIA DEVEL",
+  "heName": "אמיליה פיתוח",
+  "heSymbol": "אמפת",
+  "isin": "IL0005890103",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ENLT.TA",
+  "name": "ENLIGHT ENERGY",
+  "heName": "אנלייט אנרגיה",
+  "heSymbol": "אנלט",
+  "isin": "IL0007200111",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ENOG.TA",
+  "name": "ENERGEAN",
+  "heName": "אנרג'יאן",
+  "heSymbol": "אנאג",
+  "isin": "GB00BG12Y042",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ENRG.TA",
+  "name": "ENERGIX",
+  "heName": "אנרג'יקס",
+  "heSymbol": "אנרג",
+  "isin": "IL0011233553",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "EPIT.TA",
+  "name": "EPITOMEE MED",
+  "heName": "אפיטומי מדיקל",
+  "heSymbol": "אפיט",
+  "isin": "IL0011825911",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "EQTL.TA",
+  "name": "EQUITAL",
+  "heName": "אקויטל",
+  "heSymbol": "אקטל",
+  "isin": "IL0007550176",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ERKA.TA",
+  "name": "ERIKA CARMEL",
+  "heName": "אריקה כרמל",
+  "heSymbol": "ארקה",
+  "isin": "IL0011789125",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ESLT.TA",
+  "name": "ELBIT SYSTEMS",
+  "heName": "אלביט מערכות",
+  "heSymbol": "אלבמע",
+  "isin": "IL0010811243",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ETGA.TA",
+  "name": "ETGA GROUP",
+  "heName": "אי.טי.ג'י.איי",
+  "heSymbol": "אטגא",
+  "isin": "IL0011761140",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "EVGN.TA",
+  "name": "EVOGENE",
+  "heName": "אבוג'ן",
+  "heSymbol": "אבגן",
+  "isin": "IL0011050551",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "EXPO.TA",
+  "name": "EXPORT INV",
+  "heName": "יצוא",
+  "heSymbol": "יצוא",
+  "isin": "IL0007040152",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "FBRT.TA",
+  "name": "FMS",
+  "heName": "פמס",
+  "heSymbol": "פמס",
+  "isin": "IL0003150104",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "FGAS.TA",
+  "name": "FIRE AND GAS",
+  "heName": "טכנ גילוי אש גז",
+  "heSymbol": "טכאש",
+  "isin": "IL0011653073",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "FIBI.TA",
+  "name": "FIBI BANK",
+  "heName": "בינלאומי",
+  "heSymbol": "בנלמ",
+  "isin": "IL0005930388",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "FIBIH.TA",
+  "name": "FIBI HOLDINGS",
+  "heName": "פיבי",
+  "heSymbol": "פיבי",
+  "isin": "IL0007630119",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "FLYS-M.TA",
+  "name": "FLYING SPARK-M",
+  "heName": "פליינג ספארק-ש",
+  "heSymbol": "פליס-ש",
+  "isin": "IL0011735821",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "FORTY.TA",
+  "name": "FORMULA",
+  "heName": "פורמולה מערכות",
+  "heSymbol": "פרמלה",
+  "isin": "IL0002560162",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "FOX.TA",
+  "name": "FOX",
+  "heName": "פוקס",
+  "heSymbol": "פוקס",
+  "isin": "IL0010870223",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "FRDN.TA",
+  "name": "FRIDENSON",
+  "heName": "פרידנזון",
+  "heSymbol": "פרדנ",
+  "isin": "IL0011022196",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "FRSX.TA",
+  "name": "FORESIGHT",
+  "heName": "פורסייט",
+  "heSymbol": "פרסט",
+  "isin": "IL0001990188",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "FTAL.TA",
+  "name": "FATTAL HOLD",
+  "heName": "פתאל החזקות",
+  "heSymbol": "פתאל",
+  "isin": "IL0011434292",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "G107.TA",
+  "name": "GROUP 107",
+  "heName": "גרופ 107",
+  "heSymbol": "ג107",
+  "isin": "IL0011801813",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GABY.TA",
+  "name": "GABAY GROUP",
+  "heName": "גבאי קבוצה",
+  "heSymbol": "קגבא",
+  "isin": "IL0012246414",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GAD.TA",
+  "name": "GAD DAIRIES",
+  "heName": "מחלבות גד",
+  "heSymbol": "גד",
+  "isin": "IL0012288085",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GAGR.TA",
+  "name": "GAON GROUP",
+  "heName": "גאון קבוצה",
+  "heSymbol": "גנקב",
+  "isin": "IL0004540170",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GAON.TA",
+  "name": "GAON",
+  "heName": "גאון אחזקות",
+  "heSymbol": "גאון",
+  "isin": "IL0011047441",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GCT.TA",
+  "name": "G CITY",
+  "heName": "ג'י סיטי",
+  "heSymbol": "גיסי",
+  "isin": "IL0001260111",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GEFR.TA",
+  "name": "GEFFEN R&R",
+  "heName": "גפן מגורים",
+  "heSymbol": "גפנמ",
+  "isin": "IL0011181166",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GIBUI.TA",
+  "name": "GIBUI HOLDING",
+  "heName": "גיבוי אחזקות",
+  "heSymbol": "גיבו",
+  "isin": "IL0004480195",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GILT.TA",
+  "name": "GILAT",
+  "heName": "גילת",
+  "heSymbol": "גילת",
+  "isin": "IL0010825102",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GIX.TA",
+  "name": "GIX",
+  "heName": "גיקס",
+  "heSymbol": "גיקס",
+  "isin": "IL0007440113",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GKL.TA",
+  "name": "GLOBAL KNAFAIM",
+  "heName": "גלובל כנפיים",
+  "heSymbol": "גלכנ",
+  "isin": "IL0011413163",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GLAM.TA",
+  "name": "GALAM",
+  "heName": "גלעם",
+  "heSymbol": "גלעם",
+  "isin": "IL0012431123",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GLDE.TA",
+  "name": "GOLDEN ENERGY",
+  "heName": "גולדן אנרג'י",
+  "heSymbol": "גלדא",
+  "isin": "IL0010834435",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GLRS.TA",
+  "name": "GLOBRANDS",
+  "heName": "גלוברנדס",
+  "heSymbol": "גלרס",
+  "isin": "IL0011474876",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GLTL.TA",
+  "name": "GILAT TELECOM",
+  "heName": "גילת טלקום",
+  "heSymbol": "גלטל",
+  "isin": "IL0010805971",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GNCL.TA",
+  "name": "GENCELL",
+  "heName": "ג'נסל",
+  "heSymbol": "גנסל",
+  "isin": "IL0011696890",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GNGR.TA",
+  "name": "GINEGAR",
+  "heName": "גניגר",
+  "heSymbol": "גנגר",
+  "isin": "IL0010958929",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GNRS.TA",
+  "name": "GENERATION CAP",
+  "heName": "ג'נריישן קפיטל",
+  "heSymbol": "גנרש",
+  "isin": "IL0011569261",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GOHO.TA",
+  "name": "GOLDEN HOUSE",
+  "heName": "בית הזהב",
+  "heSymbol": "בזהב",
+  "isin": "IL0002350101",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GOLD.TA",
+  "name": "GOLD",
+  "heName": "גולד",
+  "heSymbol": "גולד",
+  "isin": "IL0001490130",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GOLF.TA",
+  "name": "GOLF",
+  "heName": "גולף",
+  "heSymbol": "גולף",
+  "isin": "IL0010961485",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GOSS.TA",
+  "name": "G 1 SECU",
+  "heName": "ג'י וואן",
+  "heSymbol": "גואנ",
+  "isin": "IL0011562803",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GOTO.TA",
+  "name": "GOTO",
+  "heName": "גוטו",
+  "heSymbol": "גוטו",
+  "isin": "IL0011767261",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GPAY-M.TA",
+  "name": "GLOBAL PAY-M",
+  "heName": "גלובל פיי-ש",
+  "heSymbol": "גפיי-ש",
+  "isin": "IL0010819832",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GRAC.TA",
+  "name": "GRACE BREEDING",
+  "heName": "גרייס ברידינג",
+  "heSymbol": "גריס",
+  "isin": "IL0011843658",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GRIN.TA",
+  "name": "GOLAN INDUS",
+  "heName": "גולן תעשיות",
+  "heSymbol": "גלתע",
+  "isin": "IL0010919335",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GSFI.TA",
+  "name": "GAN SHMUEL",
+  "heName": "גן שמואל",
+  "heSymbol": "גנשמ",
+  "isin": "IL0005320101",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "GVYM.TA",
+  "name": "GAV YAM",
+  "heName": "גב ים",
+  "heSymbol": "גבים",
+  "isin": "IL0007590198",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HAMAT.TA",
+  "name": "HAMAT",
+  "heName": "חמת",
+  "heSymbol": "חמת",
+  "isin": "IL0003840167",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HARL.TA",
+  "name": "HAREL",
+  "heName": "הראל השקעות",
+  "heSymbol": "הראל",
+  "isin": "IL0005850180",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HDST-M.TA",
+  "name": "HADASIT BIO-M",
+  "heName": "הדסית ביו-ש",
+  "heSymbol": "הדסת-ש",
+  "isin": "IL0010954050",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HGG.TA",
+  "name": "HAGAG",
+  "heName": "חג'ג'",
+  "heSymbol": "חגג",
+  "isin": "IL0008230133",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HGGE.TA",
+  "name": "HAGAG EURO",
+  "heName": "חג'ג' אירופה",
+  "heSymbol": "חגגא",
+  "isin": "IL0011436354",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HIPR.TA",
+  "name": "HIPER GLOBAL",
+  "heName": "הייפר גלובל",
+  "heSymbol": "היפר",
+  "isin": "IL0011849853",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HLAN.TA",
+  "name": "HILAN",
+  "heName": "חילן",
+  "heSymbol": "חילן",
+  "isin": "IL0010846983",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HLMS.TA",
+  "name": "HOLMES PLACE",
+  "heName": "הולמס פלייס",
+  "heSymbol": "הלמס",
+  "isin": "IL0011425878",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HMAM.TA",
+  "name": "HAMAMA",
+  "heName": "חממה סחר",
+  "heSymbol": "חממה",
+  "isin": "IL0011047854",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HMGS.TA",
+  "name": "HOMEBIOGAS",
+  "heName": "הום ביוגז",
+  "heSymbol": "המגז",
+  "isin": "IL0011722043",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HOD.TA",
+  "name": "HOD",
+  "heName": "חד",
+  "heSymbol": "חד",
+  "isin": "IL0003510158",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HRL-F109.TA",
+  "name": "Harel Sal (00)(!) Tel Bond Yields Shekel IL",
+  "heName": "הראל סל (00)(!) תל בונד תשואות שקל",
+  "heSymbol": "הרל.ס109",
+  "isin": "IL0011506719",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F11.TA",
+  "name": "Harel Sal (4A) TA 90 IL",
+  "heName": "הראל סל (4A) ת\"א 90",
+  "heSymbol": "הרל.ס11",
+  "isin": "IL0011489312",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F12.TA",
+  "name": "Harel Sal (4A) Index Israel Banks IL",
+  "heName": "הראל סל (4A) אינדקס בנקים ישראל",
+  "heSymbol": "הרל.ס12",
+  "isin": "IL0011489494",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F13.TA",
+  "name": "Harel Sal (00) Tel Bond 40 CPI Linked IL",
+  "heName": "הראל סל (00) תל בונד 40 צמודות",
+  "heSymbol": "הרל.ס13",
+  "isin": "IL0011504995",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F14.TA",
+  "name": "Harel Sal (4A) TA-SME60 IL",
+  "heName": "הראל סל (4A) ת\"א SME60",
+  "heSymbol": "הרל.ס14",
+  "isin": "IL0011489569",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F15.TA",
+  "name": "Harel Sal (4A) TA-RealEstate IL",
+  "heName": "הראל סל (4A) ת\"א נדל\"ן",
+  "heSymbol": "הרל.ס15",
+  "isin": "IL0011489643",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F16.TA",
+  "name": "Harel Sal (4A) TA-Finance IL",
+  "heName": "הראל סל (4A) ת\"א פיננסים",
+  "heSymbol": "הרל.ס16",
+  "isin": "IL0011489809",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F2.TA",
+  "name": "Harel Sal (4A) TA 125 IL",
+  "heName": "הראל סל (4A) ת\"א 125",
+  "heSymbol": "הרל.ס2",
+  "isin": "IL0011488991",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F204.TA",
+  "name": "Harel Sal (4A) ISE Cyber Security Dollar-Hedged",
+  "heName": "הראל סל (4A) ‏ISE Cyber Security מנוטרלת דולר",
+  "heSymbol": "הרל.ס204",
+  "isin": "IL0011501926",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F205.TA",
+  "name": "Harel Sal (4A) MSCI AC World Dollar-Hedged",
+  "heName": "הראל סל (4A) ‏MSCI AC World מנוטרלת דולר",
+  "heSymbol": "הרל.ס205",
+  "isin": "IL0011502007",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F207.TA",
+  "name": "Harel Sal (4D) ISE Cyber Security",
+  "heName": "הראל סל (4D) ‏ISE Cyber Security",
+  "heSymbol": "הרל.ס207",
+  "isin": "IL0011503740",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F214.TA",
+  "name": "Harel Sal (4A) Kosher TA 90 IL",
+  "heName": "הראל סל (4A) כשרה ת\"א 90",
+  "heSymbol": "הרל.ס214",
+  "isin": "IL0011661720",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F216.TA",
+  "name": "Harel Sal (6D) 2 Time Short Leverage Nasdaq 100 Monthly",
+  "heName": "הראל סל (6D) ממונפת בחסר NASDAQ 100 פי 2 חודשי",
+  "heSymbol": "הרל.ס216",
+  "isin": "IL0011675761",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F217.TA",
+  "name": "Harel Sal (6A) 3 Time Leverage Nasdaq 100 Monthly Currency-Hedged",
+  "heName": "הראל סל (6A) ממונפת NASDAQ 100 פי 3 חודשי מנוטרלת מט\"ח",
+  "heSymbol": "הרל.ס217",
+  "isin": "IL0011675688",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F220.TA",
+  "name": "Harel Sal (4A) TA-Technology IL",
+  "heName": "הראל סל (4A) ת\"א טכנולוגיה",
+  "heSymbol": "הרל.ס220",
+  "isin": "IL0011618274",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F221.TA",
+  "name": "Harel Sal (0A) Tel Bond Composite IL",
+  "heName": "הראל סל (0A) תל בונד מאגר",
+  "heSymbol": "הרל.ס221",
+  "isin": "IL0011696221",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F224.TA",
+  "name": "Harel Sal (4A) S&P North American Expanded Tech Software Currency-Hedged",
+  "heName": "הראל סל (4A)יS&P North American Expanded Tech Software מנוטרלת מט''ח",
+  "heSymbol": "הרל.ס224",
+  "isin": "IL0011840928",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F226.TA",
+  "name": "Harel Sal (4A) Index Israel 100 profitability Equal Weight IL",
+  "heName": "הראל סל (4A) אינדקס ישראל 100 רווחיות משקל שווה",
+  "heSymbol": "הרל.ס266",
+  "isin": "IL0011906851",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F227.TA",
+  "name": "Harel Sal (00) Tel Bond-CPI Linked Bank Without COCO IL",
+  "heName": "הראל סל (00) תל בונד צמודות-בנקים ללא COCO",
+  "heSymbol": "הרל.ס227",
+  "isin": "IL0011907768",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F233.TA",
+  "name": "Harel Sal (4A) TA - 90 & Banks IL",
+  "heName": "הראל סל (4A) ת\"א 90 ובנקים",
+  "heSymbol": "הרל.ס233",
+  "isin": "IL0012135948",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F235.TA",
+  "name": "Harel Sal (4D) CME CF Bitcoin Reference Rate (BRRNY)",
+  "heName": "הראל סל (4D)י (CME CF Bitcoin Reference Rate (BRRNY",
+  "heSymbol": "הרל.ס235",
+  "isin": "IL0012203910",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F236.TA",
+  "name": "Harel Sal (4A) TA-Oil & Gas IL",
+  "heName": "הראל סל (4A) ת\"א-נפט וגז",
+  "heSymbol": "הרל.ס236",
+  "isin": "IL0012269275",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F237.TA",
+  "name": "Harel Sal (00) Tel Gov-Non Linked IL",
+  "heName": "הראל סל (00) תל גוב-לא צמודות",
+  "heSymbol": "הרל.ס237",
+  "isin": "IL0012319195",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F238.TA",
+  "name": "Harel Sal (4A) TA Securities IL",
+  "heName": "הראל סל (4A) ת\"א בטחוניות",
+  "heSymbol": "הרל.ס238",
+  "isin": "IL0012331703",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F239.TA",
+  "name": "Harel Sal (4A) TA Infrastructure IL",
+  "heName": "הראל סל (4A) ת\"א תשתיות",
+  "heSymbol": "הרל.ס239",
+  "isin": "IL0012358037",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F24.TA",
+  "name": "Harel Sal (00) Tel Bond - Shekel IL",
+  "heName": "הראל סל (00) תל בונד שקלי",
+  "heSymbol": "הרל.ס24",
+  "isin": "IL0011505232",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F240.TA",
+  "name": "Harel Sal (4A) MSCI Emerging Markets Dollar-Hedged",
+  "heName": "הראל סל (4A)י MSCI Emerging Markets מנוטרלת דולר",
+  "heSymbol": "הרל.ס240",
+  "isin": "IL0012398629",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F241.TA",
+  "name": "Harel Sal (4A) TA - Israel Energy IL",
+  "heName": "הראל סל (4A) ת\"א - אנרגיה ישראל",
+  "heSymbol": "הרל.ס241",
+  "isin": "IL0012445578",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F25.TA",
+  "name": "Harel Sal (4D) S&P 500",
+  "heName": "הראל סל (4D) ‏S&P 500",
+  "heSymbol": "הרל.ס25",
+  "isin": "IL0011490203",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F26.TA",
+  "name": "Harel Sal (4D) NASDAQ 100",
+  "heName": "הראל סל (4D) ‏NASDAQ 100",
+  "heSymbol": "הרל.ס26",
+  "isin": "IL0011490385",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F28.TA",
+  "name": "Harel Sal (4D) DAX",
+  "heName": "הראל סל (4D) ‏DAX",
+  "heSymbol": "הרל.ס28",
+  "isin": "IL0011490534",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F288.TA",
+  "name": "Harel Sal (4D) Index U.S Momentum",
+  "heName": "הראל סל (4D) אינדקס מומנטום ארה\"ב",
+  "heSymbol": "הרל.ס228",
+  "isin": "IL0011908592",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F3.TA",
+  "name": "Harel Sal (00) Tel Bond 20 CPI Linked IL",
+  "heName": "הראל סל (00) תל בונד 20 צמודות",
+  "heSymbol": "הרל.ס3",
+  "isin": "IL0011504409",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F300.TA",
+  "name": "Harel Sal (00) Tel Bond Shekel - 50 IL",
+  "heName": "הראל סל (00) תל בונד שקלי 50",
+  "heSymbol": "הרל.ס300",
+  "isin": "IL0011507139",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F301.TA",
+  "name": "Harel Sal (00)(!) Tel Bond - Global Shekel IL",
+  "heName": "הראל סל (00)(!) תל בונד גלובל שקלי",
+  "heSymbol": "הרל.ס301",
+  "isin": "IL0011507394",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F303.TA",
+  "name": "Harel Sal (00) Tel Bond - Shekel Bank & Insurance IL",
+  "heName": "הראל סל (00) תל בונד שקלי-בנקים וביטוח",
+  "heSymbol": "הרל.ס303",
+  "isin": "IL0011507477",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F4.TA",
+  "name": "Harel Sal (00) Tel Bond 60 CPI Linked IL",
+  "heName": "הראל סל (00) תל בונד 60 צמודות",
+  "heSymbol": "הרל.ס4",
+  "isin": "IL0011504730",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F49.TA",
+  "name": "Harel Sal (4A) NASDAQ 100 Currency-Hedged",
+  "heName": "הראל סל (4A) ‏NASDAQ 100 מנוטרלת מט\"ח",
+  "heSymbol": "הרל.ס49",
+  "isin": "IL0011491037",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F50.TA",
+  "name": "Harel Sal (4A) S&P 500 Currency-Hedged",
+  "heName": "הראל סל (4A) ‏S&P 500 מנוטרלת מט\"ח",
+  "heSymbol": "הרל.ס50",
+  "isin": "IL0011491375",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F53.TA",
+  "name": "Harel Sal (4A) DAX Currency-Hedged",
+  "heName": "הראל סל (4A) ‏DAX מנוטרלת מט\"ח",
+  "heSymbol": "הרל.ס53",
+  "isin": "IL0011491607",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F61.TA",
+  "name": "Harel Sal (00) Tel Bond CPI Linked IL",
+  "heName": "הראל סל (00) תל בונד צמודות",
+  "heSymbol": "הרל.ס61",
+  "isin": "IL0011506065",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F64.TA",
+  "name": "Harel Sal (4D) DJ Industrial Average",
+  "heName": "הראל סל (4D) ‏DJ Industrial Average",
+  "heSymbol": "הרל.ס64",
+  "isin": "IL0011492282",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F65.TA",
+  "name": "Harel Sal (4D) EURO STOXX 50",
+  "heName": "הראל סל (4D) ‏EURO STOXX 50",
+  "heSymbol": "הרל.ס65",
+  "isin": "IL0011492449",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F67.TA",
+  "name": "Harel Sal (4A) NIKKEI 225 Currency-Hedged",
+  "heName": "הראל סל (4A) ‏NIKKEI 225 מנוטרלת מט\"ח",
+  "heSymbol": "הרל.ס67",
+  "isin": "IL0011492514",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F68.TA",
+  "name": "Harel Sal (4D) S&P Industrial",
+  "heName": "הראל סל (4D) ‏S&P Industrial",
+  "heSymbol": "הרל.ס68",
+  "isin": "IL0011492852",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F69.TA",
+  "name": "Harel Sal (00)(!) Tel Bond-Yields CPI Linked IL",
+  "heName": "הראל סל (00)(!) תל בונד-תשואות צמודות",
+  "heSymbol": "הרל.ס69",
+  "isin": "IL0011506222",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F7.TA",
+  "name": "Harel Sal (4A) TA 35 IL",
+  "heName": "הראל סל (4A) ת\"א 35",
+  "heSymbol": "הרל.ס7",
+  "isin": "IL0011489072",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F72.TA",
+  "name": "Harel Sal (4D) MSCI Emerging Markets",
+  "heName": "הראל סל (4D) ‏MSCI Emerging Markets",
+  "heSymbol": "הרל.ס72",
+  "isin": "IL0011493017",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F73.TA",
+  "name": "Harel Sal (4D) MSCI AC World",
+  "heName": "הראל סל (4D) ‏MSCI AC World",
+  "heSymbol": "הרל.ס73",
+  "isin": "IL0011493355",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F74.TA",
+  "name": "Harel Sal (4D) S&P Health Care",
+  "heName": "הראל סל (4D) ‏S&P Health Care",
+  "heSymbol": "הרל.ס74",
+  "isin": "IL0011498487",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F75.TA",
+  "name": "Harel Sal (4D) S&P Financial",
+  "heName": "הראל סל (4D) ‏S&P Financial",
+  "heSymbol": "הרל.ס75",
+  "isin": "IL0011498552",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F76.TA",
+  "name": "Harel Sal (4D) S&P Consumer Staples",
+  "heName": "הראל סל (4D) ‏S&P Consumer Staples",
+  "heSymbol": "הרל.ס76",
+  "isin": "IL0011498636",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F77.TA",
+  "name": "Harel Sal (4D) STOXX Europe 600",
+  "heName": "הראל סל (4D) ‏STOXX Europe 600",
+  "heSymbol": "הרל.ס77",
+  "isin": "IL0011498719",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F80.TA",
+  "name": "Harel Sal (4A) STOXX Europe 600 Euro-Hedged",
+  "heName": "הראל סל (4A) ‏STOXX Europe 600 מנוטרלת אירו",
+  "heSymbol": "הרל.ס80",
+  "isin": "IL0011498891",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F81.TA",
+  "name": "Harel Sal (4A) S&P Financial Currency-Hedged",
+  "heName": "הראל סל (4A) ‏S&P Financial מנוטרלת מט\"ח",
+  "heSymbol": "הרל.ס81",
+  "isin": "IL0011498974",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F82.TA",
+  "name": "Harel Sal (4A) S&P 500 Low Volatility Currency-Hedged",
+  "heName": "הראל סל (4A) ‏S&P 500 Low Volatility מנוטרלת מט\"ח",
+  "heSymbol": "הרל.ס82",
+  "isin": "IL0011499055",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F87.TA",
+  "name": "Harel Sal (4D) S&P Technology",
+  "heName": "הראל סל (4D) ‏S&P Technology",
+  "heSymbol": "הרל.ס87",
+  "isin": "IL0011499394",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F95.TA",
+  "name": "Harel Sal (4A) S&P 500 Equal Weight Currency-Hedged",
+  "heName": "הראל סל (4A) ‏S&P 500 Equal Weight מנוטרלת מט\"ח",
+  "heSymbol": "הרל.ס95",
+  "isin": "IL0011499709",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-F96.TA",
+  "name": "Harel Sal (4D) S&P Energy",
+  "heName": "הראל סל (4D) ‏S&P Energy",
+  "heSymbol": "הרל.ס96",
+  "isin": "IL0011500365",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-FK41.TA",
+  "name": "Harel Sal (00) Kosher Tel Bond 60 CPI Linked IL",
+  "heName": "הראל סל (00) כשרה תל בונד 60 צמודות",
+  "heSymbol": "הרל.סכ41",
+  "isin": "IL0011550923",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-FK42.TA",
+  "name": "Harel Sal (00) Kosher Tel Bond - Shekel IL",
+  "heName": "הראל סל (00) כשרה תל בונד שקלי",
+  "heSymbol": "הרל.סכ42",
+  "isin": "IL0011551913",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRL-FK43.TA",
+  "name": "Harel Sal (4A) Kosher TA 125 IL",
+  "heName": "הראל סל (4A) כשרה ת\"א 125",
+  "heSymbol": "הרל.סכ43",
+  "isin": "IL0011553406",
+  "type": "ETF"
+ },
+ {
+  "symbol": "HRON.TA",
+  "name": "HIRON",
+  "heName": "חירון",
+  "heSymbol": "חרון",
+  "isin": "IL0001500110",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "HUMX-M.TA",
+  "name": "HUMAN XT-M",
+  "heName": "יומן אקסטנשנס-ש",
+  "heSymbol": "ימקס",
+  "isin": "IL0011700007",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "IBI-F106.TA",
+  "name": "I.B.I. SAL (4D) MSCI AC World",
+  "heName": "אי.בי.אי. סל (4D)י MSCI AC World",
+  "heSymbol": "אבא.ס106",
+  "isin": "IL0011497729",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F112.TA",
+  "name": "I.B.I. SAL (4A) DAX Currency-Hedged",
+  "heName": "אי.בי.אי. סל (4A)י DAX מנוטרלת מט\"ח",
+  "heSymbol": "אבא.ס112",
+  "isin": "IL0011498305",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F126.TA",
+  "name": "I.B.I. SAL (4A) S&P Health Care Currency-Hedged",
+  "heName": "אי.בי.אי. סל (4A)י S&P Health Care מנוטרלת מט\"ח",
+  "heSymbol": "אבא.ס126",
+  "isin": "IL0011482127",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F13.TA",
+  "name": "I.B.I. SAL (00) Tel-Bond 40 CPI - LINKED IL",
+  "heName": "אי.בי.אי. סל (00) תל בונד 40 צמודות",
+  "heSymbol": "אבא.ס13",
+  "isin": "IL0011479743",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F14.TA",
+  "name": "I.B.I. SAL (00) Tel-Bond 60 CPI - LINKED IL",
+  "heName": "אי.בי.אי. סל (00) תל בונד 60 צמודות",
+  "heSymbol": "אבא.ס14",
+  "isin": "IL0011480063",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F16.TA",
+  "name": "I.B.I. SAL (00) Tel Bond-CPI Linked IL",
+  "heName": "אי.בי.אי. סל (00) תל בונד צמודות",
+  "heSymbol": "אבא.ס16",
+  "isin": "IL0011480485",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F161.TA",
+  "name": "I.B.I. SAL (6A) Short TA-90 (6582.848) IL",
+  "heName": "אי.בי.אי. סל (6A) חסר ת\"א 90 (6582.848)",
+  "heSymbol": "אבא.ס161",
+  "isin": "IL0011492365",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F176.TA",
+  "name": "I.B.I. SAL (4A) Index US Momentum Currency-Hedged",
+  "heName": "אי.בי.אי. סל (4A) אינדקס מומנטום ארה\"ב מנוטרלת מט\"ח",
+  "heSymbol": "אבא.ס176",
+  "isin": "IL0011903478",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F177.TA",
+  "name": "I.B.I. SAL (4D) Index Global Value",
+  "heName": "אי.בי.אי. סל (4D) אינדקס ערך עולמי",
+  "heSymbol": "אבא.ס177",
+  "isin": "IL0011903544",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F178.TA",
+  "name": "I.B.I. SAL (4D) Index Global Growth",
+  "heName": "אי.בי.אי. סל (4D) אינדקס צמיחה עולמי",
+  "heSymbol": "אבא.ס178",
+  "isin": "IL0011903627",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F179.TA",
+  "name": "I.B.I. SAL (4A) S&P 500 Currency-Hedged",
+  "heName": "אי.בי.אי. סל (4A)י 500 S&P מנוטרלת מט\"ח",
+  "heSymbol": "אבא.ס179",
+  "isin": "IL0012004359",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F180.TA",
+  "name": "I.B.I. SAL (4A) Nasdaq 100 Currency-Hedged",
+  "heName": "אי.בי.אי. סל (4A)י Nasdaq 100 מנוטרלת מט\"ח",
+  "heSymbol": "אבא.ס180",
+  "isin": "IL0012004433",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F181.TA",
+  "name": "I.B.I. SAL (4D) Nasdaq 100",
+  "heName": "אי.בי.אי. סל (4D)י Nasdaq 100",
+  "heSymbol": "אבא.ס181",
+  "isin": "IL0012004508",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F182.TA",
+  "name": "I.B.I. SAL (4A) TA-90 IL",
+  "heName": "אי.בי.אי. סל (4A) ת\"א-90",
+  "heSymbol": "IBI.ס182",
+  "isin": "IL0012094442",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F183.TA",
+  "name": "I.B.I. SAL (4A) TA-Insurance IL",
+  "heName": "אי.בי.אי. סל (4A) ת\"א-ביטוח",
+  "heSymbol": "IBI.ס183",
+  "isin": "IL0012157710",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F184.TA",
+  "name": "I.B.I. SAL (4A) Index Israeli Mid Cap & Banks IL",
+  "heName": "אי.בי.אי. סל (4A) אינדקס מיד קאפ ובנקים בישראל",
+  "heSymbol": "IBI.ס184",
+  "isin": "IL0012178435",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F185.TA",
+  "name": "I.B.I. SAL (4D) S&P Bitcoin",
+  "heName": "אי.בי.אי. סל (4D)י S&P Bitcoin",
+  "heSymbol": "IBI.ס185",
+  "isin": "IL0012222498",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F186.TA",
+  "name": "I.B.I. SAL (4A) TA-35 IL",
+  "heName": "אי.בי.אי. סל (4A) ת\"א-35",
+  "heSymbol": "IBI.ס186",
+  "isin": "IL0012259946",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F22.TA",
+  "name": "I.B.I. SAL (00) Tel Bond-CPI Linked A IL",
+  "heName": "אי.בי.אי. סל (00) תל בונד צמודות A",
+  "heSymbol": "אבא.ס22",
+  "isin": "IL0011484776",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F35.TA",
+  "name": "I.B.I. SAL (4A) Index Israel Banks IL",
+  "heName": "אי.בי.אי. סל (4A) אינדקס בנקים ישראל",
+  "heSymbol": "אבא.ס35",
+  "isin": "IL0011487746",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F42.TA",
+  "name": "I.B.I. SAL (4A) TA-125 IL",
+  "heName": "אי.בי.אי. סל (4A) ת\"א 125",
+  "heSymbol": "אבא.ס42",
+  "isin": "IL0011488082",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F61.TA",
+  "name": "I.B.I. SAL (4D) LBMA Gold Price AM",
+  "heName": "אי.בי.אי. סל (4D)י LBMA Gold Price AM",
+  "heSymbol": "אבא.ס61",
+  "isin": "IL0011478752",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F62.TA",
+  "name": "I.B.I. SAL (0D) iBoxx US Liquid Investment Grade Top 30",
+  "heName": "אי.בי.אי. סל (0D)י iBoxx US Liquid Investment Grade Top 30",
+  "heSymbol": "אבא.ס62",
+  "isin": "IL0011479669",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-F65.TA",
+  "name": "I.B.I. SAL (4D) S&P 500",
+  "heName": "אי.בי.אי. סל (4D)י S&P 500",
+  "heSymbol": "אבא.ס65",
+  "isin": "IL0011481624",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-FK1.TA",
+  "name": "‏I.B.I. SAL (00) Kosher Tel-Bond 60 CPI - LINKED IL",
+  "heName": "אי.בי.אי. סל (00) כשרה תל בונד 60 צמודות",
+  "heSymbol": "אבא.סכ1",
+  "isin": "IL0011550766",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI-FK4.TA",
+  "name": "I.B.I. SAL (4A) Kosher TA-125 IL",
+  "heName": "אי.בי.אי. סל (4A) כשרה ת\"א 125",
+  "heSymbol": "אבא.סכ4",
+  "isin": "IL0011553240",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IBI.TA",
+  "name": "IBI INV HOUSE",
+  "heName": "איביאי בית השק",
+  "heSymbol": "אבא",
+  "isin": "IL0001750186",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "IBIS.TA",
+  "name": "IBI SILVER",
+  "heName": "איביאי סילבר",
+  "heSymbol": "אבאס",
+  "isin": "IL0010970544",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "IBIU.TA",
+  "name": "IBI UNDERWRIT",
+  "heName": "איביאי חיתום",
+  "heSymbol": "אבאנ",
+  "isin": "IL0010844822",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ICHO.TA",
+  "name": "IC HOTELS",
+  "heName": "ישראל קנדה מלונ",
+  "heSymbol": "יקנמ",
+  "isin": "IL0011038523",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ICL.TA",
+  "name": "ICL",
+  "heName": "איי.סי.אל",
+  "heSymbol": "איסל",
+  "isin": "IL0002810146",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ICON.TA",
+  "name": "ICON GROUP",
+  "heName": "אייקון גרופ",
+  "heSymbol": "איקן",
+  "isin": "IL0011824849",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "IDIN.TA",
+  "name": "IDI INSUR",
+  "heName": "איידיאיי ביטוח",
+  "heSymbol": "אדבט",
+  "isin": "IL0011295016",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "IDMO.TA",
+  "name": "IDOMOO",
+  "heName": "אידומו",
+  "heSymbol": "אדמו",
+  "isin": "IL0011763468",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "IDNT.TA",
+  "name": "IDENTI",
+  "heName": "איידנטי",
+  "heSymbol": "אדנט",
+  "isin": "IL0011774507",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "IES.TA",
+  "name": "IES",
+  "heName": "אייאיאס",
+  "heSymbol": "איאס",
+  "isin": "IL0004310152",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ILCO.TA",
+  "name": "ISRAEL CORP",
+  "heName": "חברה לישראל",
+  "heSymbol": "חל",
+  "isin": "IL0005760173",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ILDC.TA",
+  "name": "LAND DEV",
+  "heName": "הכשרת הישוב",
+  "heSymbol": "הכשרה",
+  "isin": "IL0006120104",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ILDR.TA",
+  "name": "ILD RENEWAL",
+  "heName": "הכשרה התחדשות",
+  "heSymbol": "הכשע",
+  "isin": "IL0011214744",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ILX.TA",
+  "name": "ILEX MEDICAL",
+  "heName": "אילקס מדיקל",
+  "heSymbol": "אילקס",
+  "isin": "IL0010807530",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "IMCO.TA",
+  "name": "IMCO",
+  "heName": "אימקו",
+  "heSymbol": "אמקו",
+  "isin": "IL0002820129",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "IN-FF1.TA",
+  "name": "INV.FRFS&P 500",
+  "heName": "אינבסקו.חוץ",
+  "heSymbol": "אנ.סז1",
+  "isin": "IE00B3YCGJ38",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF10.TA",
+  "name": "INV.FRFIBOXX",
+  "heName": "אינבסקו.חוץIBOXX.AT1.USD",
+  "heSymbol": "אנ.סז10",
+  "isin": "IE00BFZPF322",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF11.TA",
+  "name": "INV.FRFBLOCK",
+  "heName": "אינבסקו.חוץBLOCKCHAIN",
+  "heSymbol": "אנ.סז11",
+  "isin": "IE00BGBN6P67",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF12.TA",
+  "name": "INV.FRFNASDAQ",
+  "heName": "אינבסקו.חוץNASDAQ100SWAP",
+  "heSymbol": "אנ.סז12",
+  "isin": "IE00BNRQM384",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF13.TA",
+  "name": "INV.FRFCHINA",
+  "heName": "אינבסקו.חוץMSCICHINA",
+  "heSymbol": "אנ.סז13",
+  "isin": "IE00BK80XL30",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF14.TA",
+  "name": "INV.FRFSTOXX50",
+  "heName": "אינבסקו.חוץEUSTOXX50UCITS",
+  "heSymbol": "אנ.סז14",
+  "isin": "IE00B60SWX25",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF15.TA",
+  "name": "INV.FRFRUSS2000",
+  "heName": "אינבסקו.חוץ.RUSSELL.2000",
+  "heSymbol": "אנ.סז15",
+  "isin": "IE00B60SX402",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF16.TA",
+  "name": "INV.FRFS&P500EW",
+  "heName": "אינבסקו.חוץS&P500EW.UCITS",
+  "heSymbol": "אנ.סז16",
+  "isin": "IE00BNGJJT35",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF17.TA",
+  "name": "INV.FRFFTSEAW",
+  "heName": "אינבסקו.חוץ.FTSEALLWORLD",
+  "heSymbol": "אנ.סז17",
+  "isin": "IE000716YHJ7",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF2.TA",
+  "name": "INV.FRFS&PSCORE",
+  "heName": "אינבסקו.חוץ.P.SCORED&S",
+  "heSymbol": "אנ.סז2",
+  "isin": "IE00BKS7L097",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF3.TA",
+  "name": "INV.FRFFINS&P",
+  "heName": "אינבסקו.חוץPUCITSETF&FINS",
+  "heSymbol": "אנ.סז3",
+  "isin": "IE00B42Q4896",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF4.TA",
+  "name": "INV.FRFS&P.CARE",
+  "heName": "אינבסקו.חוץP.HEALTCARE&S",
+  "heSymbol": "אנ.סז4",
+  "isin": "IE00B3WMTH43",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF5.TA",
+  "name": "INV.FRF.NASDAQ",
+  "heName": "אינבסקו.חוץNASDAQ.FINTECH",
+  "heSymbol": "אנ.סז5",
+  "isin": "IE00BYMS5W68",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF6.TA",
+  "name": "INV.FRFMSCIEM",
+  "heName": "אינבסקו.חוץMSCIEMUCITSETF",
+  "heSymbol": "אנ.סז6",
+  "isin": "IE00B3DWVS88",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF7.TA",
+  "name": "INV.FRF.WORLD",
+  "heName": "אינבסקו חוץMSCI.WORLD",
+  "heSymbol": "אנ.סז7",
+  "isin": "IE00B60SX394",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF8.TA",
+  "name": "INV.FRFSTOXX600",
+  "heName": "אינבסקו.חוץSTOX.EUROPE600",
+  "heSymbol": "אנ.סז8",
+  "isin": "IE00B60SWW18",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IN-FF9.TA",
+  "name": "INV.FRFS&PTEC",
+  "heName": "אינבסקו.חוץP.TECHNOLOGY&S",
+  "heSymbol": "אנ.סז9",
+  "isin": "IE00B3VSSL01",
+  "type": "ETF"
+ },
+ {
+  "symbol": "INCR.TA",
+  "name": "INTERCURE",
+  "heName": "אינטרקיור",
+  "heSymbol": "אנקר",
+  "isin": "IL0011063760",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ININ.TA",
+  "name": "INTER INDSTRIES",
+  "heName": "אינטר תעשיות",
+  "heSymbol": "אנתע",
+  "isin": "IL0010809288",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "INRM.TA",
+  "name": "INROM CONST",
+  "heName": "אינרום",
+  "heSymbol": "אנרם",
+  "isin": "IL0011323560",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "INTR.TA",
+  "name": "INTERGAMA",
+  "heName": "אינטרגאמא",
+  "heSymbol": "אנטר",
+  "isin": "IL0001740112",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "IPO.TA",
+  "name": "INPLAY",
+  "heName": "אינפליי",
+  "heSymbol": "איפו",
+  "isin": "CA45780T4046",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "IS-FF101.TA",
+  "name": "ISH.FRF MSCI EM",
+  "heName": "איישרס.חוץ MSCI EM",
+  "heSymbol": "אש.סז101",
+  "isin": "IE00BKM4GZ66",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF102.TA",
+  "name": "ISH.FRF UST1-3Y",
+  "heName": "איישרס.חוץ TRSY BOND 1-3Y",
+  "heSymbol": "אש.סז102",
+  "isin": "IE00BYXPSP02",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF103.TA",
+  "name": "ISH.FRF CORPBND",
+  "heName": "איישרס.חוץ CORP BOND USD",
+  "heSymbol": "אש.סז103",
+  "isin": "IE00BYXYYJ35",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF201.TA",
+  "name": "ISH.FRF EMBOND$",
+  "heName": "איישרס.חוץ JPM EM BOND",
+  "heSymbol": "אש.סז201",
+  "isin": "IE00BYXYYK40",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF202.TA",
+  "name": "ISH.FRF TIPS",
+  "heName": "איישרס.חוץ US TIPS",
+  "heSymbol": "אש.סז202",
+  "isin": "IE00B1FZSC47",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF203.TA",
+  "name": "ISH.FRF HY BOND",
+  "heName": "איישרס.חוץ HY CORP BOND",
+  "heSymbol": "אש.סז203",
+  "isin": "IE00BYXYYL56",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF204.TA",
+  "name": "ISH.FRF FLOAT",
+  "heName": "איישרס.חוץFLOAT RATE BOND",
+  "heSymbol": "אש.סז204",
+  "isin": "IE00BDFGJ627",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF301.TA",
+  "name": "ISH.FRF MSCIEUR",
+  "heName": "איישרס.חוץ MSCI EUROPE",
+  "heSymbol": "אש.סז301",
+  "isin": "IE00B4K48X80",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF302.TA",
+  "name": "ISH.FRF GLBBOND",
+  "heName": "איישרס.חוץ GLB AGG BOND",
+  "heSymbol": "אש.סז302",
+  "isin": "IE00BZ043R46",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF401.TA",
+  "name": "ISH.FRF CHINA_A",
+  "heName": "איישרס.חוץ MSCI CHINA",
+  "heSymbol": "אש.סז401",
+  "isin": "IE00BQT3WG13",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF402.TA",
+  "name": "ISH.FRF HEALTH",
+  "heName": "איישרס.חוץ HEALTHCARE INN",
+  "heSymbol": "אש.סז402",
+  "isin": "IE00BYZK4776",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF403.TA",
+  "name": "ISH.FRF DGTL",
+  "heName": "איישרס.חוץ DIGITALISATION",
+  "heSymbol": "אש.סז403",
+  "isin": "IE00BYZK4883",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF404.TA",
+  "name": "ISH.FRF ROBOT",
+  "heName": "איישרס.חוץ ROBOT&AUTOMAT",
+  "heSymbol": "אש.סז404",
+  "isin": "IE00BYZK4552",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF405.TA",
+  "name": "ISH.FRF SHRTDUR",
+  "heName": "איישרס.חוץ SHORT DUR BOND",
+  "heSymbol": "אש.סז405",
+  "isin": "IE00BYXYYP94",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF501.TA",
+  "name": "ISH.FRF SPTECH",
+  "heName": "איישרס.חוץ P TECHNOLOGY&S",
+  "heSymbol": "אש.סז501",
+  "isin": "IE00B3WJKG14",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF502.TA",
+  "name": "ISH.FRF SPHEAL",
+  "heName": "איישרס.חוץ P HEALTHCARE&S",
+  "heSymbol": "אש.סז502",
+  "isin": "IE00B43HR379",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF503.TA",
+  "name": "ISH.FRF SPFINAN",
+  "heName": "איישרס.חוץ P FINANCIALS&S",
+  "heSymbol": "אש.סז503",
+  "isin": "IE00B4JNQZ49",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF504.TA",
+  "name": "ISH.FRF SPDISCR",
+  "heName": "איישרס.חוץ P CONS DISCR&S",
+  "heSymbol": "אש.סז504",
+  "isin": "IE00B4MCHD36",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF505.TA",
+  "name": "ISH.FRF MSCIACW",
+  "heName": "איישרס.חוץ MSCI ACWI",
+  "heSymbol": "אש.סז505",
+  "isin": "IE00B6R52259",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF701.TA",
+  "name": "ISH.FRF NSDQ100",
+  "heName": "איישרס.חוץ NASDAQ 100",
+  "heSymbol": "אש.סז701",
+  "isin": "IE00B53SZB19",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF702.TA",
+  "name": "ISH.FRF SP 500",
+  "heName": "איישרס.חוץ P 500&S",
+  "heSymbol": "אש.סז702",
+  "isin": "IE00B5BMR087",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF703.TA",
+  "name": "ISH.FRF UST7-10",
+  "heName": "איישרס.חוץ TRSYBOND 7-10Y",
+  "heSymbol": "אש.סז703",
+  "isin": "IE00B3VWN518",
+  "type": "ETF"
+ },
+ {
+  "symbol": "IS-FF704.TA",
+  "name": "ISH.FRF UST3-7Y",
+  "heName": "איישרס.חוץ TRSY BOND 3-7Y",
+  "heSymbol": "אש.סז704",
+  "isin": "IE00B3VWN393",
+  "type": "ETF"
+ },
+ {
+  "symbol": "ISCD.TA",
+  "name": "ISRACARD",
+  "heName": "ישראכרט",
+  "heSymbol": "ישכט",
+  "isin": "IL0011574030",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ISCN.TA",
+  "name": "ISRAEL CANADA",
+  "heName": "ישראל קנדה",
+  "heSymbol": "ישקנ",
+  "isin": "IL0004340191",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ISHI.TA",
+  "name": "ISRAEL SHIPYARD",
+  "heName": "מספנות ישראל",
+  "heSymbol": "מספנ",
+  "isin": "IL0011685331",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ISHO.TA",
+  "name": "ISRAS HOLDINGS",
+  "heName": "ישרס אחזקות",
+  "heSymbol": "ישאח",
+  "isin": "IL0012029778",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ISI.TA",
+  "name": "IMAGESAT I.S.I",
+  "heName": "אימאג'סט",
+  "heSymbol": "אימג",
+  "isin": "IL0011838138",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ISRG.TA",
+  "name": "ISRAIR GROUP",
+  "heName": "ישראייר גרופ",
+  "heSymbol": "ישרג",
+  "isin": "IL0011871949",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ISRO.TA",
+  "name": "ISROTEL",
+  "heName": "ישרוטל",
+  "heSymbol": "ישרטל",
+  "isin": "IL0010809858",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ISRS.TA",
+  "name": "ISRAS",
+  "heName": "ישרס",
+  "heSymbol": "ישרס",
+  "isin": "IL0006130343",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ISTA.TA",
+  "name": "ISSTA",
+  "heName": "איסתא",
+  "heSymbol": "אסתא",
+  "isin": "IL0010810740",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "JBNK.TA",
+  "name": "JERUSALEM",
+  "heName": "ירושלים",
+  "heSymbol": "ירשם",
+  "isin": "IL0007260180",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "JCFN.TA",
+  "name": "JACOB FINANCE",
+  "heName": "יעקב פיננסים",
+  "heSymbol": "יקפנ",
+  "isin": "IL0011850570",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "JEEN.TA",
+  "name": "JEEN AI TECH",
+  "heName": "ג'ין טכנולוגיות",
+  "heSymbol": "גיין",
+  "isin": "IL0010997877",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "JNGO.TA",
+  "name": "JUNGO",
+  "heName": "ג'נגו",
+  "heSymbol": "גנגו",
+  "isin": "IL0011788622",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "KAFR.TA",
+  "name": "KAFRIT",
+  "heName": "כפרית",
+  "heSymbol": "כפרת",
+  "isin": "IL0005220111",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "KARE.TA",
+  "name": "KARDAN REAL ES",
+  "heName": "קרדן נדלן",
+  "heSymbol": "קרנז",
+  "isin": "IL0011184475",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "KEN.TA",
+  "name": "KENON",
+  "heName": "קנון",
+  "heSymbol": "קנון",
+  "isin": "SG9999012629",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "KLIL.TA",
+  "name": "KLIL",
+  "heName": "קליל",
+  "heSymbol": "קליל",
+  "isin": "IL0007970358",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "KMDA.TA",
+  "name": "KAMADA",
+  "heName": "קמהדע",
+  "heSymbol": "קמדע",
+  "isin": "IL0010941198",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "KNFM.TA",
+  "name": "KNAFAIM",
+  "heName": "כנפיים",
+  "heSymbol": "כנפים",
+  "isin": "IL0005430173",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "KRDI.TA",
+  "name": "KARDEN ISRAEL",
+  "heName": "קרדן ישראל",
+  "heSymbol": "קרדי",
+  "isin": "IL0012101528",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "KRUR.TA",
+  "name": "KERUR",
+  "heName": "קרור",
+  "heSymbol": "קרור",
+  "isin": "IL0006210111",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "KSM-F1.TA",
+  "name": "KSM ETF (00) Tel Bond-CPI Linked 3-5 IL",
+  "heName": "קסם ETFי (00) תל בונד צמודות 3-5",
+  "heSymbol": "קסם.ס1",
+  "isin": "IL0011507543",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F10.TA",
+  "name": "KSM ETF (4D) ISE Clean Edge Water",
+  "heName": "קסם ISE Clean Edge Water (4D) ETF",
+  "heSymbol": "קסם.ס10",
+  "isin": "IL0011458879",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F103.TA",
+  "name": "KSM ETF (4A) TA-Oil&Gas IL",
+  "heName": "קסם 4A) ETF) ת\"א נפט וגז",
+  "heSymbol": "קסם.ס103",
+  "isin": "IL0011468852",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F106.TA",
+  "name": "KSM ETF (0D) iBoxx US Liquid Investment Grade Top 30",
+  "heName": "קסם iBoxx US Liquid Investment Grade Top 30 (0D) ETF",
+  "heSymbol": "קסם.ס106",
+  "isin": "IL0011469199",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F107.TA",
+  "name": "KSM ETF (00) Tel Bond-CPI Linked IL",
+  "heName": "קסם ETFי (00) תל בונד צמודות",
+  "heSymbol": "קסם.ס107",
+  "isin": "IL0011469272",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F108.TA",
+  "name": "KSM ETF (00) Tel Bond-CPI Linked SmallCap IL",
+  "heName": "קסם ETFי (00) תל בונד צמודות-יתר",
+  "heSymbol": "קסם.ס108",
+  "isin": "IL0011469355",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F109.TA",
+  "name": "KSM ETF (4D) S&P Homebuilders",
+  "heName": "קסם S&P Homebuilders (4D) ETF",
+  "heSymbol": "קסם.ס109",
+  "isin": "IL0011469439",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F110.TA",
+  "name": "KSM ETF (00)(!) Tel Bond-Yields CPI Linked IL",
+  "heName": "קסם ETFי (00)(!) תל בונד-תשואות צמודות",
+  "heSymbol": "קסם.ס110",
+  "isin": "IL0011469504",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F111.TA",
+  "name": "KSM ETF (6D) Leveraged S&P 500 x3 Monthly",
+  "heName": "קסם 6D) ETF) ממונפת S&P 500 פי 3 חודשי",
+  "heSymbol": "קסם.ס111",
+  "isin": "IL0011469686",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F112.TA",
+  "name": "KSM ETF (6D) Leveraged NASDAQ 100 x3 Monthly",
+  "heName": "קסם 6D) ETF) ממונפת NASDAQ 100 פי 3 חודשי",
+  "heSymbol": "קסם.ס112",
+  "isin": "IL0011469769",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F113.TA",
+  "name": "KSM ETF (6D) Leveraged DAX x3 Monthly",
+  "heName": "קסם 6D) ETF) ממונפת DAX פי 3 חודשי",
+  "heSymbol": "קסם.ס113",
+  "isin": "IL0011469843",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F114.TA",
+  "name": "KSM ETF (6D) Short Leveraged S&P 500 x2 Monthly",
+  "heName": "קסם 6D) ETF) ממונפת בחסר S&P 500 פי 2 חודשי",
+  "heSymbol": "קסם.ס114",
+  "isin": "IL0011469926",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F115.TA",
+  "name": "KSM ETF (6D) Short Leveraged NASDAQ 100 x2 Monthly",
+  "heName": "קסם 6D) ETF) ממונפת בחסר NASDAQ 100 פי 2 חודשי",
+  "heSymbol": "קסם.ס115",
+  "isin": "IL0011470080",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F116.TA",
+  "name": "KSM ETF (6D) Short Leveraged DAX x2 Monthly",
+  "heName": "קסם 6D) ETF) ממונפת בחסר DAX פי 2 חודשי",
+  "heSymbol": "קסם.ס116",
+  "isin": "IL0011470163",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F117.TA",
+  "name": "KSM ETF (4A) S&P SmallCap 600 Currency Hedged",
+  "heName": "קסם S&P SmallCap 600 (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס117",
+  "isin": "IL0011470247",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F118.TA",
+  "name": "KSM ETF (4D) Morningstar Wide Moat Focus",
+  "heName": "קסם Morningstar Wide Moat Focus (4D) ETF",
+  "heSymbol": "קסם.ס118",
+  "isin": "IL0011470320",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F119.TA",
+  "name": "KSM ETF (4A) Composite US Equity Monthly Currency Hedged",
+  "heName": "קסם 4A) ETF) משולבת מניות ארהב חודשי מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס119",
+  "isin": "IL0011470403",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F12.TA",
+  "name": "KSM ETF (4D) S&P Energy",
+  "heName": "קסם S&P Energy (4D) ETF",
+  "heSymbol": "קסם.ס12",
+  "isin": "IL0011459034",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F120.TA",
+  "name": "KSM ETF (4A) NASDAQ US BuyBack Achievers Currency Hedged",
+  "heName": "קסם NASDAQ US BuyBack Achievers (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס120",
+  "isin": "IL0011461410",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F121.TA",
+  "name": "KSM ETF (4A) STOXX Europe 600 Euro Hedged",
+  "heName": "קסם STOXX Europe 600 (4A) ETF מנוטרלת אירו",
+  "heSymbol": "קסם.ס121",
+  "isin": "IL0011461824",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F122.TA",
+  "name": "KSM ETF (4D) STOXX Europe 600",
+  "heName": "קסם STOXX Europe 600 (4D) ETF",
+  "heSymbol": "קסם.ס122",
+  "isin": "IL0011462087",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F123.TA",
+  "name": "KSM ETF (4D) NASDAQ US BuyBack Achievers",
+  "heName": "קסם NASDAQ US BuyBack Achievers (4D) ETF",
+  "heSymbol": "קסם.ס123",
+  "isin": "IL0011462244",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F124.TA",
+  "name": "KSM ETF (4A) STOXX Europe MID 200 Euro Hedged",
+  "heName": "קסם STOXX Europe MID 200 (4A) ETF מנוטרלת אירו",
+  "heSymbol": "קסם.ס124",
+  "isin": "IL0011462400",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F125.TA",
+  "name": "KSM ETF (4A) Composite Euro Equity Monthly Euro Hedged",
+  "heName": "קסם 4A) ETF) משולבת מניות אירופה חודשי מנוטרלת אירו",
+  "heSymbol": "קסם.ס125",
+  "isin": "IL0011462657",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F126.TA",
+  "name": "KSM ETF (00) Tel Bond-CPI Linked Bank Without COCO IL",
+  "heName": "קסם ETFי (00) תל בונד צמודות- בנקים ללא COCO",
+  "heSymbol": "קסם.ס126",
+  "isin": "IL0011462814",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F127.TA",
+  "name": "KSM ETF (4A) STOXX Europe 600 Banks Euro Hedged",
+  "heName": "קסם STOXX Europe 600 Banks (4A) ETF מנוטרלת אירו",
+  "heSymbol": "קסם.ס127",
+  "isin": "IL0011463077",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F128.TA",
+  "name": "KSM ETF (4D) MDAX",
+  "heName": "קסם MDAX (4D) ETF",
+  "heSymbol": "קסם.ס128",
+  "isin": "IL0011463721",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F129.TA",
+  "name": "KSM ETF (4A) MDAX Currency Hedged",
+  "heName": "קסם MDAX (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס129",
+  "isin": "IL0011465882",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F13.TA",
+  "name": "KSM ETF (4A) Tel-Div IL",
+  "heName": "קסם 4A) ETF) תל דיב",
+  "heSymbol": "קסם.ס13",
+  "isin": "IL0011459117",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F132.TA",
+  "name": "KSM ETF (4D) S&P Financial",
+  "heName": "קסם S&P Financial (4D) ETF",
+  "heSymbol": "קסם.ס132",
+  "isin": "IL0011467862",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F133.TA",
+  "name": "KSM ETF (4D) S&P Industrial",
+  "heName": "קסם S&P Industrial (4D) ETF",
+  "heSymbol": "קסם.ס133",
+  "isin": "IL0011475295",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F134.TA",
+  "name": "KSM ETF (4D) S&P Consumer Discretionary",
+  "heName": "קסם S&P Consumer Discretionary (4D) ETF",
+  "heSymbol": "קסם.ס134",
+  "isin": "IL0011467946",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F136.TA",
+  "name": "KSM ETF (4A) FTSE 250 Currency Hedged",
+  "heName": "קסם FTSE 250 (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס136",
+  "isin": "IL0011470999",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F138.TA",
+  "name": "KSM ETF (4A) FTSE 100 Currency Hedged",
+  "heName": "קסם FTSE 100 (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס138",
+  "isin": "IL0011475451",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F139.TA",
+  "name": "KSM ETF (4A) DJ Internet Composite Currency Hedged",
+  "heName": "קסם DJ Internet Composite (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס139",
+  "isin": "IL0011468100",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F14.TA",
+  "name": "KSM ETF (4D) Bloomberg Brent Crude Future",
+  "heName": "קסם ETFי (4D) חוזה Bloomberg Brent Crude",
+  "heSymbol": "קסם.ס14",
+  "isin": "IL0011459299",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F140.TA",
+  "name": "KSM ETF (4A) Composite MidCap Equity Monthly Currency Hedged",
+  "heName": "קסם 4A) ETF) משולבת מניות MidCap מפותחות חודשי מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס140",
+  "isin": "IL0011468282",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F141.TA",
+  "name": "KSM ETF (2A) Comp Tel-Gov (55%) Cor Bond (30%) Equity (15%) Monthly CurrHedged",
+  "heName": "קסם 2A) ETF) משולבת תל גוב-כללי(55%) קונצרני(30%) ומניות(15%) חודשי מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס141",
+  "isin": "IL0011470577",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F142.TA",
+  "name": "KSM ETF (4D) S&P 500 Low Volatility High Dividend",
+  "heName": "קסם S&P 500 Low Volatility High Dividend (4D) ETF",
+  "heSymbol": "קסם.ס142",
+  "isin": "IL0011470650",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F143.TA",
+  "name": "KSM ETF (4A) MSCI World Dollar Hedged",
+  "heName": "קסם MSCI World (4A) ETF מנוטרלת דולר",
+  "heSymbol": "קסם.ס143",
+  "isin": "IL0011470734",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F144.TA",
+  "name": "KSM ETF (0A) Tel Bond-Composite IL",
+  "heName": "קסם 0A) ETF) תל בונד מאגר",
+  "heSymbol": "קסם.ס144",
+  "isin": "IL0011470817",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F145.TA",
+  "name": "KSM ETF (4A) DJ US Dividend Currency Hedged",
+  "heName": "קסם DJ US Dividend (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס145",
+  "isin": "IL0011471070",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F148.TA",
+  "name": "KSM ETF (00)(!) Short Tel Bond-Yields CPI Linked (742.24) IL",
+  "heName": "קסם ETFי (00)(!) חסר תל בונד- תשואות צמודות (742.24)",
+  "heSymbol": "קסם.ס148",
+  "isin": "IL0011471310",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F150.TA",
+  "name": "KSM ETF (4D) Composite US Equity Monthly",
+  "heName": "קסם 4D) ETF) משולבת מניות ארהב חודשי",
+  "heSymbol": "קסם.ס150",
+  "isin": "IL0011471567",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F152.TA",
+  "name": "KSM ETF (4D) S&P Health Care",
+  "heName": "קסם S&P Health Care (4D) ETF",
+  "heSymbol": "קסם.ס152",
+  "isin": "IL0011471724",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F154.TA",
+  "name": "KSM ETF (00) All-Bond Floating Shekel IL",
+  "heName": "קסם ETFי (00) All-Bond ריבית משתנה שקלי",
+  "heSymbol": "קסם.ס154",
+  "isin": "IL0011471989",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F156.TA",
+  "name": "KSM ETF (4D) Composite US S&P Sector Equity Monthly",
+  "heName": "קסם 4D) ETF) משולבת מניות סקטורים ארהב S&P חודשי",
+  "heSymbol": "קסם.ס156",
+  "isin": "IL0011472144",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F158.TA",
+  "name": "KSM ETF (4D) S&P Technology",
+  "heName": "קסם S&P Technology (4D) ETF",
+  "heSymbol": "קסם.ס158",
+  "isin": "IL0011472300",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F16.TA",
+  "name": "KSM ETF (4A) NIKKEI 225 Currency Hedged",
+  "heName": "קסם NIKKEI 225 (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס16",
+  "isin": "IL0011459455",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F161.TA",
+  "name": "KSM ETF (0A) iBoxx $ Corps Liquid 3-7 Years Currency Hedged",
+  "heName": "קסם iBoxx $ Corps Liquid 3-7 Years (0A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס161",
+  "isin": "IL0011472631",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F162.TA",
+  "name": "KSM ETF (4D) Bluestar Israel Global Technology",
+  "heName": "קסם Bluestar Israel Global Technology (4D) ETF",
+  "heSymbol": "קסם.ס162",
+  "isin": "IL0011472714",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F164.TA",
+  "name": "KSM ETF (0D) iBoxx $ Corps Liquid 3-7 Years",
+  "heName": "קסם iBoxx $ Corps Liquid 3-7 Years (0D) ETF",
+  "heSymbol": "קסם.ס164",
+  "isin": "IL0011472979",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F169.TA",
+  "name": "(KSM ETF (6A) Short TA-SME60 IL (1913.2",
+  "heName": "קסם ETF י(6A) חסר ת\"א SME60י (1913.2)",
+  "heSymbol": "קסם.ס169",
+  "isin": "IL0011473472",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F17.TA",
+  "name": "KSM ETF (4A) EURO STOXX 50 Currency Hedged",
+  "heName": "קסם EURO STOXX 50 (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס17",
+  "isin": "IL0011459521",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F171.TA",
+  "name": "KSM ETF (4A) MSCI AC World Dollar Hedged",
+  "heName": "קסם MSCI AC World (4A) ETF מנוטרלת דולר",
+  "heSymbol": "קסם.ס171",
+  "isin": "IL0011473621",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F174.TA",
+  "name": "KSM ETF (00) Tel Bond-Shekel 3-5 IL",
+  "heName": "קסם ETFי (00) תל בונד שקלי 3-5",
+  "heSymbol": "קסם.ס174",
+  "isin": "IL0011473969",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F175.TA",
+  "name": "KSM ETF (0D) All-Bond FX & Top 5 Tel Bond-20 CPI-Linked IL",
+  "heName": "קסם ETFי (0D)י All-Bond-מט\"ח וטופ 5 תל בונד-20 צמודות",
+  "heSymbol": "קסם.ס175",
+  "isin": "IL0011573792",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F176.TA",
+  "name": "KSM ETF (0D) S&P U.S. Treasury Bond 1-3 Year",
+  "heName": "קסם S&P U.S. Treasury Bond 1-3 Year (0D) ETF",
+  "heSymbol": "קסם.ס176",
+  "isin": "IL0011579088",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F177.TA",
+  "name": "KSM ETF (0D) S&P U.S. Treasury Bond 3-5 Year",
+  "heName": "קסם S&P U.S. Treasury Bond 3-5 Year (0D) ETF",
+  "heSymbol": "קסם.ס177",
+  "isin": "IL0011579161",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F178.TA",
+  "name": "KSM ETF (0D) S&P U.S. Treasury Bond 7-10 Year",
+  "heName": "קסם S&P U.S. Treasury Bond 7-10 Year (0D) ETF",
+  "heSymbol": "קסם.ס178",
+  "isin": "IL0011579245",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F18.TA",
+  "name": "KSM ETF (00) Tel Bond-20 CPI Linked IL",
+  "heName": "קסם ETFי (00) תל בונד 20 צמודות",
+  "heSymbol": "קסם.ס18",
+  "isin": "IL0011459604",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F181.TA",
+  "name": "KSM ETF (4D)(!) NIFTY 50",
+  "heName": "קסם NIFTY 50 (!)(4D) ETF",
+  "heSymbol": "קסם.ס181",
+  "isin": "IL0011579575",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F186.TA",
+  "name": "KSM ETF (60) Short TA-90 (6123.68) IL",
+  "heName": "קסם ETF י(60) חסר ת\"א 90 (6123.68)",
+  "heSymbol": "קסם.ס186",
+  "isin": "IL0011610586",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F188.TA",
+  "name": "KSM ETF (60) Short TA-125 (6,727.62) IL",
+  "heName": "קסם ETFי (60) חסר ת\"א 125 (6,727.62) (מספר קרן: 1161884)",
+  "heSymbol": "קסם.ס188",
+  "isin": "IL0011618845",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F191.TA",
+  "name": "KSM ETF (4D) CSI300",
+  "heName": "קסם CSI300 (4D) ETF",
+  "heSymbol": "קסם.ס191",
+  "isin": "IL0011627838",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F192.TA",
+  "name": "KSM ETF (4A) TA Sector-Balance IL",
+  "heName": "קסם 4A) ETF) ת\"א סקטור-באלאנס",
+  "heSymbol": "קסם.ס192",
+  "isin": "IL0011672610",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F194.TA",
+  "name": "KSM ETF (4D) Indxx Climate Change Solutions",
+  "heName": "קסם Indxx Climate Change Solutions (4D) ETF",
+  "heSymbol": "קסם.ס194",
+  "isin": "IL0011673295",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F195.TA",
+  "name": "KSM ETF (4D) ISE Cyber Security",
+  "heName": "קסם ETF י(4D)י ISE Cyber Security",
+  "heSymbol": "קסם.ס195",
+  "isin": "IL0011687154",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F198.TA",
+  "name": "KSM ETF (00)(!) Tel Bond-Yields Shekel IL",
+  "heName": "קסם ETFי (00)(!) תל בונד-תשואות שקל",
+  "heSymbol": "קסם.ס198",
+  "isin": "IL0011708364",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F199.TA",
+  "name": "KSM ETF (4D) Indxx China Internet",
+  "heName": "קסם Indxx China Internet (4D) ETF",
+  "heSymbol": "קסם.ס199",
+  "isin": "IL0011708448",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F2.TA",
+  "name": "KSM ETF (00) Tel Bond Shekel-50 IL",
+  "heName": "קסם ETFי (00) תל בונד שקלי 50",
+  "heSymbol": "קסם.ס2",
+  "isin": "IL0011507626",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F203.TA",
+  "name": "KSM ETF (4D) MVIS US Listed Semiconductor 25",
+  "heName": "קסם ETF י(4D)י MVIS US Listed Semiconductor 25",
+  "heSymbol": "קסם.ס203",
+  "isin": "IL0011741191",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F205.TA",
+  "name": "KSM ETF (00) Tel Bond-CPI Linked A IL",
+  "heName": "קסם ETFי (00) תל בונד-צמודות A",
+  "heSymbol": "קסם.ס205",
+  "isin": "IL0011763203",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F206.TA",
+  "name": "KSM ETF (4A) TA-Construction IL",
+  "heName": "קסם 4A) ETF) ת\"א-בנייה",
+  "heSymbol": "קסם.ס206",
+  "isin": "IL0011783599",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F207.TA",
+  "name": "KSM ETF (00) Tel Bond-Shekel 5-15 IL",
+  "heName": "קסם ETFי (00) תל בונד-שקלי 5-15",
+  "heSymbol": "קסם.ס207",
+  "isin": "IL0011851230",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F208.TA",
+  "name": "(2649.49) KSM ETF (60) Short TA-RealEstate IL",
+  "heName": "קסם ETF י(60) חסר ת\"א נדל\"ן (2649.49)",
+  "heSymbol": "קסם.ס208",
+  "isin": "IL0011866345",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F209.TA",
+  "name": "KSM ETF (6D) Short Leveraged Future Bloomberg Brent Crude x2 Monthly",
+  "heName": "קסם ETF י(6D) ממונפת בחסר חוזה Bloomberg Brent Crude פי 2 חודשי",
+  "heSymbol": "קסם.ס209",
+  "isin": "IL0011898025",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F21.TA",
+  "name": "KSM ETF (4A) TA-Growth IL",
+  "heName": "קסם 4A) ETF) ת\"א צמיחה",
+  "heSymbol": "קסם.ס21",
+  "isin": "IL0011459943",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F210.TA",
+  "name": "KSM ETF (4D) Index World Value",
+  "heName": "קסם ETF י(4D) אינדקס ערך עולמי",
+  "heSymbol": "קסם.ס210",
+  "isin": "IL0011890188",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F211.TA",
+  "name": "KSM ETF (4D) Index World Growth",
+  "heName": "קסם ETF י(4D) אינדקס צמיחה עולמי",
+  "heSymbol": "קסם.ס211",
+  "isin": "IL0011893729",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F212.TA",
+  "name": "KSM ETF (4D) MSCI ACWI Sustainable Development",
+  "heName": "קסם ETF י(4D)י MSCI ACWI Sustainable Development",
+  "heSymbol": "קסם.ס212",
+  "isin": "IL0011940678",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F213.TA",
+  "name": "KSM ETF (00) Index Israeli Gov CPI-Linked 5Y Duration IL",
+  "heName": "קסם ETF י(00) אינדקס מדינה צמוד- מח\"מ 5 קבוע",
+  "heSymbol": "קסם.ס213",
+  "isin": "IL0011923849",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F214.TA",
+  "name": "KSM ETF (00) Index Israeli Gov Non-Linked 5Y Duration IL",
+  "heName": "קסם ETF י(00) אינדקס מדינה שקלי- מח\"מ 5 קבוע",
+  "heSymbol": "קסםס214",
+  "isin": "IL0011923922",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F217.TA",
+  "name": "KSM ETF (00) Tel Bond-CPI Linked 1-3 IL",
+  "heName": "קסם ETF‏י (00) תל בונד-צמודות 1-3",
+  "heSymbol": "קסם.ס217",
+  "isin": "IL0011936148",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F218.TA",
+  "name": "KSM ETF (00) Tel Bond-CPI Linked AA-AAA IL",
+  "heName": "קסם ETFי (00) תל בונד צמודות AA-AAA",
+  "heSymbol": "קסם.ס218",
+  "isin": "IL0011936486",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F219.TA",
+  "name": "KSM ETF (00) Tel Bond-Shekel A IL",
+  "heName": "קסם ETFי (00) תל בונד שקלי A",
+  "heSymbol": "קסם.ס219",
+  "isin": "IL0011936551",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F22.TA",
+  "name": "KSM ETF (4D) STOXX Europe MID 200",
+  "heName": "קסם STOXX Europe MID 200 (4D) ETF",
+  "heSymbol": "קסם.ס22",
+  "isin": "IL0011460008",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F220.TA",
+  "name": "KSM ETF (00) Tel Bond-Shekel AA-AAA IL",
+  "heName": "קסם ETFי (00) תל בונד שקלי AA-AAA",
+  "heSymbol": "קסם.ס220",
+  "isin": "IL0011936635",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F221.TA",
+  "name": "KSM ETF (00) Tel Bond-CPI Linked 5-15 IL",
+  "heName": "קסם ETFי (00) תל בונד צמודות 5-15",
+  "heSymbol": "קסם.ס221",
+  "isin": "IL0011936718",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F223.TA",
+  "name": "KSM ETF (00) Tel Bond-Shekel 1- 3 IL",
+  "heName": "קסם ETFי (00) תל בונד-שקלי 1-3",
+  "heSymbol": "קסם.ס223",
+  "isin": "IL0011936890",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F224.TA",
+  "name": "KSM ETF (4A) S&P Financial Currency-Hedged",
+  "heName": "קסם S&P Financial (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס224",
+  "isin": "IL0011937138",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F225.TA",
+  "name": "KSM ETF (4A) S&P Technology Currency-Hedged",
+  "heName": "קסם S&P Technology (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס225",
+  "isin": "IL0011937393",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F227.TA",
+  "name": "KSM ETF (00)(!) KOSHER Tel Bond-Yields CPI Linked IL",
+  "heName": "קסם ETFי(00)י(!) כשרה תל בונד-תשואות צמודות",
+  "heSymbol": "קסם.ס227",
+  "isin": "IL0011990582",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F228.TA",
+  "name": "KSM ETF (4A) S&P MidCap 400 Currency-Hedged",
+  "heName": "קסם S&P MidCap 400 (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס228",
+  "isin": "IL0011937476",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F229.TA",
+  "name": "KSM ETF (4A) S&P Consumer Discretionary Currency-Hedged",
+  "heName": "קסם S&P Consumer Discretionary (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס229",
+  "isin": "IL0011937542",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F230.TA",
+  "name": "KSM ETF (4A) S&P Regional Banks Currency-Hedged",
+  "heName": "קסם S&P Regional Banks (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס230",
+  "isin": "IL0011937625",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F232.TA",
+  "name": "KSM ETF (4A) S&P Consumer Staples Currency-Hedged",
+  "heName": "קסם S&P Consumer Staples (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס232",
+  "isin": "IL0011937880",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F233.TA",
+  "name": "KSM ETF (4D) S&P 500 TOP 50",
+  "heName": "קסם ETF י(4D)י 50 S&P 500 TOP",
+  "heSymbol": "קסם.ס233",
+  "isin": "IL0012021833",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F236.TA",
+  "name": "KSM ETF (4D) S&P Consumer Staples",
+  "heName": "קסם S&P Consumer Staples (4D) ETF",
+  "heSymbol": "קסם.ס236",
+  "isin": "IL0011938201",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F237.TA",
+  "name": "KSM ETF (4D) S&P 500 Equal Weight",
+  "heName": "קסם ETF י(4D)י S&P 500 Equal Weight",
+  "heSymbol": "קסם.ס237",
+  "isin": "IL0012038357",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F239.TA",
+  "name": "KSM ETF (4A) Israel 100 Profitability Equally Weighted iNDEX IL",
+  "heName": "קסם ETF י(4A) אינדקס ישראל 100 רווחיות משקל שווה",
+  "heSymbol": "קסם.ס239",
+  "isin": "IL0012201518",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F240.TA",
+  "name": "KSM ETF (4D) MSCI China",
+  "heName": "קסם ETF י(4D)י MSCI China",
+  "heSymbol": "קסם.ס240",
+  "isin": "IL0012304734",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F243.TA",
+  "name": "KSM ETF (0A) iBoxx $ Treasuries 10Y+ Currency Hedged",
+  "heName": "קסם ETF י(0A)י +iBoxx $ Treasuries 10Y מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס243",
+  "isin": "IL0012370644",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F244.TA",
+  "name": "KSM ETF (4A) TA-Technology IL",
+  "heName": "קסם ETFי (4A) ת\"א -טכנולוגיה",
+  "heSymbol": "קסם.ס244",
+  "isin": "IL0012385592",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F245.TA",
+  "name": "KSM ETF (4A) Israeli Energy iNDEX IL",
+  "heName": "קסם ETF י(4A)י אינדקס אנרגיה ישראלית",
+  "heSymbol": "קסם.ס245",
+  "isin": "IL0012385675",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F246.TA",
+  "name": "KSM ETF (4A) MarketVector Israel Defense Industries Index IL",
+  "heName": "קסם ETF י(4A)י MarketVector תעשיות בטחוניות ישראליות",
+  "heSymbol": "קסם.ס246",
+  "isin": "IL0012396987",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F247.TA",
+  "name": "(KSM ETF (4D) Composite TA-125 (50% S&P 500 (50%) Monthly",
+  "heName": "קסם ETF י(4D)י משולבת ת\"א 125 (50%) S&P 500 י(50%) חודשי",
+  "heSymbol": "קסם.ס247",
+  "isin": "IL0012429408",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F248.TA",
+  "name": "KSM ETF (4D) Poland 50 iNDEX",
+  "heName": "קסם ETF י(4D)י Poland 50 iNDEX",
+  "heSymbol": "קסם.ס248",
+  "isin": "IL0012434507",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F27.TA",
+  "name": "KSM ETF (6A) Short Leveraged TA-35 x2 Monthly IL",
+  "heName": "קסם 6A) ETF) ממונפת בחסר ת\"א 35 פי 2 חודשי",
+  "heSymbol": "קסם.ס27",
+  "isin": "IL0011460594",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F28.TA",
+  "name": "KSM ETF (4D) DJ US Dividend",
+  "heName": "קסם DJ US Dividend (4D) ETF",
+  "heSymbol": "קסם.ס28",
+  "isin": "IL0011460677",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F3.TA",
+  "name": "KSM ETF (00)(!)Tel Bond-Global Shekel IL",
+  "heName": "קסם ETFי (00)(!) תל בונד גלובל שקלי",
+  "heSymbol": "קסם.ס3",
+  "isin": "IL0011507709",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F31.TA",
+  "name": "KSM ETF(!)(4D) IBOVESPA",
+  "heName": "קסם IBOVESPA(!)(4D) ETF",
+  "heSymbol": "קסם.ס31",
+  "isin": "IL0011460917",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F34.TA",
+  "name": "KSM ETF (4A) TA-Insurance IL",
+  "heName": "קסם 4A) ETF) ת\"א-ביטוח",
+  "heSymbol": "קסם.ס34",
+  "isin": "IL0011461253",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F35.TA",
+  "name": "KSM ETF (00) Tel Gov-CPI-Linked 0-2",
+  "heName": "קסם ETFי (00) תל גוב- צמודות 0-2",
+  "heSymbol": "קסם.ס35",
+  "isin": "IL0011461337",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F36.TA",
+  "name": "KSM ETF (00) Tel Gov-CPI-Linked 2-5",
+  "heName": "קסם ETFי (00) תל גוב- צמודות 2-5",
+  "heSymbol": "קסם.ס36",
+  "isin": "IL0011461584",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F37.TA",
+  "name": "KSM ETF (00) Tel Gov-Shekel 0-2",
+  "heName": "קסם ETFי (00) תל גוב - שקלי 0-2",
+  "heSymbol": "קסם.ס37",
+  "isin": "IL0011461667",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F38.TA",
+  "name": "KSM ETF (00) Tel Gov-Shekel 5+",
+  "heName": "קסם ETFי (00) תל גוב- שקלי 5+",
+  "heSymbol": "קסם.ס38",
+  "isin": "IL0011461741",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F39.TA",
+  "name": "KSM ETF (00) Tel Gov-Shekel 2-5",
+  "heName": "קסם ETFי (00) תל גוב- שקלי 2-5",
+  "heSymbol": "קסם.ס39",
+  "isin": "IL0011461907",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F40.TA",
+  "name": "KSM ETF (00) Tel Bond-40 CPI Linked IL",
+  "heName": "קסם ETFי (00) תל בונד 40 צמודות",
+  "heSymbol": "קסם.ס40",
+  "isin": "IL0011462160",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F41.TA",
+  "name": "KSM ETF (00) Tel Bond-60 CPI Linked IL",
+  "heName": "קסם ETFי (00) תל בונד 60 צמודות",
+  "heSymbol": "קסם.ס41",
+  "isin": "IL0011462327",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F42.TA",
+  "name": "KSM ETF (00) Tel Gov-CPI Linked",
+  "heName": "קסם ETFי (00) תל גוב-צמודות",
+  "heSymbol": "קסם.ס42",
+  "isin": "IL0011462574",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F43.TA",
+  "name": "KSM ETF (00) Tel Gov T-Bills (MAKAM)",
+  "heName": "קסם ETFי (00) תל גוב- מק\"מ",
+  "heSymbol": "קסם.ס43",
+  "isin": "IL0011462731",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F46.TA",
+  "name": "KSM ETF (6A) Leveraged TA-35 x3 Monthly IL",
+  "heName": "קסם 6A) ETF) ממונפת ת\"א 35 פי 3 חודשי",
+  "heSymbol": "קסם.ס46",
+  "isin": "IL0011463804",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F48.TA",
+  "name": "KSM ETF (00) Tel Bond-Shekel IL",
+  "heName": "קסם ETFי (00) תל בונד שקלי",
+  "heSymbol": "קסם.ס48",
+  "isin": "IL0011464141",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F49.TA",
+  "name": "KSM ETF (4A) LBMA Gold Price PM USD Currency Hedged",
+  "heName": "קסם LBMA Gold Price PM USD (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס49",
+  "isin": "IL0011464224",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F5.TA",
+  "name": "KSM ETF (4D) S&P MidCap 400",
+  "heName": "קסם S&P MidCap 400 (4D) ETF",
+  "heSymbol": "קסם.ס5",
+  "isin": "IL0011507964",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F50.TA",
+  "name": "KSM ETF (00) Short Tel Bond-40 CPI Linked (666.27) IL",
+  "heName": "קסם ETFי (00) חסר תל בונד 40 צמודות (666.27)",
+  "heSymbol": "קסם.ס50",
+  "isin": "IL0011464554",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F51.TA",
+  "name": "KSM ETF (4D) FTSE 100",
+  "heName": "קסם FTSE 100 (4D) ETF",
+  "heSymbol": "קסם.ס51",
+  "isin": "IL0011464976",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F52.TA",
+  "name": "KSM ETF (4D) NASDAQ 100",
+  "heName": "קסם NASDAQ 100 (4D) ETF",
+  "heSymbol": "קסם.ס52",
+  "isin": "IL0011465056",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F53.TA",
+  "name": "KSM ETF (4D) DAX",
+  "heName": "קסם DAX (4D) ETF",
+  "heSymbol": "קסם.ס53",
+  "isin": "IL0011465130",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F54.TA",
+  "name": "KSM ETF (4D) FTSE China 50",
+  "heName": "קסם FTSE China 50 (4D) ETF",
+  "heSymbol": "קסם.ס54",
+  "isin": "IL0011465213",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F55.TA",
+  "name": "KSM ETF (4A) TA-SME60 IL",
+  "heName": "קסם 4A) ETF) ת\"א SME60",
+  "heSymbol": "קסם.ס55",
+  "isin": "IL0011465395",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F56.TA",
+  "name": "KSM ETF (4A) TA-RealEstate IL",
+  "heName": "קסם 4A) ETF) ת\"א נדל\"ן",
+  "heSymbol": "קסם.ס56",
+  "isin": "IL0011465478",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F57.TA",
+  "name": "KSM ETF (4A) TA-Finance IL",
+  "heName": "קסם 4A) ETF) ת\"א פיננסים",
+  "heSymbol": "קסם.ס57",
+  "isin": "IL0011465544",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F58.TA",
+  "name": "KSM ETF (00) Tel Gov-Shekel",
+  "heName": "קסם ETFי (00) תל גוב- שקלי",
+  "heSymbol": "קסם.ס58",
+  "isin": "IL0011465627",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F59.TA",
+  "name": "KSM ETF (4A) TA-35 IL",
+  "heName": "קסם 4A) ETF) ת\"א 35",
+  "heSymbol": "קסם.ס59",
+  "isin": "IL0011465700",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F6.TA",
+  "name": "KSM ETF (4D) LBMA Gold Price PM USD",
+  "heName": "קסם LBMA Gold Price PM USD (4D) ETF",
+  "heSymbol": "קסם.ס6",
+  "isin": "IL0011458200",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F60.TA",
+  "name": "KSM ETF (4D) Russell 2000",
+  "heName": "קסם Russell 2000 (4D) ETF",
+  "heSymbol": "קסם.ס60",
+  "isin": "IL0011457137",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F62.TA",
+  "name": "KSM ETF (00) Tel Gov-CPI-Linked 5-10",
+  "heName": "קסם ETFי (00) תל גוב- צמודות 5-10",
+  "heSymbol": "קסם.ס62",
+  "isin": "IL0011457392",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F63.TA",
+  "name": "KSM ETF (4D)(!) MSCI India",
+  "heName": "קסם MSCI India (!)(4D) ETF",
+  "heSymbol": "קסם.ס63",
+  "isin": "IL0011457475",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F64.TA",
+  "name": "KSM ETF (4D)(!) KOSPI 200",
+  "heName": "קסם KOSPI 200 (!)(4D) ETF",
+  "heSymbol": "קסם.ס64",
+  "isin": "IL0011457541",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F67.TA",
+  "name": "KSM ETF (4D) MSCI World",
+  "heName": "קסם MSCI World (4D) ETF",
+  "heSymbol": "קסם.ס67",
+  "isin": "IL0011458044",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F68.TA",
+  "name": "KSM ETF (4D) MSCI Emerging Markets",
+  "heName": "קסם MSCI Emerging Markets (4D) ETF",
+  "heSymbol": "קסם.ס68",
+  "isin": "IL0011458127",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F69.TA",
+  "name": "KSM ETF (4D) MSCI AC Far East EX Japan",
+  "heName": "קסם MSCI AC Far East EX Japan (4D) ETF",
+  "heSymbol": "קסם.ס69",
+  "isin": "IL0011458382",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F72.TA",
+  "name": "KSM ETF (4A) TA-90 IL",
+  "heName": "קסם 4A) ETF) ת\"א 90",
+  "heSymbol": "קסם.ס72",
+  "isin": "IL0011463317",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F74.TA",
+  "name": "KSM ETF (4A) TA-125 IL",
+  "heName": "קסם 4A) ETF) ת\"א 125",
+  "heSymbol": "קסם.ס74",
+  "isin": "IL0011463564",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F75.TA",
+  "name": "KSM ETF (4A) TA Global-BlueTech IL",
+  "heName": "קסם 4A) ETF) ת\"א גלובל בלוטק",
+  "heSymbol": "קסם.ס75",
+  "isin": "IL0011463648",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F76.TA",
+  "name": "KSM ETF (4D) EURO STOXX 50",
+  "heName": "קסם EURO STOXX 50 (4D) ETF",
+  "heSymbol": "קסם.ס76",
+  "isin": "IL0011464067",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F77.TA",
+  "name": "KSM ETF (4A) Index Israeli Banks IL",
+  "heName": "קסם 4A) ETF) אינדקס בנקים ישראל",
+  "heSymbol": "קסם.ס77",
+  "isin": "IL0011464307",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F78.TA",
+  "name": "KSM ETF (4D) DJ Industrial Average",
+  "heName": "קסם DJ Industrial Average (4D) ETF",
+  "heSymbol": "קסם.ס78",
+  "isin": "IL0011464489",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F80.TA",
+  "name": "KSM ETF (4D) S&P 500",
+  "heName": "קסם S&P 500 (4D) ETF",
+  "heSymbol": "קסם.ס80",
+  "isin": "IL0011464711",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F82.TA",
+  "name": "KSM ETF (4A) S&P 500 Currency Hedged",
+  "heName": "קסם S&P 500 (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס82",
+  "isin": "IL0011466047",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F83.TA",
+  "name": "KSM ETF (4A) NASDAQ 100 Currency Hedged",
+  "heName": "קסם NASDAQ 100 (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס83",
+  "isin": "IL0011466120",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F84.TA",
+  "name": "KSM ETF (4A) Bloomberg Brent Crude Currency Hedged Future",
+  "heName": "קסם ETFי (4A) חוזה Bloomberg Brent Crude מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס84",
+  "isin": "IL0011466203",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F85.TA",
+  "name": "KSM ETF (0A) Comp Tel-Gov (65%) Cor Bond IL (35%) Monthly",
+  "heName": "קסם ETFי (0A) משולבת תל גוב-כללי (65%) וקונצרני ישראל (35%) חודשי",
+  "heSymbol": "קסם.ס85",
+  "isin": "IL0011466385",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F86.TA",
+  "name": "KSM ETF (0A) Tel-Gov",
+  "heName": "קסם 0A) ETF) תל גוב-כללי",
+  "heSymbol": "קסם.ס86",
+  "isin": "IL0011466468",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F88.TA",
+  "name": "KSM ETF (2A) Composite Gen Bond IL (90%) IL Equity (10%) Monthly",
+  "heName": "קסם 2A) ETF) משולבת אגח כללי ישראל (90%) ומניות ישראל (10%) חודשי",
+  "heSymbol": "קסם.ס88",
+  "isin": "IL0011466617",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F89.TA",
+  "name": "KSM ETF (4D) MSCI AC World",
+  "heName": "קסם MSCI AC World (4D) ETF",
+  "heSymbol": "קסם.ס89",
+  "isin": "IL0011466799",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F9.TA",
+  "name": "KSM ETF (4D) DJ Health Care Titans 30",
+  "heName": "קסם DJ Health Care Titans 30 (4D) ETF",
+  "heSymbol": "קסם.ס9",
+  "isin": "IL0011458796",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F90.TA",
+  "name": "KSM ETF (4A) Hang Seng China Currency Hedged",
+  "heName": "קסם Hang Seng China (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס90",
+  "isin": "IL0011466872",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F91.TA",
+  "name": "KSM ETF (2A) Composite Gen Bond IL (80%) Equity (20%) Monthly",
+  "heName": "קסם 2A) ETF) משולבת אגח כללי ישראל (80%) ומניות (20%) חודשי",
+  "heSymbol": "קסם.ס91",
+  "isin": "IL0011466955",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F92.TA",
+  "name": "KSM ETF (4A) DAX Currency Hedged",
+  "heName": "קסם DAX (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס92",
+  "isin": "IL0011467037",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F94.TA",
+  "name": "KSM ETF (4A) Russell 2000 Currency Hedged",
+  "heName": "קסם Russell 2000 (4A) ETF מנוטרלת מט\"ח",
+  "heSymbol": "קסם.ס94",
+  "isin": "IL0011467292",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F95.TA",
+  "name": "KSM ETF (4A) MSCI Emerging Markets Dollar Hedged",
+  "heName": "קסם MSCI Emerging Markets (4A) ETF מנוטרלת דולר",
+  "heSymbol": "קסם.ס95",
+  "isin": "IL0011467375",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-F96.TA",
+  "name": "KSM ETF (6A) Short TA-35 (5,337.49) IL",
+  "heName": "קסם 6A) ETF) חסר ת\"א 35 (5,337.49)",
+  "heSymbol": "קסם.ס96",
+  "isin": "IL0011467458",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-FK1.TA",
+  "name": "KSM ETF (00) KOSHER Tel Bond-60 CPI Linked IL",
+  "heName": "קסם ETFי (00) כשרה תל בונד 60 צמודות",
+  "heSymbol": "קסם.סכ1",
+  "isin": "IL0011551269",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-FK2.TA",
+  "name": "KSM ETF (00) Kosher Tel Bond-Shekel IL",
+  "heName": "קסם ETFי (00) כשרה תל בונד שקלי",
+  "heSymbol": "קסם.סכ2",
+  "isin": "IL0011551590",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSM-FK3.TA",
+  "name": "KSM ETF (4A) Kosher TA-125 IL",
+  "heName": "קסם 4A) ETF) כשרה ת\"א 125",
+  "heSymbol": "קסם.סכ3",
+  "isin": "IL0011553653",
+  "type": "ETF"
+ },
+ {
+  "symbol": "KSTN.TA",
+  "name": "KEYSTONE INFRA",
+  "heName": "קיסטון אינפרא",
+  "heSymbol": "קסטנ",
+  "isin": "IL0011759342",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LAHAV.TA",
+  "name": "LAHAV",
+  "heName": "להב",
+  "heSymbol": "להב",
+  "isin": "IL0001360101",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LAPD.TA",
+  "name": "LAPIDOTH CAP.",
+  "heName": "לפידות קפיטל",
+  "heSymbol": "לפדת",
+  "isin": "IL0006420173",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LBRA.TA",
+  "name": "LIBRA",
+  "heName": "ליברה",
+  "heSymbol": "לברה",
+  "isin": "IL0011769812",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LBTL.TA",
+  "name": "LIBENTAL",
+  "heName": "ליבנטל",
+  "heSymbol": "לבטל",
+  "isin": "IL0005840116",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LCTX.TA",
+  "name": "LINEAGE THERAP",
+  "heName": "ליניאג תרפיוטיק",
+  "heSymbol": "לינג",
+  "isin": "US53566P1093",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LEOF.TA",
+  "name": "LEVINSKI OFER",
+  "heName": "לוינסקי עופר",
+  "heSymbol": "ליעפ",
+  "isin": "IL0002000144",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LEVI.TA",
+  "name": "LEVINSTEIN ENG",
+  "heName": "לוינשטין הנדסה",
+  "heSymbol": "לשטן",
+  "isin": "IL0005730143",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LHIS.TA",
+  "name": "LACHISH",
+  "heName": "לכיש",
+  "heSymbol": "לכיש",
+  "isin": "IL0008260163",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LODZ.TA",
+  "name": "LODZIA",
+  "heName": "לודזיה",
+  "heSymbol": "לודז",
+  "isin": "IL0007530129",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LPSN.TA",
+  "name": "LIVEPERSON",
+  "heName": "לייבפרסון",
+  "heSymbol": "לפסן",
+  "isin": "US5381463091",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LSCO.TA",
+  "name": "LESICO",
+  "heName": "לסיכו",
+  "heSymbol": "לסכו",
+  "isin": "IL0011409468",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LUDN.TA",
+  "name": "LUDAN",
+  "heName": "לודן",
+  "heSymbol": "לודן",
+  "isin": "IL0010814395",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LUDT.TA",
+  "name": "LUDAN-TECH",
+  "heName": "לודן-טק",
+  "heSymbol": "לודט",
+  "isin": "IL0012269929",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LUMI.TA",
+  "name": "LEUMI",
+  "heName": "לאומי",
+  "heSymbol": "לאומי",
+  "isin": "IL0006046119",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LURO.TA",
+  "name": "LUZON RON",
+  "heName": "לוזון רונסון",
+  "heSymbol": "לורו",
+  "isin": "IL0012025974",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LUZC.TA",
+  "name": "LUZON CREDIT",
+  "heName": "לוזון אשראי",
+  "heSymbol": "לוזא",
+  "isin": "IL0006660166",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "LUZN.TA",
+  "name": "LUZON GROUP",
+  "heName": "לוזון קבוצה",
+  "heSymbol": "לוזנ",
+  "isin": "IL0004730177",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MAXO.TA",
+  "name": "MAX STOCK",
+  "heName": "מקס סטוק",
+  "heSymbol": "מקסו",
+  "isin": "IL0011685588",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MCLL.TA",
+  "name": "MICHLOL FIN",
+  "heName": "מכלול מימון",
+  "heSymbol": "מכלל",
+  "isin": "IL0011797532",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MCPL.TA",
+  "name": "MICHPAL TECH",
+  "heName": "מכפל טכנולוגיות",
+  "heSymbol": "מכפל",
+  "isin": "IL0012293358",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MDPR.TA",
+  "name": "MEDIPOWER 0.1$",
+  "heName": "מדיפאואר",
+  "heSymbol": "מדפר",
+  "isin": "CY0100361019",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MDTR.TA",
+  "name": "MEDITR TOWER",
+  "heName": "מגדלי תיכון",
+  "heSymbol": "מגתכ",
+  "isin": "IL0011315236",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MEDN.TA",
+  "name": "MEHADRIN",
+  "heName": "מהדרין",
+  "heSymbol": "מהדרן",
+  "isin": "IL0006860147",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MGDL.TA",
+  "name": "MIGDAL INSUR.",
+  "heName": "מגדל ביטוח",
+  "heSymbol": "מגדל",
+  "isin": "IL0010811656",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MGDO.TA",
+  "name": "MEGIDO",
+  "heName": "מגידו",
+  "heSymbol": "מגדו",
+  "isin": "IL0012166059",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MGOR.TA",
+  "name": "MEGA OR",
+  "heName": "מגה אור",
+  "heSymbol": "מגאר",
+  "isin": "IL0011044885",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MGRT.TA",
+  "name": "MGURIT",
+  "heName": "מגוריט",
+  "heSymbol": "מריט",
+  "isin": "IL0011391955",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MIA.TA",
+  "name": "MIA DYNAMICS",
+  "heName": "מיה דיינמיקס",
+  "heSymbol": "מיה",
+  "isin": "IL0004940131",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MISH.TA",
+  "name": "MIVTACH SHAMIR",
+  "heName": "מבטח שמיר",
+  "heSymbol": "מבשמ",
+  "isin": "IL0001270193",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MLD-M.TA",
+  "name": "MIRLAND-M",
+  "heName": "מירלנד-ש",
+  "heSymbol": "מרלד-ס",
+  "isin": "CY0106902113",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MLRN.TA",
+  "name": "MLRN",
+  "heName": "מלרן",
+  "heSymbol": "מלרן",
+  "isin": "IL0011709503",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MLSR.TA",
+  "name": "MELISRON",
+  "heName": "מליסרון",
+  "heSymbol": "מלסרן",
+  "isin": "IL0003230146",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MLTH.TA",
+  "name": "MALAM-TEAM HOLD",
+  "heName": "מלם-תים אחזקות",
+  "heSymbol": "מלתא",
+  "isin": "IL0007310183",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MMHD.TA",
+  "name": "MENORA MIV HLD",
+  "heName": "מנורה מב החז",
+  "heSymbol": "ממהח",
+  "isin": "IL0005660183",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MNIF.TA",
+  "name": "MENIF",
+  "heName": "מניף",
+  "heSymbol": "מניף",
+  "isin": "IL0011708935",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MNIN.TA",
+  "name": "MENDELSON IF",
+  "heName": "מנדלסוןתשת",
+  "heSymbol": "מנתש",
+  "isin": "IL0011294449",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MNRT.TA",
+  "name": "MENIVIM REIT",
+  "heName": "מניבים ריט",
+  "heSymbol": "מנרט",
+  "isin": "IL0011405730",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MNRV.TA",
+  "name": "MINRAV GROUP",
+  "heName": "מנרב",
+  "heSymbol": "מנרב",
+  "isin": "IL0012384272",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MORE-S1.TA",
+  "name": "MORE SAL (4D) S&P 500",
+  "heName": "מור סל (4D)י S&P 500",
+  "heSymbol": "מור.ס1",
+  "isin": "IL0011658106",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MORE-S10.TA",
+  "name": "MORE SAL (00) Tel Bond 60 CPI Linked IL",
+  "heName": "מור סל (00) תל בונד 60 צמודות",
+  "heSymbol": "מור.ס10",
+  "isin": "IL0011953044",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MORE-S11.TA",
+  "name": "MORE SAL (0A)Tel Bond Composite IL",
+  "heName": "מור סל (0A) תל בונד מאגר",
+  "heSymbol": "מור.ס11",
+  "isin": "IL0011953127",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MORE-S2.TA",
+  "name": "MORE SAL (4A) S&P 500 Currency Hedged",
+  "heName": "מור סל (4A)י S&P 500 מנוטרלת מט\"ח",
+  "heSymbol": "מור.ס2",
+  "isin": "IL0011658288",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MORE-S3.TA",
+  "name": "MORE SAL (4D) NASDAQ 100",
+  "heName": "מור סל (4D)י NASDAQ 100",
+  "heSymbol": "מור.ס3",
+  "isin": "IL0011658361",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MORE-S4.TA",
+  "name": "MORE SAL (4A) NASDAQ 100 Currency Hedged",
+  "heName": "מור סל (4A)י NASDAQ 100 מנוטרלת מט\"ח",
+  "heSymbol": "מור.ס4",
+  "isin": "IL0011658445",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MORE-S6.TA",
+  "name": "MORE SAL (4A) Index Banks EW IL",
+  "heName": "מור סל (4A) אינדקס בנקים משקל שווה",
+  "heSymbol": "מור.ס6",
+  "isin": "IL0011877649",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MORE-S7.TA",
+  "name": "MORE SAL (4A) TA-35 IL",
+  "heName": "מור סל (4A) ת\"א-35",
+  "heSymbol": "מור.ס7",
+  "isin": "IL0011943805",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MORE-S8.TA",
+  "name": "MORE SAL (4A) TA-90 IL",
+  "heName": "מור סל (4A) ת\"א-90",
+  "heSymbol": "מור.ס8",
+  "isin": "IL0011961468",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MORE-S9.TA",
+  "name": "MORE SAL (4A) TA-125 IL",
+  "heName": "מור סל (4A) ת\"א-125",
+  "heSymbol": "מור.ס9",
+  "isin": "IL0011961534",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MPP.TA",
+  "name": "MORE PENSION",
+  "heName": "מור גמל פנסיה",
+  "heSymbol": "מרגפ",
+  "isin": "IL0011843815",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MRG.TA",
+  "name": "MULTI RETAIL",
+  "heName": "מולטי ריטייל",
+  "heSymbol": "מרג",
+  "isin": "IL0011716698",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MRHL.TA",
+  "name": "MERCHAVIA HOLD",
+  "heName": "מרחביה אחזקות",
+  "heSymbol": "מראח",
+  "isin": "IL0002570146",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MRIN.TA",
+  "name": "MORE INVEST",
+  "heName": "מור השקעות",
+  "heSymbol": "מרהש",
+  "isin": "IL0011414641",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MSBI.TA",
+  "name": "HAMASHBIR 365",
+  "heName": "המשביר 365",
+  "heSymbol": "משבי",
+  "isin": "IL0011049595",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MSHR.TA",
+  "name": "MISHORIM",
+  "heName": "מישורים",
+  "heSymbol": "מישר",
+  "isin": "IL0011051963",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MSKE.TA",
+  "name": "MESHEK ENERGY",
+  "heName": "משק אנרגיה",
+  "heSymbol": "משקא",
+  "isin": "IL0011669749",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MSLA.TA",
+  "name": "MASLAVI",
+  "heName": "מצלאוי",
+  "heSymbol": "מצלא",
+  "isin": "IL0011067498",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MSVT.TA",
+  "name": "MASSIVIT",
+  "heName": "מאסיבית",
+  "heSymbol": "מסבת",
+  "isin": "IL0011729725",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MTAV.TA",
+  "name": "MEITAV INVEST",
+  "heName": "מיטב השקעות",
+  "heSymbol": "מיטב",
+  "isin": "IL0010818438",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MTF-F1.TA",
+  "name": "MTF SAL (00) Tel Gov - Shekel IL",
+  "heName": "‏MTF סל (00) תל גוב-שקלי",
+  "heSymbol": "מטפ.ס1",
+  "isin": "IL0011499543",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F100.TA",
+  "name": "MTF Sal (4A) TA Real Estate IL",
+  "heName": "MTF סל (4A) ת\"א-נדל\"ן",
+  "heSymbol": "מטפ.ס100",
+  "isin": "IL0011839532",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F103.TA",
+  "name": "MTF Sal (6D) Short Leveraged Nasdaq 100x2 Monthly",
+  "heName": "MTF סל (6D) ממונפת בחסר Nasdaq 100 פי 2 חודשי",
+  "heSymbol": "מטפ.ס103",
+  "isin": "IL0011880692",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F104.TA",
+  "name": "MTF Sal (6D) Leveraged Nasdaq 100x3 Monthly",
+  "heName": "MTF סל (6D) ממונפת Nasdaq 100 פי 3 חודשי",
+  "heSymbol": "מטפ.ס104",
+  "isin": "IL0011870792",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F106.TA",
+  "name": "MTF Sal (4D) Index World Value",
+  "heName": "MTF סל (4D) אינדקס ערך עולמי",
+  "heSymbol": "מטפ.ס106",
+  "isin": "IL0011898280",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F107.TA",
+  "name": "MTF Sal (4D) Index World Growth",
+  "heName": "MTF סל (4D) אינדקס צמיחה עולמי",
+  "heSymbol": "מטפ.ס107",
+  "isin": "IL0011898108",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F109.TA",
+  "name": "MTF Sal (0D) iBoxx US Liquid Investment Grade Top 30",
+  "heName": "MTF סל iBoxx US Liquid Investment Grade Top 30 (0D)",
+  "heSymbol": "מטפ.ס109",
+  "isin": "IL0011918815",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F11.TA",
+  "name": "MTF SAL (00) Tel Bond - CPI Linked IL",
+  "heName": "MTF סל (00) תל בונד צמודות",
+  "heSymbol": "מטפ.ס11",
+  "isin": "IL0011501017",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F112.TA",
+  "name": "MTF SAL (00) Tel Bond-CPI Linked 1-3 IL",
+  "heName": "MTF סל (00) תל בונד-צמודות 1-3",
+  "heSymbol": "מטפ.ס112",
+  "isin": "IL0011931271",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F113.TA",
+  "name": "MTF SAL (00) Tel Bond-Shekel 1-3 IL",
+  "heName": "MTF סל (00) תל בונד-שקלי 1-3‏",
+  "heSymbol": "מטפ.ס113",
+  "isin": "IL0011930513",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F114.TA",
+  "name": "MTF Sal (00) Tel Bond-Shekel 5-15 IL",
+  "heName": "MTF סל (00) תל בונד-שקלי 5-15",
+  "heSymbol": "מטפ.ס114",
+  "isin": "IL0011930448",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F115.TA",
+  "name": "MTF Sal (0A) Tel-Gov IL",
+  "heName": "MTF סל (0A) תל גוב – כללי",
+  "heSymbol": "מטפ.ס115",
+  "isin": "IL0011930695",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F116.TA",
+  "name": "MTF Sal (0A) Tel Bond-Composite IL",
+  "heName": "MTF סל (0A) תל בונד-מאגר",
+  "heSymbol": "מטפ.ס116",
+  "isin": "IL0011933178",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F117.TA",
+  "name": "MTF Sal (00) Tel Bond-CPI Linked 5-15 IL",
+  "heName": "MTF סל (00) תל בונד-צמודות 5-15",
+  "heSymbol": "מטפ.ס117",
+  "isin": "IL0011931354",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F12.TA",
+  "name": "MTF SAL (00)(!) Tel - Bond Yields CPI Linked IL",
+  "heName": "MTF סל (00)(!) תל - בונד תשואות צמודות",
+  "heSymbol": "מטפ.ס12",
+  "isin": "IL0011501199",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F120.TA",
+  "name": "MTF SAL (4A) Index Israel-120 IL",
+  "heName": "MTF סל (4A) אינדקס 120 ישראל",
+  "heSymbol": "מטפ.ס120",
+  "isin": "IL0012016239",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F122.TA",
+  "name": "MTF Sal (4D) Index Top10 Tech",
+  "heName": "MTF סל (4D) אינדקס Top10 Tech",
+  "heSymbol": "מטפ.ס122",
+  "isin": "IL0012001959",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F123.TA",
+  "name": "MTF Sal (4D) Indxx US Healthcare Top 10",
+  "heName": "MTF סל (Indxx US Healthcare Top 10 (4D",
+  "heSymbol": "מטפ.ס123",
+  "isin": "IL0012003518",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F124.TA",
+  "name": "MTF Sal (4D) MSCI AC World",
+  "heName": "MTF סל (MSCI AC World (4D",
+  "heSymbol": "מטפ.ס124",
+  "isin": "IL0012010034",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F125.TA",
+  "name": "MTF Sal (0D) Index US Gov 10Y Fixed Duration",
+  "heName": "MTF סל (0D) אינדקס אג\"ח ממשלת ארה\"ב - מח\"מ 10 קבוע",
+  "heSymbol": "מטפ.ס125",
+  "isin": "IL0012192949",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F126.TA",
+  "name": "MTF SAL (4D) Bloomberg US Analyst Recommendations",
+  "heName": "MTF סל (Bloomberg US Analyst Recommendations (4D",
+  "heSymbol": "מטפ.ס126",
+  "isin": "IL0012056573",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F127.TA",
+  "name": "MTF Sal (4D) Index US Semiconductors Top10",
+  "heName": "MTF סל (4D) אינדקס שבבים ארה\"ב Top10",
+  "heSymbol": "מטפ.ס127",
+  "isin": "IL0012079013",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F128.TA",
+  "name": "MTF Sal (4D) iNDEX US Top10 Pure Cyber Security",
+  "heName": "MTF סל (4D) אינדקס US Top10 Pure Cyber Security",
+  "heSymbol": "מטפ.ס128",
+  "isin": "IL0012175613",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F13.TA",
+  "name": "MTF SAL (00)(!) Tel Bond - Gobal Shekel IL",
+  "heName": "MTF סל (00)(!) תל בונד - גלובל שקלי",
+  "heSymbol": "מטפ.ס13",
+  "isin": "IL0011501355",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F131.TA",
+  "name": "MTF Sal (4A) S&P Israel 100 (ILS) IL",
+  "heName": "MTF סל S&P Israel 100 (ILS) (4A)",
+  "heSymbol": "מטפ.ס131",
+  "isin": "IL0012127945",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F133.TA",
+  "name": "MTF SAL (4D) Indxx Top 10 US Oil Industry",
+  "heName": "MTF סל (Indxx Top 10 US Oil Industry (4D",
+  "heSymbol": "מטפ.ס133",
+  "isin": "IL0012216706",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F134.TA",
+  "name": "MTF SAL (4D) Indxx Top 10 Europe Defense Euro-Hedged",
+  "heName": "MTF סל (Indxx Top 10 Europe Defense (4D מנוטרלת אירו",
+  "heSymbol": "מטפ.ס134",
+  "isin": "IL0012224395",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F136.TA",
+  "name": "IL י( 3,451.81) MTF Sal (6A) Short TA-Construction",
+  "heName": "MTF סל (6A) חסר ת\"א - בנייה (3,451.81)",
+  "heSymbol": "מטפ.ס136",
+  "isin": "IL0012367442",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F137.TA",
+  "name": "MTF SAL (4A) Indxx Israel Defense IL",
+  "heName": "MTF סל (4A)י Indxx ביטחוניות ישראל",
+  "heSymbol": "מטפ.ס137",
+  "isin": "IL0012367517",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F138.TA",
+  "name": "MTF Sal (4D) Indxx Us industrial Electrification Ecosystem",
+  "heName": "MTF סל (4D) י Indxx US Industrial Electrification Ecosystem",
+  "heSymbol": "מטפ.ס138",
+  "isin": "IL0012379165",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F140.TA",
+  "name": "MTF SAL (0A) Index US Gov 10Y Fixed Duration Currency-Hedged",
+  "heName": "MTF סל (0A) אינדקס אג\"ח ממשלת ארה\"ב - מח\"מ 10 קבוע מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס140",
+  "isin": "IL0012439977",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F15.TA",
+  "name": "MTF SAL (00) Tel Bond Shekel 50 IL",
+  "heName": "MTF סל‏ (00) תל בונד שקלי 50",
+  "heSymbol": "מטפ.ס15",
+  "isin": "IL0011501686",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F16.TA",
+  "name": "MTF SAL (4A) TA-35 IL",
+  "heName": "MTF סל (4A) ת\"א 35",
+  "heSymbol": "מטפ.ס16",
+  "isin": "IL0011501843",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F17.TA",
+  "name": "MTF SAL (4A) TA-90 IL",
+  "heName": "MTF סל‏ (4A) ת\"א 90",
+  "heSymbol": "מטפ.ס17",
+  "isin": "IL0011502593",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F18.TA",
+  "name": "MTF SAL (4A) TA Tech - Elite IL",
+  "heName": "MTF סל‏ (4A) ת\"א טק-עילית",
+  "heSymbol": "מטפ.ס18",
+  "isin": "IL0011502676",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F19.TA",
+  "name": "MTF SAL (4A) TA-125 IL",
+  "heName": "MTF סל (4A) ת\"א 125",
+  "heSymbol": "מטפ.ס19",
+  "isin": "IL0011502833",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F2.TA",
+  "name": "MTF SAL (00)Tel Gov - Shekel 2-5 IL",
+  "heName": "MTF סל (00) תל גוב-שקלי 2-5",
+  "heSymbol": "מטפ.ס2",
+  "isin": "IL0011499626",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F23.TA",
+  "name": "MTF SAL (4D) S&P 500",
+  "heName": "MTF סל (S&P 500 (4D",
+  "heSymbol": "מטפ.ס23",
+  "isin": "IL0011503336",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F24.TA",
+  "name": "MTF SAL (4D) S&P Aerospace & Defense",
+  "heName": "MTF סל (S&P Aerospace & Defense (4D",
+  "heSymbol": "מטפ.ס24",
+  "isin": "IL0011503419",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F25.TA",
+  "name": "MTF SAL (4D) S&P Consumer Discretionary",
+  "heName": "MTF סל (S&P Consumer Discretionary (4D",
+  "heSymbol": "מטפ.ס25",
+  "isin": "IL0011503583",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F26.TA",
+  "name": "MTF SAL (4D) S&P Consumer Staples",
+  "heName": "MTF סל (S&P Consumer Staples (4D",
+  "heSymbol": "מטפ.ס26",
+  "isin": "IL0011503666",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F27.TA",
+  "name": "MTF SAL (4D) S&P Financial",
+  "heName": "MTF סל (S&P Financial (4D",
+  "heSymbol": "מטפ.ס27",
+  "isin": "IL0011503823",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F28.TA",
+  "name": "MTF SAL (4D) S&P Health Care",
+  "heName": "MTF סל (S&P Health Care (4D",
+  "heSymbol": "מטפ.ס28",
+  "isin": "IL0011503906",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F29.TA",
+  "name": "MTF SAL (4D) S&P Industrial",
+  "heName": "MTF סל (S&P Industrial (4D",
+  "heSymbol": "מטפ.ס29",
+  "isin": "IL0011504086",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F3.TA",
+  "name": "MTF SAL (00) Tel-Bond 20 CPI-Linked IL",
+  "heName": "MTF סל (00) תל בונד 20 צמודות",
+  "heSymbol": "מטפ.ס3",
+  "isin": "IL0011499881",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F30.TA",
+  "name": "MTF SAL (4D) S&P Technology",
+  "heName": "MTF סל (S&P Technology (4D",
+  "heSymbol": "מטפ.ס30",
+  "isin": "IL0011504243",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F31.TA",
+  "name": "MTF SAL (4D) STOXX Europe 600",
+  "heName": "MTF סל (STOXX Europe 600 (4D",
+  "heSymbol": "מטפ.ס31",
+  "isin": "IL0011502262",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F33.TA",
+  "name": "MTF SAL (4D) RUSSELL 2000",
+  "heName": "MTF סל (RUSSELL 2000 (4D",
+  "heSymbol": "מטפ.ס33",
+  "isin": "IL0011502429",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F34.TA",
+  "name": "MTF SAL (4D) MSCI Emerging Markets",
+  "heName": "MTF סל (MSCI Emerging Markets (4D",
+  "heSymbol": "מטפ.ס34",
+  "isin": "IL0011502759",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F36.TA",
+  "name": "MTF SAL (4A) DAX Currency-Hedged",
+  "heName": "MTF סל (DAX (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס36",
+  "isin": "IL0011504169",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F39.TA",
+  "name": "MTF SAL (4A) S&P Aerospace & Defense Currency-Hedged",
+  "heName": "MTF סל (S&P Aerospace & Defense (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס39",
+  "isin": "IL0011505646",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F4.TA",
+  "name": "MTF SAL (00) Tel-Bond 60 CPI-Linked IL",
+  "heName": "MTF סל (00) תל בונד 60 צמודות",
+  "heSymbol": "מטפ.ס4",
+  "isin": "IL0011499964",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F40.TA",
+  "name": "MTF SAL (4A) STOXX Europe 600 Currency-Hedged",
+  "heName": "MTF סל (STOXX Europe 600 (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס40",
+  "isin": "IL0011506149",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F42.TA",
+  "name": "MTF SAL (4A) S&P Consumer Discretionary Currency-Hedged",
+  "heName": "MTF סל (S&P Consumer Discretionary (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס42",
+  "isin": "IL0011506636",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F43.TA",
+  "name": "MTF SAL (4A) S&P Consumer Staples Currency-Hedged",
+  "heName": "MTF סל (S&P Consumer Staples (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס43",
+  "isin": "IL0011506891",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F44.TA",
+  "name": "MTF SAL (4A) S&P Energy Currency-Hedged",
+  "heName": "MTF סל (S&P Energy (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס44",
+  "isin": "IL0011507212",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F45.TA",
+  "name": "MTF SAL (4A) S&P Financial Currency-Hedged",
+  "heName": "MTF סל (S&P Financial (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס45",
+  "isin": "IL0011505984",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F46.TA",
+  "name": "MTF SAL (4A) S&P Health Care Currency-Hedged",
+  "heName": "MTF סל (S&P Health Care (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס46",
+  "isin": "IL0011504326",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F47.TA",
+  "name": "MTF SAL (4A) S&P Industrial Currency-Hedged",
+  "heName": "MTF סל (S&P Industrial (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס47",
+  "isin": "IL0011504573",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F48.TA",
+  "name": "MTF SAL (4A) S&P Technology Currency-Hedged",
+  "heName": "MTF סל (S&P Technology (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס48",
+  "isin": "IL0011504813",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F49.TA",
+  "name": "MTF SAL (4A) S&P Utilities Currency-Hedged",
+  "heName": "MTF סל (S&P Utilities (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס49",
+  "isin": "IL0011505075",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F5.TA",
+  "name": "MTF SAL (00) Tel Bond Shekel IL",
+  "heName": "MTF סל (00) תל בונד שקלי",
+  "heSymbol": "מטפ.ס5",
+  "isin": "IL0011500027",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F50.TA",
+  "name": "MTF SAL (4A) NIKKEI 225 Currency-Hedged",
+  "heName": "MTF סל (NIKKEI 225 (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס50",
+  "isin": "IL0011505315",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F51.TA",
+  "name": "MTF SAL (4A) RUSSELL 2000 Currency-Hedged",
+  "heName": "MTF סל (RUSSELL 2000 (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס51",
+  "isin": "IL0011505497",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F52.TA",
+  "name": "MTF SAL (4A) S&P 500 Currency-Hedged",
+  "heName": "MTF סל (S&P 500 (4A מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס52",
+  "isin": "IL0011505729",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F54.TA",
+  "name": "MTF SAL (4D) Indxx USA Cloud Computing",
+  "heName": "MTF סל (Indxx USA Cloud Computing (4D",
+  "heSymbol": "מטפ.ס54",
+  "isin": "IL0011583288",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F58.TA",
+  "name": "MTF Sal (00) Index Banks and Insurance Bonds - Tier 2 IL",
+  "heName": "MTF סל (00) אינדקס אג\"ח בנקים וביטוח - רובד 2",
+  "heSymbol": "מטפ.ס58",
+  "isin": "IL0011623613",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F6.TA",
+  "name": "MTF SAL (00) Tel Gov - CPI Linked 2-5 IL",
+  "heName": "MTF סל‏ (00) תל גוב-צמודות 2-5",
+  "heSymbol": "מטפ.ס6",
+  "isin": "IL0011500100",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F60.TA",
+  "name": "MTF Sal (4D) S&P 500 Scored & Screened",
+  "heName": "MTF סל (4D)י S&P 500 Scored & Screened",
+  "heSymbol": "מטפ.ס60",
+  "isin": "IL0011621898",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F65.TA",
+  "name": "MTF SAL (4A) TA -Construction IL",
+  "heName": "MTF סל (4A) ת\"א-בנייה",
+  "heSymbol": "מטפ.ס65",
+  "isin": "IL0011656530",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F66.TA",
+  "name": "MTF SAL (4A) TA - Israel Commercial Real Estate IL",
+  "heName": "MTF סל (4A) ת\"א-מניב ישראל",
+  "heSymbol": "מטפ.ס66",
+  "isin": "IL0011656613",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F68.TA",
+  "name": "MTF Sal (4D) Bluestar Top 10 US Banks",
+  "heName": "MTF סל (Bluestar Top 10 US Banks (4D",
+  "heSymbol": "מטפ.ס68",
+  "isin": "IL0011697963",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F69.TA",
+  "name": "MTF Sal (4D) Bluestar Travel & Vacation",
+  "heName": "MTF סל (Bluestar Travel & Vacation (4D",
+  "heSymbol": "מטפ.ס69",
+  "isin": "IL0011675845",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F7.TA",
+  "name": "MTF SAL (4D) DAX",
+  "heName": "MTF סל (DAX (4D",
+  "heSymbol": "מטפ.ס7",
+  "isin": "IL0011508616",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F71.TA",
+  "name": "MTF Sal (4A) Index Israeli Renewable Energy Equityl IL",
+  "heName": "MTF סל (4A) אינדקס אנרגיה מתחדשת ישראל",
+  "heSymbol": "מטפ.ס71",
+  "isin": "IL0011687238",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F74.TA",
+  "name": "MTF SAL (4A) TA-Technology IL",
+  "heName": "MTF סל (4A) ת\"א-טכנולוגיה",
+  "heSymbol": "מטפ.ס74",
+  "isin": "IL0011694085",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F76.TA",
+  "name": "MTF Sal (4D) Index US Shopping Centers REIT",
+  "heName": "MTF סל (4D) אינדקס REIT ארה\"ב מרכזי קניות",
+  "heSymbol": "מטפ.ס76",
+  "isin": "IL0011713216",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F78.TA",
+  "name": "MTF Sal (4D) Bluestar China Internet Software",
+  "heName": "MTF סל (Bluestar China Internet Software (4D",
+  "heSymbol": "מטפ.ס78",
+  "isin": "IL0011715864",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F79.TA",
+  "name": "MTF SAL (00) Tel Bond CPI-Linked A IL",
+  "heName": "MTF סל (00) תל בונד - צמודות A",
+  "heSymbol": "מטפ.ס79",
+  "isin": "IL0011715948",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F8.TA",
+  "name": "MTF SAL (00) Tel Gov - Shekel 5+ IL",
+  "heName": "MTF סל (00) תל גוב-שקלי 5+",
+  "heSymbol": "מטפ.ס8",
+  "isin": "IL0011500514",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F80.TA",
+  "name": "MTF SAL (00) Tel Bond - Shekel A IL",
+  "heName": "MTF סל (00) תל בונד - שקלי A",
+  "heSymbol": "מטפ.ס80",
+  "isin": "IL0011728248",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F85.TA",
+  "name": "MTF SAL (4A) MSCI AC World USD-Hedged",
+  "heName": "MTF סל ‏‏‏MSCI AC World (4A) מנוטרלת דולר",
+  "heSymbol": "מטפ.ס85",
+  "isin": "IL0011760316",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F9.TA",
+  "name": "MTF SAL (00) Tel Gov - CPI Linked 5-10 IL",
+  "heName": "MTF סל (00) תל גוב-צמודות 5-10",
+  "heSymbol": "מטפ.ס9",
+  "isin": "IL0011500696",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F90.TA",
+  "name": "MTF SAL (6A) Short TA-90 (4,574.35) IL",
+  "heName": "MTF סל (6A) חסר ת\"א 90 (4,574.35)",
+  "heSymbol": "מטפ.תא90",
+  "isin": "IL0011710998",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F93.TA",
+  "name": "MTF Sal (4D) FTSE China A50",
+  "heName": "MTF סל FTSE China A50 (4D)",
+  "heSymbol": "מטפ.ס93",
+  "isin": "IL0011810236",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F95.TA",
+  "name": "MTF Sal (4D) Nasdaq 100",
+  "heName": "MTF סל Nasdaq 100 (4D)",
+  "heSymbol": "מטפ.ס95",
+  "isin": "IL0011813875",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-F96.TA",
+  "name": "MTF Sal (4A) Nasdaq 100 Currency Hedged",
+  "heName": "MTF סל Nasdaq 100 (4A) מנוטרלת מט\"ח",
+  "heSymbol": "מטפ.ס96",
+  "isin": "IL0011814451",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-FK55.TA",
+  "name": "MTF SAL (00) Kosher Tel - Bond 60 CPI-Linked IL",
+  "heName": "MTF סל (00) כשרה תל בונד 60 צמודות",
+  "heSymbol": "מטפ.סכ55",
+  "isin": "IL0011596983",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-FK56.TA",
+  "name": "MTF Sal (4A) Kosher TA-125 IL",
+  "heName": "MTF סל (4A) כשרה ת\"א-125",
+  "heSymbol": "מטפ.סכ56",
+  "isin": "IL0011597148",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTF-FK57.TA",
+  "name": "MTF SAL (00) Kosher Tel Bond shekel IL",
+  "heName": "MTF סל (00) כשרה תל בונד שקלי",
+  "heSymbol": "מטפ.סכ57",
+  "isin": "IL0011597064",
+  "type": "ETF"
+ },
+ {
+  "symbol": "MTLF.TA",
+  "name": "MATRICELF",
+  "heName": "מטריסלף",
+  "heSymbol": "מטלפ",
+  "isin": "IL0011767915",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MTRD.TA",
+  "name": "MEITAV TRA",
+  "heName": "מיטב טרייד",
+  "heSymbol": "מטרה",
+  "isin": "IL0012031816",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MTRN.TA",
+  "name": "MAYTRONICS",
+  "heName": "מיטרוניקס",
+  "heSymbol": "מטרן",
+  "isin": "IL0010910656",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MTRX.TA",
+  "name": "MATRIX",
+  "heName": "מטריקס",
+  "heSymbol": "מטרקס",
+  "isin": "IL0004450156",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MUTG.TA",
+  "name": "URBAN BRAND",
+  "heName": "מותג עירוני",
+  "heSymbol": "מותג",
+  "isin": "IL0012238585",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MVNE.TA",
+  "name": "MIVNE",
+  "heName": "מבנה",
+  "heSymbol": "מבנה",
+  "isin": "IL0002260193",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MYDS.TA",
+  "name": "MYDAS",
+  "heName": "מידאס",
+  "heSymbol": "מדאס",
+  "isin": "IL0005440156",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "MZTF.TA",
+  "name": "MIZRAHI TEFAHOT",
+  "heName": "מזרחי טפחות",
+  "heSymbol": "מזטפ",
+  "isin": "IL0006954379",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NAWI.TA",
+  "name": "NAWI",
+  "heName": "נאוי",
+  "heSymbol": "נאוי",
+  "isin": "IL0002080179",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NFTA.TA",
+  "name": "NAPHTHA",
+  "heName": "נפטא",
+  "heSymbol": "נפטא",
+  "isin": "IL0006430156",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NICE.TA",
+  "name": "NICE",
+  "heName": "נייס",
+  "heSymbol": "נייס",
+  "isin": "IL0002730112",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NISA.TA",
+  "name": "NISSAN",
+  "heName": "ניסן",
+  "heSymbol": "ניסן",
+  "isin": "IL0006600196",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NOFR.TA",
+  "name": "NOFAR ENERGY",
+  "heName": "נופר אנרג'י",
+  "heSymbol": "נופר",
+  "isin": "IL0011708778",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NRGN.TA",
+  "name": "NRGENE",
+  "heName": "אנרג'ין",
+  "heSymbol": "אנגנ",
+  "isin": "IL0011720716",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NSTR.TA",
+  "name": "NORSTAR",
+  "heName": "נורסטאר",
+  "heSymbol": "נסטר",
+  "isin": "PAL0605071A3",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NTGR.TA",
+  "name": "NETANEL GROUP",
+  "heName": "נתנאל גרופ",
+  "heSymbol": "נתגר",
+  "isin": "IL0004210162",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NTML.TA",
+  "name": "NETO MALINDA",
+  "heName": "נטו מלינדה",
+  "heSymbol": "נטמל",
+  "isin": "IL0011050973",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NTNB.TA",
+  "name": "NETANEL MENIV",
+  "heName": "נתנאל מניבים",
+  "heSymbol": "נתנב",
+  "isin": "IL0011945131",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NTO.TA",
+  "name": "NETO",
+  "heName": "נטו אחזקות",
+  "heSymbol": "נטו",
+  "isin": "IL0001680136",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NURI.TA",
+  "name": "NUR",
+  "heName": "נור",
+  "heSymbol": "נורי",
+  "isin": "IL0011757288",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NVLG.TA",
+  "name": "NOVOLOG",
+  "heName": "נובולוג",
+  "heSymbol": "נבלג",
+  "isin": "IL0011401515",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NVMI.TA",
+  "name": "NOVA",
+  "heName": "נובה",
+  "heSymbol": "נובה",
+  "isin": "IL0010845571",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NXFR-M.TA",
+  "name": "NEXTFERM-M",
+  "heName": "נקסטפרם-ש",
+  "heSymbol": "נקפר.ש",
+  "isin": "IL0011719338",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NXGN-M.TA",
+  "name": "NEXTGEN-M",
+  "heName": "נקסט ג'ן-ש",
+  "heSymbol": "נקגן-ש",
+  "isin": "IL0010839301",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NXSN.TA",
+  "name": "NEXT VISION",
+  "heName": "נקסט ויז'ן",
+  "heSymbol": "נקסנ",
+  "isin": "IL0011765935",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NXTG.TA",
+  "name": "NEXTAGE",
+  "heName": "נקסטייג'",
+  "heSymbol": "נקטג",
+  "isin": "IL0004330119",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NXTM.TA",
+  "name": "NEXTCOM",
+  "heName": "נקסטקום",
+  "heSymbol": "נקסט",
+  "isin": "IL0010957855",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "NYAX.TA",
+  "name": "NAYAX",
+  "heName": "נאייקס",
+  "heSymbol": "ניקס",
+  "isin": "IL0011751166",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ODYS.TA",
+  "name": "ODYSIGHT",
+  "heName": "אודיסייט",
+  "heSymbol": "אודס",
+  "isin": "US81063V2043",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "OMCN.TA",
+  "name": "OMER CONS",
+  "heName": "עומר הנדסה",
+  "heSymbol": "עמהנ",
+  "isin": "IL0012334939",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ONE.TA",
+  "name": "ONE TECHNOLOGI",
+  "heName": "וואן טכנולוגיות",
+  "heSymbol": "וואן",
+  "isin": "IL0001610182",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "OPAL.TA",
+  "name": "OPAL BALANCE",
+  "heName": "אופל בלאנס",
+  "heSymbol": "אופל",
+  "isin": "IL0010949860",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "OPCE.TA",
+  "name": "OPC ENERGY",
+  "heName": "או פי סי אנרגיה",
+  "heSymbol": "אפסא",
+  "isin": "IL0011415713",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "OPK.TA",
+  "name": "OPKO HEALTH",
+  "heName": "אופקו הלת'",
+  "heSymbol": "אפקו",
+  "isin": "US68375N1037",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ORA.TA",
+  "name": "ORMAT TECHNO",
+  "heName": "אורמת טכנו",
+  "heSymbol": "ארמת",
+  "isin": "US6866881021",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ORAD.TA",
+  "name": "ORAD",
+  "heName": "אורד",
+  "heSymbol": "אורד",
+  "isin": "IL0011044968",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ORIN.TA",
+  "name": "ORIAN",
+  "heName": "אוריין",
+  "heSymbol": "אורן",
+  "isin": "IL0011035065",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ORL.TA",
+  "name": "BAZAN",
+  "heName": "בזן",
+  "heSymbol": "בזן",
+  "isin": "IL0025902482",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ORMP.TA",
+  "name": "ORAMED PHARM",
+  "heName": "אורמד פארמ",
+  "heSymbol": "ארמד",
+  "isin": "US68403P2039",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ORNP.TA",
+  "name": "ORION",
+  "heName": "אוריון",
+  "heSymbol": "ארנמ",
+  "isin": "IL0012327503",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ORON.TA",
+  "name": "ORON GROUP",
+  "heName": "אורון קבוצה",
+  "heSymbol": "אורנ",
+  "isin": "IL0011357063",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ORTC.TA",
+  "name": "O.R.T.",
+  "heName": "או.אר.טי",
+  "heSymbol": "ארטכ",
+  "isin": "IL0010862303",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "OVRS.TA",
+  "name": "OVERSEAS",
+  "heName": "אוברסיז",
+  "heSymbol": "אובר",
+  "isin": "IL0011396178",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PAYT.TA",
+  "name": "PAYTON",
+  "heName": "פייטון",
+  "heSymbol": "פטון",
+  "isin": "IL0004120155",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PAZ.TA",
+  "name": "PAZ ENERGY",
+  "heName": "פז אנרגיה",
+  "heSymbol": "פז",
+  "isin": "IL0011000077",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PCBT.TA",
+  "name": "P.C.B TEC",
+  "heName": "פיסיבי טכנ",
+  "heSymbol": "פסבט",
+  "isin": "IL0010916851",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PEAX.TA",
+  "name": "PEAX SOLUTIONS",
+  "heName": "פיקס סולושנז",
+  "heSymbol": "פקסו",
+  "isin": "IL0003820102",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PERI.TA",
+  "name": "PERION NETWORK",
+  "heName": "פריון נטוורק",
+  "heSymbol": "פריון",
+  "isin": "IL0010958192",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PHOE.TA",
+  "name": "PHOENIX",
+  "heName": "הפניקס",
+  "heSymbol": "פנקס",
+  "isin": "IL0007670123",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PHTM.TA",
+  "name": "PHOTOMYNE",
+  "heName": "פוטומיין",
+  "heSymbol": "פוטו",
+  "isin": "IL0011738551",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PIES.TA",
+  "name": "PIE SIAM",
+  "heName": "פאי סיאם",
+  "heSymbol": "פאיס",
+  "isin": "IL0011865271",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PLAZ-L.TA",
+  "name": "PLAZA CENTERS-L",
+  "heName": "פלאזה סנטר -ס",
+  "heSymbol": "פלזס-ס",
+  "isin": "NL0011882741",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PLCR.TA",
+  "name": "PLASTO CARGAL",
+  "heName": "פלסטו קרגל",
+  "heSymbol": "פלקר",
+  "isin": "IL0007270163",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PLRM.TA",
+  "name": "PALRAM",
+  "heName": "פלרם",
+  "heSymbol": "פלרם",
+  "isin": "IL0006440130",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PLSM.TA",
+  "name": "PULSENMORE",
+  "heName": "פלסאנמור",
+  "heSymbol": "פאלס",
+  "isin": "IL0011767006",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PLSN.TA",
+  "name": "PLASSON INDUS",
+  "heName": "פלסאון תעשיות",
+  "heSymbol": "פלסון",
+  "isin": "IL0010816036",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PLUR.TA",
+  "name": "PLURI",
+  "heName": "פלורי",
+  "heSymbol": "פלור",
+  "isin": "US72942G2030",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PMNT.TA",
+  "name": "PAYMENT FINA",
+  "heName": "פיימנט",
+  "heSymbol": "פמנט",
+  "isin": "IL0011808768",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PMVM.TA",
+  "name": "POMVOM",
+  "heName": "פוםוום",
+  "heSymbol": "פומו",
+  "isin": "IL0011734345",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PNRG.TA",
+  "name": "PHINERGY",
+  "heName": "פינרג'י",
+  "heSymbol": "פנרג",
+  "isin": "IL0011723603",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "POLI.TA",
+  "name": "POALIM",
+  "heName": "פועלים",
+  "heSymbol": "פעלים",
+  "isin": "IL0006625771",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "POLP.TA",
+  "name": "POLYRAM PLS",
+  "heName": "פולירם",
+  "heSymbol": "פולפ",
+  "isin": "IL0011702169",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "POLY.TA",
+  "name": "POLYGON",
+  "heName": "פוליגון",
+  "heSymbol": "פלגן",
+  "isin": "IL0007450187",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PPBT.TA",
+  "name": "PURPLE BIOTECH",
+  "heName": "פרפל ביוטק",
+  "heSymbol": "פפבט",
+  "isin": "IL0007650166",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PPIL.TA",
+  "name": "PLASTOFIL",
+  "heName": "פלסטופיל",
+  "heSymbol": "פפיל",
+  "isin": "IL0010928401",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PRDM.TA",
+  "name": "PRODALIM INVEST",
+  "heName": "פרודלים השקעות",
+  "heSymbol": "פרדם",
+  "isin": "IL0012370313",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PRIM.TA",
+  "name": "PRIME ENERGY",
+  "heName": "פריים אנרג'י",
+  "heSymbol": "פרים",
+  "isin": "IL0011744575",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PRKM.TA",
+  "name": "PARKOMAT",
+  "heName": "פרקומט",
+  "heSymbol": "פרקמ",
+  "isin": "IL0011876401",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PRMG.TA",
+  "name": "PRIMOTEC",
+  "heName": "פרימוטק",
+  "heSymbol": "פרמג",
+  "isin": "IL0011754962",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PRPD.TA",
+  "name": "PROPDO",
+  "heName": "פרופדו",
+  "heSymbol": "פרפד",
+  "isin": "IL0011886228",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PRSK.TA",
+  "name": "PRASHKOVSKY",
+  "heName": "פרשקובסקי",
+  "heSymbol": "פרשק",
+  "isin": "IL0011021289",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PRTC.TA",
+  "name": "PRIORTECH",
+  "heName": "פריורטק",
+  "heSymbol": "פרטק",
+  "isin": "IL0003280133",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PSEC.TA",
+  "name": "PROSPECT",
+  "heName": "פרוספקט",
+  "heSymbol": "פרפק",
+  "isin": "US74348T1025",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PSRX.TA",
+  "name": "PSYRX BIO-TECH",
+  "heName": "פסיירקס ביו-טק",
+  "heSymbol": "פסרק",
+  "isin": "IL0011769085",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PTBL.TA",
+  "name": "PROPERT & BUIL",
+  "heName": "נכסים ובנין",
+  "heSymbol": "נכסבנ",
+  "isin": "IL0006990175",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PTCH.TA",
+  "name": "PETROCHEMICAL",
+  "heName": "פטרוכימיים",
+  "heSymbol": "פטרו",
+  "isin": "IL0007560159",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "PTNR.TA",
+  "name": "PARTNER",
+  "heName": "פרטנר",
+  "heSymbol": "פרטנר",
+  "isin": "IL0010834849",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "QLTU.TA",
+  "name": "QUALITAU",
+  "heName": "קווליטאו",
+  "heSymbol": "קלטו",
+  "isin": "IL0010839558",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "QNCO.TA",
+  "name": "QUEENCO",
+  "heName": "קווינקו",
+  "heSymbol": "קנקו",
+  "isin": "IL0003860116",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RAFA.TA",
+  "name": "RAFA LABORATOR",
+  "heName": "מעבדות רפא",
+  "heSymbol": "רפא",
+  "isin": "IL0012448887",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RANI.TA",
+  "name": "RANI ZIM",
+  "heName": "רני צים",
+  "heSymbol": "רנצם",
+  "isin": "IL0011436198",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RAVD.TA",
+  "name": "RAVAD",
+  "heName": "רבד",
+  "heSymbol": "רבד",
+  "isin": "IL0005260125",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RAYG.TA",
+  "name": "RAY TLV GROUP",
+  "heName": "ריי טי אל וי",
+  "heSymbol": "רטאל",
+  "isin": "IL0006730126",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "REKA.TA",
+  "name": "REKAH",
+  "heName": "רקח",
+  "heSymbol": "רקח",
+  "isin": "IL0010810096",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RENT.TA",
+  "name": "RENT IT",
+  "heName": "רנט איט",
+  "heSymbol": "רנטא",
+  "isin": "IL0011996456",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RGAS.TA",
+  "name": "RGA SERVICES",
+  "heName": "רגא שרותים",
+  "heSymbol": "רגאש",
+  "isin": "IL0012268855",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RIMO.TA",
+  "name": "RIMONI",
+  "heName": "רימוני",
+  "heSymbol": "רמני",
+  "isin": "IL0010804560",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RIT1.TA",
+  "name": "REIT 1",
+  "heName": "ריט 1",
+  "heSymbol": "ריט1",
+  "isin": "IL0010989205",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RLCO.TA",
+  "name": "RALCO",
+  "heName": "ראלקו",
+  "heSymbol": "רלקו",
+  "isin": "IL0003930174",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RLRE.TA",
+  "name": "RAMI LEVI RE",
+  "heName": "רמי לוי נדל\"ן",
+  "heSymbol": "רלנד",
+  "isin": "IL0012350018",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RMLI.TA",
+  "name": "RAMI LEVI",
+  "heName": "רמי לוי",
+  "heSymbol": "רמלי",
+  "isin": "IL0011042491",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RMN.TA",
+  "name": "RAM ON",
+  "heName": "רם און",
+  "heSymbol": "רמאן",
+  "isin": "IL0010909435",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RMON.TA",
+  "name": "RIMON",
+  "heName": "רימון",
+  "heSymbol": "רמון",
+  "isin": "IL0011787228",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ROBO.TA",
+  "name": "ROBOGROUP",
+  "heName": "רובוגרופ",
+  "heSymbol": "רבגפ",
+  "isin": "IL0002660152",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ROTS.TA",
+  "name": "ROTSHTEIN",
+  "heName": "רוטשטיין",
+  "heSymbol": "רשטן",
+  "isin": "IL0005390153",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RPAC.TA",
+  "name": "RAPAC",
+  "heName": "רפק",
+  "heSymbol": "רפק",
+  "isin": "IL0007690261",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RPCE.TA",
+  "name": "RAPAC ENERGY",
+  "heName": "רפק אנרג'י",
+  "heSymbol": "רפקא",
+  "isin": "IL0012447301",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RPOL.TA",
+  "name": "RP OPTICAL",
+  "heName": "אר פי אופטיקל",
+  "heSymbol": "ארפי",
+  "isin": "IL0012224627",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RSEL.TA",
+  "name": "RSL",
+  "heName": "אראסאל",
+  "heSymbol": "רסל",
+  "isin": "IL0002990161",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RSTC.TA",
+  "name": "RUSTIC BAKERY",
+  "heName": "רוסטיק בייקרי",
+  "heSymbol": "רסטק",
+  "isin": "IL0012427261",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RTLS.TA",
+  "name": "RETAILORS",
+  "heName": "ריטיילורס",
+  "heSymbol": "רטלס",
+  "isin": "IL0011754889",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RTMD-M.TA",
+  "name": "RETAILMINDS -M",
+  "heName": "ריטייל מיינדס-ש",
+  "heSymbol": "רטמד-ש",
+  "isin": "IL0011737231",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RTSN.TA",
+  "name": "ROTEM SHANI",
+  "heName": "רותם שני",
+  "heSymbol": "רתשנ",
+  "isin": "IL0011715294",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RVL.TA",
+  "name": "RAVAL",
+  "heName": "רבל",
+  "heSymbol": "רבל",
+  "isin": "IL0011038788",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "RZR.TA",
+  "name": "RAZOR LABS",
+  "heName": "רייזור",
+  "heSymbol": "רזר",
+  "isin": "IL0011725277",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SADE.TA",
+  "name": "SADE REAL ESTAT",
+  "heName": "שדה נדל\"ן",
+  "heSymbol": "שדהנ",
+  "isin": "IL0003410169",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SAE.TA",
+  "name": "SHUFERSAL",
+  "heName": "שופרסל",
+  "heSymbol": "שפרסל",
+  "isin": "IL0007770378",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SANO1.TA",
+  "name": "SANO",
+  "heName": "סנו",
+  "heSymbol": "סנו",
+  "isin": "IL0008130143",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SARN.TA",
+  "name": "SARINE TECH",
+  "heName": "שרין טכנו",
+  "heSymbol": "שרין",
+  "isin": "IL0010927254",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SBEN.TA",
+  "name": "SHIKN&BINUI ENE",
+  "heName": "שוב אנרגיה",
+  "heSymbol": "שובא",
+  "isin": "IL0011882425",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SCC.TA",
+  "name": "SPACE COM",
+  "heName": "חלל תקשורת",
+  "heSymbol": "חלל",
+  "isin": "IL0010923451",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SCDX.TA",
+  "name": "SCODIX",
+  "heName": "סקודיקס",
+  "heSymbol": "סקדס",
+  "isin": "IL0011784902",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SCOP.TA",
+  "name": "SCOPE",
+  "heName": "סקופ",
+  "heSymbol": "סקופ",
+  "isin": "IL0002880198",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SEMG.TA",
+  "name": "SEACH MEDICAL",
+  "heName": "שיח מדיקל",
+  "heSymbol": "שיח",
+  "isin": "IL0002490113",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SFRN.TA",
+  "name": "SUFRIN",
+  "heName": "סופרין",
+  "heSymbol": "ספרן",
+  "isin": "IL0011815698",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SHAN.TA",
+  "name": "SHANIV",
+  "heName": "שניב",
+  "heSymbol": "שניב",
+  "isin": "IL0010808371",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SHGR.TA",
+  "name": "SHAGRIR",
+  "heName": "שגריר",
+  "heSymbol": "שגרר",
+  "isin": "IL0011383796",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SHMM.TA",
+  "name": "SHAMAYM",
+  "heName": "שמיים",
+  "heSymbol": "שמים",
+  "isin": "IL0011762395",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SHNP.TA",
+  "name": "SCHNAPP",
+  "heName": "שנפ",
+  "heSymbol": "שנפ",
+  "isin": "IL0011035719",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SHOM.TA",
+  "name": "SHOHAM BUSINESS",
+  "heName": "שוהם ביזנס",
+  "heSymbol": "שוהם",
+  "isin": "IL0010820079",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SHVA.TA",
+  "name": "AUTO BANK SERV",
+  "heName": "שירותי בנק אוטו",
+  "heSymbol": "שבא",
+  "isin": "IL0011581613",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SHVL.TA",
+  "name": "SHOVAL",
+  "heName": "שובל",
+  "heSymbol": "שובל",
+  "isin": "IL0012079682",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SKBN.TA",
+  "name": "SHIKUN & BINUI",
+  "heName": "שיכון ובינוי",
+  "heSymbol": "שוב",
+  "isin": "IL0010819428",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SKLN.TA",
+  "name": "SKYLINE",
+  "heName": "סקייליין",
+  "heSymbol": "סקלן",
+  "isin": "CA83084Y1007",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SLARL.TA",
+  "name": "SELLA REAL EST",
+  "heName": "סלע נדלן",
+  "heSymbol": "סלענד",
+  "isin": "IL0011096448",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SLRM.TA",
+  "name": "SLRM",
+  "heName": "סולרום החז",
+  "heSymbol": "סלרם",
+  "isin": "IL0011775181",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SMNR.TA",
+  "name": "SHEMEN ESTATE",
+  "heName": "שמן נדלן",
+  "heSymbol": "שמנד",
+  "isin": "IL0006340306",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SMSH.TA",
+  "name": "SMART SHOOTER",
+  "heName": "סמארט שוטר",
+  "heSymbol": "סמאש",
+  "isin": "IL0012377425",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SMT.TA",
+  "name": "SUMMIT",
+  "heName": "סאמיט",
+  "heSymbol": "סמט",
+  "isin": "IL0010816861",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SNCM.TA",
+  "name": "SUNY COMMUN",
+  "heName": "סאני תקשורת",
+  "heSymbol": "סנתק",
+  "isin": "IL0010823537",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SNEL.TA",
+  "name": "SYNEL",
+  "heName": "סינאל",
+  "heSymbol": "סנאל",
+  "isin": "IL0010849532",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SNFL.TA",
+  "name": "SUNFLOWER",
+  "heName": "סאנפלאואר",
+  "heSymbol": "סנפל",
+  "isin": "IL0010987555",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SOFW.TA",
+  "name": "SOFWAVE",
+  "heName": "סופווייב",
+  "heSymbol": "סופב",
+  "isin": "IL0011754392",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SOLA.TA",
+  "name": "SOLA ENERGIES",
+  "heName": "סולה אנרגיות",
+  "heSymbol": "סולה",
+  "isin": "IL0012446311",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SOLR.TA",
+  "name": "SOLAER",
+  "heName": "סולאיר",
+  "heSymbol": "סלאר",
+  "isin": "IL0011722878",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SOLT-M.TA",
+  "name": "SOLTERRA-M",
+  "heName": "סולטרה אנרגיה-ש",
+  "heSymbol": "סולט-ש",
+  "isin": "IL0001690119",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SONO.TA",
+  "name": "SONOVIA",
+  "heName": "סונוביה",
+  "heSymbol": "סונו",
+  "isin": "IL0011705394",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SONR.TA",
+  "name": "SONOL",
+  "heName": "סונול נדלן",
+  "heSymbol": "סונד",
+  "isin": "IL0012268772",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SPDV.TA",
+  "name": "SPEEDVALUE",
+  "heName": "ספידווליו",
+  "heSymbol": "ספדו",
+  "isin": "IL0011782849",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SPEN.TA",
+  "name": "SHAPIR ENG",
+  "heName": "שפיר הנדסה",
+  "heSymbol": "שפהנ",
+  "isin": "IL0011338758",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SPGS.TA",
+  "name": "SUPERGAS POWER",
+  "heName": "סופרגז פאוור",
+  "heSymbol": "ספגז",
+  "isin": "IL0011669178",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SPNTC.TA",
+  "name": "SPUNTECH",
+  "heName": "ספאנטק",
+  "heSymbol": "ספנטק",
+  "isin": "IL0010901176",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SPRG.TA",
+  "name": "SPRING",
+  "heName": "ספרינג",
+  "heSymbol": "ספרג",
+  "isin": "IL0010973449",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SRAC.TA",
+  "name": "S.R ACCORD",
+  "heName": "אסאר אקורד",
+  "heSymbol": "אסאק",
+  "isin": "IL0004220146",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SRFT.TA",
+  "name": "SARFATI",
+  "heName": "צרפתי",
+  "heSymbol": "צרפת",
+  "isin": "IL0004250176",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "STG.TA",
+  "name": "STG",
+  "heName": "אסטיגי",
+  "heSymbol": "סטג",
+  "isin": "IL0005500124",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "STRG.TA",
+  "name": "STORAGE DROP",
+  "heName": "סטורג' דרופ",
+  "heSymbol": "סטרג",
+  "isin": "IL0011226540",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "STRK.TA",
+  "name": "STARK POWER",
+  "heName": "סטארק פאוור",
+  "heSymbol": "סטרק",
+  "isin": "IL0011698953",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "STRS.TA",
+  "name": "STRAUSS GROUP",
+  "heName": "שטראוס",
+  "heSymbol": "שטרס",
+  "isin": "IL0007460160",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "STRW.TA",
+  "name": "STRAWBERRY INC",
+  "heName": "סטרוברי אינק",
+  "heSymbol": "סטרו",
+  "isin": "US8631821019",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SUGT.TA",
+  "name": "SUGAT",
+  "heName": "סוגת",
+  "heSymbol": "סוגת",
+  "isin": "IL0012330143",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SVRE-L.TA",
+  "name": "SAVER O-L",
+  "heName": "סייברוואן-ס",
+  "heSymbol": "סיבר-ס",
+  "isin": "IL0011666935",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "SVRT-M.TA",
+  "name": "SAVOREAT-M",
+  "heName": "סבוריט-ש",
+  "heSymbol": "סברט-ש",
+  "isin": "IL0011699787",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TANM.TA",
+  "name": "T&M GROUP",
+  "heName": "טי אנד אם",
+  "heSymbol": "טיאם",
+  "isin": "IL0012430133",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TASE.TA",
+  "name": "TASE",
+  "heName": "הבורסה לניע בתא",
+  "heSymbol": "ברסה",
+  "isin": "IL0011590291",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TATT.TA",
+  "name": "TAT TECHNO",
+  "heName": "תאת טכנו",
+  "heSymbol": "תאתטכ",
+  "isin": "IL0010827264",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TAYA.TA",
+  "name": "TAYA INV",
+  "heName": "תיא השקעות",
+  "heSymbol": "תאהש",
+  "isin": "IL0007960110",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TCH-F1.TA",
+  "name": "Tachlit SAL (40) TA 35 IL",
+  "heName": "תכלית סל (40) ת\"א 35",
+  "heSymbol": "תכל.ס1",
+  "isin": "IL0011437006",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F10.TA",
+  "name": "Tachlit SAL (00) Tel Bond 20 CPI-Linked IL",
+  "heName": "תכלית סל (00) תל בונד 20 צמודות",
+  "heSymbol": "תכל.ס10",
+  "isin": "IL0011437915",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F100.TA",
+  "name": "Tachlit SAL (4D) STOXX Europe 600",
+  "heName": "תכלית סל (4D)י STOXX Europe 600",
+  "heSymbol": "תכל.ס100",
+  "isin": "IL0011447245",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F101.TA",
+  "name": "Tachlit SAL (4A) STOXX Europe 600 EURO Hedged",
+  "heName": "תכלית סל (4A)י STOXX Europe 600 מנוטרלת אירו",
+  "heSymbol": "תכל.ס101",
+  "isin": "IL0011438335",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F102.TA",
+  "name": "Tachlit SAL (4A) MSCI World U.S.D Hedged",
+  "heName": "תכלית סל (4A)י MSCI World מנוטרלת דולר",
+  "heSymbol": "תכל.ס102",
+  "isin": "IL0011438665",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F104.TA",
+  "name": "Tachlit SAL (0B) Tel Bond-Composite IL",
+  "heName": "תכלית סל (0B) תל בונד מאגר",
+  "heSymbol": "תכל.ס104",
+  "isin": "IL0011440133",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F108.TA",
+  "name": "Tachlit SAL (4A) CAC 40 Currency-Hedged",
+  "heName": "תכלית סל (4A)י CAC 40 מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס108",
+  "isin": "IL0011440547",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F11.TA",
+  "name": "Tachlit SAL (4A) S&P 500 Currency-Hedged",
+  "heName": "תכלית סל (4A)י S&P 500 מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס11",
+  "isin": "IL0011438178",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F113.TA",
+  "name": "Tachlit SAL (4D) DAX",
+  "heName": "תכלית סל (4D) ‏‏‏DAX",
+  "heSymbol": "תכל.ס113",
+  "isin": "IL0011441040",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F114.TA",
+  "name": "Tachlit SAL (4D) MSCI India",
+  "heName": "תכלית סל (4D)‏ MSCI India",
+  "heSymbol": "תכל.ס114",
+  "isin": "IL0011441123",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F118.TA",
+  "name": "Tachlit SAL (40) TA Finance IL",
+  "heName": "תכלית סל (40) ת\"א פיננסים",
+  "heSymbol": "תכל.ס118",
+  "isin": "IL0011441610",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F12.TA",
+  "name": "Tachlit SAL (4A) DAX Currency-Hedged",
+  "heName": "תכלית סל (4A)י DAX מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס12",
+  "isin": "IL0011438251",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F124.TA",
+  "name": "Tachlit SAL (4D) MSCI AC World",
+  "heName": "תכלית סל (4D) ‏‏‏MSCI AC World",
+  "heSymbol": "תכל.ס124",
+  "isin": "IL0011442378",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F128.TA",
+  "name": "Tachlit SAL (4D) MSCI Emerging Markets",
+  "heName": "תכלית סל (4D) ‏‏‏MSCI Emerging Markets",
+  "heSymbol": "תכל.ס128",
+  "isin": "IL0011444507",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F129.TA",
+  "name": "Tachlit SAL (4A) NIKKEI 225 Currency-Hedged",
+  "heName": "תכלית סל (4A)י NIKKEI 225 מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס129",
+  "isin": "IL0011444689",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F131.TA",
+  "name": "Tachlit SAL (4D) Russell 2000",
+  "heName": "תכלית סל (4D) ‏‏‏Russell 2000",
+  "heSymbol": "תכל.ס131",
+  "isin": "IL0011444846",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F134.TA",
+  "name": "Tachlit SAL (4D) composite US Equity Monthly",
+  "heName": "תכלית סל (4D) משולבת מניות ארהב חודשי",
+  "heSymbol": "תכל.ס134",
+  "isin": "IL0011445181",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F136.TA",
+  "name": "Tachlit SAL (40) TA Oil & GAS IL",
+  "heName": "תכלית סל (40) ת\"א נפט וגז",
+  "heSymbol": "תכל.ס136",
+  "isin": "IL0011448078",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F138.TA",
+  "name": "Tachlit SAL (00) Tel Bond-CPI Linked Bank Without COCO IL",
+  "heName": "תכלית סל (00) תל בונד צמודות-בנקים ללא COCO",
+  "heSymbol": "תכל.ס138",
+  "isin": "IL0011448235",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F139.TA",
+  "name": "Tachlit SAL (4A) DJ Internet Composite Currency-Hedged",
+  "heName": "תכלית סל (4A) ‏‏‏DJ Internet Composite מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס139",
+  "isin": "IL0011448318",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F14.TA",
+  "name": "Tachlit SAL (00) Tel Gov-Non-Linked IL",
+  "heName": "תכלית סל (00) תל גוב-לא צמודות",
+  "heSymbol": "תכל.ס14",
+  "isin": "IL0011449712",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F140.TA",
+  "name": "Tachlit SAL (4A) S&P Financial Currency-Hedged",
+  "heName": "תכלית סל (4A)י S&P Financial מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס140",
+  "isin": "IL0011448490",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F141.TA",
+  "name": "Tachlit SAL (4A) FTSE 250 Currency-Hedged",
+  "heName": "תכלית סל (4A)י FTSE 250 מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס141",
+  "isin": "IL0011448565",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F146.TA",
+  "name": "Tachlit SAL (4D) S&P 500 Dividend Aristocrats",
+  "heName": "תכלית סל (4D) ‏‏‏S&P 500 Dividend Aristocrats",
+  "heSymbol": "תכל.ס146",
+  "isin": "IL0011449068",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F147.TA",
+  "name": "Tachlit SAL (4A) S&P 500 Dividend Aristocrats Currency-Hedged",
+  "heName": "תכלית סל (4A)י S&P 500 Dividend Aristocrats מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס147",
+  "isin": "IL0011449142",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F150.TA",
+  "name": "Tachlit SAL (4A) IPOX 100 US Currency-Hedged",
+  "heName": "תכלית סל (4A)י IPOX 100 US מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס150",
+  "isin": "IL0011449480",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F151.TA",
+  "name": "Tachlit SAL (4A) S&P MidCap 400 Currency-Hedged",
+  "heName": "תכלית סל (4A)י S&P MidCap 400 מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס151",
+  "isin": "IL0011449555",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F155.TA",
+  "name": "Tachlit SAL (4D) Indxx US Industrial Real Estate & Logistics",
+  "heName": "תכלית סל (4D)י Indxx US Industrial Real Estate & Logistics",
+  "heSymbol": "תכל.ס155",
+  "isin": "IL0011601593",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F157.TA",
+  "name": "Tachlit SAL (60) Short TA 90 (5767.86) IL",
+  "heName": "תכלית סל (60) חסר ת\"א 90 (5767.86)",
+  "heSymbol": "תכל.ס157",
+  "isin": "IL0011610339",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F158.TA",
+  "name": "Tachlit SAL (00) Tel Bond Shekel 50 IL",
+  "heName": "תכלית סל (00) תל בונד שקלי 50",
+  "heSymbol": "תכל.ס158",
+  "isin": "IL0011693335",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F159.TA",
+  "name": "Tachlit SAL (4D) Index Big Tech 30 USA",
+  "heName": "תכלית סל (4D) אינדקס ביג טק 30 ארה\"ב",
+  "heSymbol": "תכל.ס159",
+  "isin": "IL0011693418",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F16.TA",
+  "name": "Tachlit SAL (4D) composite Gov. Bond (80%) Foreign Equity (20%) Monthly IL",
+  "heName": "תכלית סל (4D) משולבת ‏‏אגח ממשלתי (80%) מניות חול (20%) חודשי",
+  "heSymbol": "תכל.ס16",
+  "isin": "IL0011449977",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F164.TA",
+  "name": "Tachlit SAL (4D) PHLX Semiconductor Sector",
+  "heName": "תכלית סל (4D)י PHLX Semiconductor Sector",
+  "heSymbol": "תכל.ס164",
+  "isin": "IL0011707036",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F171.TA",
+  "name": "Tachlit SAL (40) TA-Construction IL",
+  "heName": "תכלית סל (40) ת\"א-בנייה",
+  "heSymbol": "תכל.ס171",
+  "isin": "IL0011765364",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F172.TA",
+  "name": "Tachlit SAL (40) TA-Insurance",
+  "heName": "תכלית סל (40) ת\"א -ביטוח",
+  "heSymbol": "תכל.ס172",
+  "isin": "IL0011976987",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F173.TA",
+  "name": "Tachlit SAL (4D) Index World Value U.S.D Hedged",
+  "heName": "תכלית סל (4D) אינדקס ערך עולמי מנוטרלת דולר",
+  "heSymbol": "תכל.ס173",
+  "isin": "IL0011895963",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F174.TA",
+  "name": "Tachlit SAL (4D) Index World Growth",
+  "heName": "תכלית סל (4D) אינדקס צמיחה עולמי",
+  "heSymbol": "תכל.ס174",
+  "isin": "IL0011896045",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F177.TA",
+  "name": "Tachlit Sal (0A) Rated Wide Spread IL",
+  "heName": "תכלית סל (0A) אינדקס מדורג פיזור רחב",
+  "heSymbol": "תכל.ס177",
+  "isin": "IL0012134610",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F178.TA",
+  "name": "Tachlit SAL (4A) Index World Quality U.S.D Hedged",
+  "heName": "תכלית סל (4A)י World Quality iNDEX מנוטרלת דולר",
+  "heSymbol": "תכל.ס178",
+  "isin": "IL0012134206",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F179.TA",
+  "name": "Tachlit SAL (4D) CME CF Bitcoin Reference Rate (BRRNY)",
+  "heName": "תכלית סל (4D)י CME CF Bitcoin Reference Rate (BRRNY)",
+  "heSymbol": "תכל.ס179",
+  "isin": "IL0012178351",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F181.TA",
+  "name": "Tachlit SAL (00) Kosher Tel Bond 60 CPI-Linked IL",
+  "heName": "תכלית סל (00) כשרה תל בונד 60 צמודות",
+  "heSymbol": "תכל.ס181",
+  "isin": "IL0012164807",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F182.TA",
+  "name": "Tachlit SAL (4D) CME CF Ethereum Reference Rate (ETHUSDNY)",
+  "heName": "תכלית סל י(4D)י CME CF Ethereum Reference Rate (ETHUSDNY)",
+  "heSymbol": "תכל.ס182",
+  "isin": "IL0012204090",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F183.TA",
+  "name": "Tachlit SAL Leveraged (6D) S&P 500 x3 Monthly",
+  "heName": "תכלית סל (6D) ממונפת S&P 500 פי 3 חודשי",
+  "heSymbol": "תכל.ס183",
+  "isin": "IL0012216540",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F184.TA",
+  "name": "Tachlit SAL Leveraged (6D) NASDAQ 100 x3 Monthly",
+  "heName": "תכלית סל (6D) ממונפת NASDAQ 100 פי 3 חודשי",
+  "heSymbol": "תכל.ס184",
+  "isin": "IL0012216623",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F185.TA",
+  "name": "Tachlit SAL (4A) Index Israeli Defense Industries IL",
+  "heName": "תכלית סל (4A) אינדקס תעשיות ביטחוניות ישראל",
+  "heSymbol": "תכל.ס185",
+  "isin": "IL0012359852",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F2.TA",
+  "name": "Tachlit SAL (40) TA 125 IL",
+  "heName": "תכלית סל (40) ת\"א 125",
+  "heSymbol": "תכל.ס2",
+  "isin": "IL0011437188",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F20.TA",
+  "name": "Tachlit SAL (40) TEL DIV IL",
+  "heName": "תכלית סל (40) תל דיב",
+  "heSymbol": "תכל.ס20",
+  "isin": "IL0011450363",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F21.TA",
+  "name": "Tachlit SAL (40) SME60 IL",
+  "heName": "תכלית סל (40) ת\"א SME60",
+  "heSymbol": "תכל.ס21",
+  "isin": "IL0011450447",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F25.TA",
+  "name": "Tachlit SAL (00) Tel Gov-CPI-Linked 2-5 Years IL",
+  "heName": "תכלית סל (00) תל גוב-צמודות 2-5",
+  "heSymbol": "תכל.ס25",
+  "isin": "IL0011450850",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F26.TA",
+  "name": "Tachlit SAL (00) Tel Bond 40 CPI-Linked IL",
+  "heName": "תכלית סל (00) תל בונד 40 צמודות",
+  "heSymbol": "תכל.ס26",
+  "isin": "IL0011450934",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F27.TA",
+  "name": "Tachlit SAL (00) Tel Bond 60 CPI-Linked IL",
+  "heName": "תכלית סל (00) תל בונד 60 צמודות",
+  "heSymbol": "תכל.ס27",
+  "isin": "IL0011451015",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F29.TA",
+  "name": "Tachlit SAL (4A) FTSE 100 Currency-Hedged",
+  "heName": "תכלית סל (4A)י FTSE 100 מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס29",
+  "isin": "IL0011451270",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F3.TA",
+  "name": "Tachlit SAL (40) INDEX ISRAEL BANKS IL",
+  "heName": "תכלית סל (40) אינדקס בנקים ישראל",
+  "heSymbol": "תכל.ס3",
+  "isin": "IL0011437261",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F31.TA",
+  "name": "Tachlit SAL (00) Tel Gov-Non-Linked Fixed Int 2-5 Years IL",
+  "heName": "תכלית סל (00) תל גוב-שקלי 2-5",
+  "heSymbol": "תכל.ס31",
+  "isin": "IL0011451502",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F32.TA",
+  "name": "Tachlit SAL (00) Tel Gov-Non-Linked Fixed Int 5+ Years IL",
+  "heName": "תכלית סל (00) תל גוב-שקלי 5+",
+  "heSymbol": "תכל.ס32",
+  "isin": "IL0011451684",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F33.TA",
+  "name": "Tachlit SAL (00) Tel Gov-CPI-Linked 5-10 Years IL",
+  "heName": "תכלית סל (00) תל גוב-צמודות 5-10",
+  "heSymbol": "תכל.ס33",
+  "isin": "IL0011451767",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F34.TA",
+  "name": "Tachlit SAL (00) Tel Bond-Shekel IL",
+  "heName": "תכלית סל (00) תל בונד שקלי",
+  "heSymbol": "תכל.ס34",
+  "isin": "IL0011451841",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F39.TA",
+  "name": "Tachlit SAL (4A) Russell 2000 Currency-Hedged",
+  "heName": "תכלית סל (4A)י Russell 2000 מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס39",
+  "isin": "IL0011452344",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F4.TA",
+  "name": "Tachlit SAL (4A) NASDAQ 100 Currency-Hedged",
+  "heName": "תכלית סל (4A)י NASDAQ 100 מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס4",
+  "isin": "IL0011437345",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F40.TA",
+  "name": "Tachlit SAL (4A) composite INT. Equity Currency-Hedged Monthly",
+  "heName": "תכלית סל (4A) משולבת מניות חול מנוטרלת מט\"ח חודשי",
+  "heSymbol": "תכל.ס40",
+  "isin": "IL0011452427",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F41.TA",
+  "name": "Tachlit SAL (00)(!) Tel Bond-Yields Linked IL",
+  "heName": "תכלית סל (00)(!) תל בונד-תשואות צמודות",
+  "heSymbol": "תכל.ס41",
+  "isin": "IL0011452591",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F44.TA",
+  "name": "Tachlit SAL (4D) MDAX",
+  "heName": "תכלית סל (4D)‏ MDAX",
+  "heSymbol": "תכל.ס44",
+  "isin": "IL0011452831",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F46.TA",
+  "name": "Tachlit SAL (4D) MDAX Currency-Hedged",
+  "heName": "תכלית סל (4A)י MDAX מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס46",
+  "isin": "IL0011453094",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F49.TA",
+  "name": "Tachlit SAL (4A) S&P Health Care Currency-Hedged",
+  "heName": "תכלית סל (4A)י S&P Health Care מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס49",
+  "isin": "IL0011453334",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F5.TA",
+  "name": "Tachlit SAL (4A) Hang Seng China 100 Currency-Hedged",
+  "heName": "תכלית סל (4A)י Hang Seng China מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס5",
+  "isin": "IL0011437428",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F50.TA",
+  "name": "Tachlit SAL (4D) S&P Financial",
+  "heName": "תכלית סל (4D) ‏S&P Financial",
+  "heSymbol": "תכל.ס50",
+  "isin": "IL0011438418",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F51.TA",
+  "name": "Tachlit SAL (4A) S&P Industrial Currency-Hedged",
+  "heName": "תכלית סל (4A)י S&P Industrial מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס51",
+  "isin": "IL0011438582",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F52.TA",
+  "name": "Tachlit SAL (4A) comp S&PConsumer (50%) S&PStaples (50%) Currency-Hedged Monthly",
+  "heName": "תכלית סל (4A) משולבת S&P Consumer י(50%) S&P Staples י(50%) מנוטרלת מט\"ח חודשי",
+  "heSymbol": "תכל.ס52",
+  "isin": "IL0011438822",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F55.TA",
+  "name": "Tachlit SAL (4D) S&P Consumer Discretionary",
+  "heName": "תכלית סל (4D) ‏S&P Consumer Discretionary",
+  "heSymbol": "תכל.ס55",
+  "isin": "IL0011439572",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F56.TA",
+  "name": "Tachlit SAL (4A) S&P Technology Currency-Hedged",
+  "heName": "תכלית סל (4A)י S&P Technology מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס56",
+  "isin": "IL0011439655",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F57.TA",
+  "name": "Tachlit SAL (4D) S&P Consumer Staples",
+  "heName": "תכלית סל (4D) ‏S&P Consumer Staples",
+  "heSymbol": "תכל.ס57",
+  "isin": "IL0011439812",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F58.TA",
+  "name": "Tachlit SAL (4D) S&P Health Care",
+  "heName": "תכלית סל (4D) ‏S&P Health Care",
+  "heSymbol": "תכל.ס58",
+  "isin": "IL0011439994",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F63.TA",
+  "name": "Tachlit SAL (4D) ISE Cyber Security",
+  "heName": "תכלית סל (4D) ‏ISE Cyber Security",
+  "heSymbol": "תכל.ס63",
+  "isin": "IL0011442527",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F64.TA",
+  "name": "Tachlit SAL (00)(!) Tel Bond-Yield NIS IL",
+  "heName": "תכלית סל (00)(!) תל בונד תשואות שקל",
+  "heSymbol": "תכל.ס64",
+  "isin": "IL0011442600",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F65.TA",
+  "name": "Tachlit SAL (4D) S&P Energy",
+  "heName": "תכלית סל (4D) ‏S&P Energy",
+  "heSymbol": "תכל.ס65",
+  "isin": "IL0011442782",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F69.TA",
+  "name": "Tachlit SAL (4D) S&P Aerospace & Defense",
+  "heName": "תכלית סל (4D) ‏S&P Aerospace & Defense",
+  "heSymbol": "תכל.ס69",
+  "isin": "IL0011443103",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F7.TA",
+  "name": "Tachlit SAL (40) EURO STOXX 50 Currency-Hedged",
+  "heName": "תכלית סל (4A)י EURO STOXX 50 מנוטרלת מט\"ח",
+  "heSymbol": "תכל.ס7",
+  "isin": "IL0011437675",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F71.TA",
+  "name": "Tachlit SAL (4A) MSCI AC World U.S.D Hedged",
+  "heName": "תכלית סל (4A) ‏‏MSCI AC World מנוטרלת דולר",
+  "heSymbol": "תכל.ס71",
+  "isin": "IL0011443368",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F75.TA",
+  "name": "Tachlit SAL (00)(!) Tel Bond-Global Shekel IL",
+  "heName": "תכלית סל (00)(!) תל בונד גלובל שקלי",
+  "heSymbol": "תכל.ס75",
+  "isin": "IL0011443772",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F76.TA",
+  "name": "Tachlit SAL (4D) S&P 500",
+  "heName": "תכלית סל (4D) ‏‏S&P 500",
+  "heSymbol": "תכל.ס76",
+  "isin": "IL0011443855",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F77.TA",
+  "name": "Tachlit SAL (4D) NASDAQ 100",
+  "heName": "תכלית סל (4D) ‏‏‏NASDAQ 100",
+  "heSymbol": "תכל.ס77",
+  "isin": "IL0011444010",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F78.TA",
+  "name": "Tachlit SAL (4D) NIKKEI 225",
+  "heName": "תכלית סל (4D) ‏‏‏‏NIKKEI 225",
+  "heSymbol": "תכל.ס78",
+  "isin": "IL0011444192",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F79.TA",
+  "name": "Tachlit SAL (4D) EURO STOXX 50",
+  "heName": "תכלית סל (4D) ‏‏EURO STOXX 50",
+  "heSymbol": "תכל.ס79",
+  "isin": "IL0011444275",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F80.TA",
+  "name": "Tachlit SAL (4D) NASDAQ Biotechnology",
+  "heName": "תכלית סל (4D) ‏‏‏NASDAQ Biotechnology",
+  "heSymbol": "תכל.ס80",
+  "isin": "IL0011445264",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F81.TA",
+  "name": "Tachlit SAL (4D) Future Bloomberg Brent Crude",
+  "heName": "תכלית סל (4D) חוזה Bloomberg Brent Crude",
+  "heSymbol": "תכל.ס81",
+  "isin": "IL0011445348",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F82.TA",
+  "name": "Tachlit SAL (4D) Future Bloomberg Silver",
+  "heName": "תכלית סל (4D) חוזה ‏Bloomberg Silver",
+  "heSymbol": "תכל.ס82",
+  "isin": "IL0011445421",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F83.TA",
+  "name": "Tachlit SAL (40) TA REAL-ESTATE IL",
+  "heName": "תכלית סל (40) ת\"א נדל\"ן",
+  "heSymbol": "תכל.ס83",
+  "isin": "IL0011445595",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F85.TA",
+  "name": "Tachlit SAL (40) TA Growth IL",
+  "heName": "תכלית סל (40) ת\"א צמיחה",
+  "heSymbol": "תכל.ס85",
+  "isin": "IL0011445751",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F87.TA",
+  "name": "Tachlit SAL (00) Tel Gov-CPI-Linked 0-2 Years IL",
+  "heName": "תכלית סל (00) תל גוב-צמודות 0-2",
+  "heSymbol": "תכל.ס87",
+  "isin": "IL0011445918",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F88.TA",
+  "name": "Tachlit SAL (00) Tel Gov-Non-Linked Fixed Int 0-2 Years IL",
+  "heName": "תכלית סל (00) תל גוב-שקלי 0-2",
+  "heSymbol": "תכל.ס88",
+  "isin": "IL0011446098",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F9.TA",
+  "name": "Tachlit SAL (40) TA 90 IL",
+  "heName": "תכלית סל (40) ת\"א 90",
+  "heSymbol": "תכל.ס9",
+  "isin": "IL0011437832",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F91.TA",
+  "name": "Tachlit SAL (00) Tel Gov-Short Term Treasury Bill IL",
+  "heName": "תכלית סל (00) תל גוב-מק\"מ",
+  "heSymbol": "תכל.ס91",
+  "isin": "IL0011446338",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F93.TA",
+  "name": "Tachlit SAL (60) Leveraged*2 TA 35 Monthly IL",
+  "heName": "תכלית סל (60) ממונפת ת\"א 35 פי 2 חודשי",
+  "heSymbol": "תכל.ס93",
+  "isin": "IL0011446585",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F94.TA",
+  "name": "Tachlit SAL (4D) LBMA Gold Price AM",
+  "heName": "תכלית סל (4D) ‏‏‏LBMA Gold Price AM",
+  "heSymbol": "תכל.ס94",
+  "isin": "IL0011446668",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F97.TA",
+  "name": "Tachlit SAL (00) Tel Bond-CPI Linked SmallCap IL",
+  "heName": "תכלית סל (00) תל בונד צמודות-יתר",
+  "heSymbol": "תכל.ס97",
+  "isin": "IL0011446908",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F98.TA",
+  "name": "Tachlit SAL (60) Long Leveraged*3 TA 35 Monthly IL",
+  "heName": "תכלית סל (60) ממונפת ת\"א 35 פי 3 חודשי",
+  "heSymbol": "תכל.ס98",
+  "isin": "IL0011447088",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-F99.TA",
+  "name": "Tachlit SAL (60) Short Leveraged*2 TA 35 Monthly IL",
+  "heName": "תכלית סל (60) ממונפת בחסר ת\"א 35 פי 2 חודשי",
+  "heSymbol": "תכל.ס99",
+  "isin": "IL0011447161",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-FK1.TA",
+  "name": "Tachlit SAL (00)(!) Kosher Tel Bond-Yields Linked IL",
+  "heName": "תכלית סל (00)(!) כשרה תל בונד-תשואות צמודות",
+  "heSymbol": "תכל.סכ1",
+  "isin": "IL0011551004",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-FK2.TA",
+  "name": "Tachlit SAL (00) Kosher Tel Bond-CPI Linked SmallCap IL",
+  "heName": "תכלית סל (00) כשרה תל בונד צמודות-יתר",
+  "heSymbol": "תכל.סכ2",
+  "isin": "IL0011551186",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-FK3.TA",
+  "name": "Tachlit SAL(00) Kosher Tel Bond-Shekel IL",
+  "heName": "תכלית סל (00) כשרה תל בונד שקלי",
+  "heSymbol": "תכל.סכ3",
+  "isin": "IL0011551830",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TCH-FK4.TA",
+  "name": "Tachlit SAL (40) Kosher TA 125 IL",
+  "heName": "תכלית סל (40) כשרה ת\"א 125",
+  "heSymbol": "תכל.סכ4",
+  "isin": "IL0011553737",
+  "type": "ETF"
+ },
+ {
+  "symbol": "TDHR.TA",
+  "name": "TIDHAR",
+  "heName": "קבוצת תדהר",
+  "heSymbol": "תדהר",
+  "isin": "IL0012425281",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TDRN.TA",
+  "name": "TADIRAN GROUP",
+  "heName": "תדיראן גרופ",
+  "heSymbol": "תדראן",
+  "isin": "IL0002580129",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TECT.TA",
+  "name": "TECTONA",
+  "heName": "טקטונה",
+  "heSymbol": "טקטנ",
+  "isin": "IL0002160104",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TEDE.TA",
+  "name": "TEDEA",
+  "heName": "תדאה",
+  "heSymbol": "תדאה",
+  "isin": "IL0001420186",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TEVA.TA",
+  "name": "TEVA",
+  "heName": "טבע",
+  "heSymbol": "טבע",
+  "isin": "IL0006290147",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TFRLF.TA",
+  "name": "TEFRON",
+  "heName": "תפרון",
+  "heSymbol": "תפרן",
+  "isin": "IL0010825854",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TGI.TA",
+  "name": "TGI",
+  "heName": "טי.ג'י.איי",
+  "heSymbol": "טגאי",
+  "isin": "IL0010901416",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TGTR.TA",
+  "name": "TOGETHER",
+  "heName": "טוגדר",
+  "heSymbol": "טגדר",
+  "isin": "IL0004620105",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "THES.TA",
+  "name": "THIRDEYE",
+  "heName": "עין שלישית",
+  "heSymbol": "עינש",
+  "isin": "IL0003970188",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TIGBUR.TA",
+  "name": "TGBR",
+  "heName": "תיגבור קבוצה",
+  "heSymbol": "תגבר",
+  "isin": "IL0011050221",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TIGI.TA",
+  "name": "TIGI",
+  "heName": "תיגי",
+  "heSymbol": "תיגי",
+  "isin": "IL0011738718",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TKUN.TA",
+  "name": "TIKUN OLAM CANB",
+  "heName": "תיקון עולם קנבט",
+  "heSymbol": "תקונ",
+  "isin": "IL0010843675",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TLSY.TA",
+  "name": "TELSYS",
+  "heName": "טלסיס",
+  "heSymbol": "טלסיס",
+  "isin": "IL0003540197",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TMIS.TA",
+  "name": "THEMIS",
+  "heName": "תמיס",
+  "heSymbol": "תמיס",
+  "isin": "IL0010972292",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TMRP.TA",
+  "name": "TAMAR PET",
+  "heName": "תמר פטרוליום",
+  "heSymbol": "תמרפ",
+  "isin": "IL0011413577",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TNDO.TA",
+  "name": "TONDO SMART",
+  "heName": "טונדו סמארט",
+  "heSymbol": "טנדו",
+  "isin": "IL0011806861",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TOEN.TA",
+  "name": "TOMER ENERGY",
+  "heName": "תומר אנרגיה",
+  "heSymbol": "תמאנ",
+  "isin": "IL0011294936",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TOFD.TA",
+  "name": "TOMER FOOD",
+  "heName": "תומר מזון",
+  "heSymbol": "תומז",
+  "isin": "IL0011819328",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TOPG.TA",
+  "name": "TOP GROUP",
+  "heName": "טופ גרופ",
+  "heSymbol": "טופג",
+  "isin": "IL0010833775",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TPGM.TA",
+  "name": "TOP GUM",
+  "heName": "טופ גאם",
+  "heSymbol": "טפגם",
+  "isin": "IL0011791428",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TRAN.TA",
+  "name": "TRUCKNET",
+  "heName": "טראקנט",
+  "heSymbol": "טראנ",
+  "isin": "IL0011740938",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TRLT.TA",
+  "name": "TERA LIGHT",
+  "heName": "טראלייט",
+  "heSymbol": "טרלט",
+  "isin": "IL0011801730",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TRPZ.TA",
+  "name": "TURPAZ",
+  "heName": "תורפז",
+  "heSymbol": "תרפז",
+  "isin": "IL0011756116",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TRX.TA",
+  "name": "TERMINAL X",
+  "heName": "טרמינל איקס",
+  "heSymbol": "טרקס",
+  "isin": "IL0011787145",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TSEM.TA",
+  "name": "TOWER",
+  "heName": "טאואר",
+  "heSymbol": "טאואר",
+  "isin": "IL0010823792",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TSG.TA",
+  "name": "TSG",
+  "heName": "טיאסג'י",
+  "heSymbol": "טסגי",
+  "isin": "IL0012094772",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TTAM.TA",
+  "name": "TIV TAAM",
+  "heName": "טיב טעם",
+  "heSymbol": "טטעמ",
+  "isin": "IL0001030100",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TURB.TA",
+  "name": "TURBOGEN",
+  "heName": "טורבוג'ן",
+  "heSymbol": "טורב",
+  "isin": "IL0011817421",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "TUZA.TA",
+  "name": "TEUZA",
+  "heName": "תעוזה",
+  "heSymbol": "תעוזה",
+  "isin": "IL0002900236",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "UMH.TA",
+  "name": "UMH",
+  "heName": "יו.אמ.איץ'",
+  "heSymbol": "יואמ",
+  "isin": "US9030021037",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "UNIT.TA",
+  "name": "UNITRONICS",
+  "heName": "יוניטרוניקס",
+  "heSymbol": "יונט",
+  "isin": "IL0010838311",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "UNMI.TA",
+  "name": "UNIVERSAL",
+  "heName": "יוניברסל מוטורס",
+  "heSymbol": "יומי",
+  "isin": "IL0011447732",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "UNVO-M.TA",
+  "name": "UNIVO-M",
+  "heName": "יוניבו-ש",
+  "heSymbol": "יונב-ש",
+  "isin": "IL0010935588",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "UPSL.TA",
+  "name": "UPSELLON BRANDS",
+  "heName": "אפסלון ברנדס",
+  "heSymbol": "אפסל",
+  "isin": "IL0004560129",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "URBC.TA",
+  "name": "URBANICA",
+  "heName": "אורבניקה",
+  "heSymbol": "ארבק",
+  "isin": "IL0012207556",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "UTRN.TA",
+  "name": "UTRON",
+  "heName": "יוטרון",
+  "heSymbol": "יטרנ",
+  "isin": "IL0011571143",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "VCTR.TA",
+  "name": "VICTORY",
+  "heName": "ויקטורי",
+  "heSymbol": "וקטר",
+  "isin": "IL0011237778",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "VILR.TA",
+  "name": "VILLAR",
+  "heName": "וילאר",
+  "heSymbol": "ולאר",
+  "isin": "IL0004160169",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "VISN.TA",
+  "name": "VISION SIGMA",
+  "heName": "ויז'ן סיגמא",
+  "heSymbol": "ויזן",
+  "isin": "IL0003500175",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "VRDS.TA",
+  "name": "VERIDIS",
+  "heName": "ורידיס",
+  "heSymbol": "ורדס",
+  "isin": "IL0011763872",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "VRYX.TA",
+  "name": "VELORYX",
+  "heName": "ולוריקס",
+  "heSymbol": "ורקס",
+  "isin": "IL0011702409",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "VTNA.TA",
+  "name": "VITANIA",
+  "heName": "ויתניה",
+  "heSymbol": "ותנה",
+  "isin": "IL0011099665",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "WATR.TA",
+  "name": "WATER IO",
+  "heName": "ווטר אי או",
+  "heSymbol": "ווטר",
+  "isin": "IL0011803066",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "WESR.TA",
+  "name": "WESURE GLOBALT",
+  "heName": "ווישור גלובלטק",
+  "heSymbol": "וושר",
+  "isin": "IL0011732281",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "WILC.TA",
+  "name": "WILLI FOOD INTE",
+  "heName": "ויליפוד אינטרנש",
+  "heSymbol": "וילפ",
+  "isin": "IL0010828585",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "WILK.TA",
+  "name": "WILK",
+  "heName": "וילק",
+  "heSymbol": "וילק",
+  "isin": "IL0002780109",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "WLFD.TA",
+  "name": "WILLY FOOD",
+  "heName": "וילי פוד",
+  "heSymbol": "ולפוד",
+  "isin": "IL0003710139",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "WNBZ-L.TA",
+  "name": "WIND BU-L",
+  "heName": "ווינד באז-ס",
+  "heSymbol": "ונבז-ס",
+  "isin": "IL0011051625",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "XTLB.TA",
+  "name": "XTL BIO",
+  "heName": "אקס טי אל",
+  "heSymbol": "אקסבי",
+  "isin": "IL0010854979",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "YAAZ.TA",
+  "name": "YAAZ",
+  "heName": "יעז יזמות",
+  "heSymbol": "יעזי",
+  "isin": "IL0012273210",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "YACO.TA",
+  "name": "YACOBI GROUP",
+  "heName": "יעקובי קבוצה",
+  "heSymbol": "יעקב",
+  "isin": "IL0011424210",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "YBOX.TA",
+  "name": "YBOX",
+  "heName": "וויי בוקס",
+  "heSymbol": "ובקס",
+  "isin": "IL0004860271",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "YBRD.TA",
+  "name": "Y.B RENEWAL",
+  "heName": "י.ב התחדשות",
+  "heSymbol": "יבהמ",
+  "isin": "IL0001110134",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "YELN-F1.TA",
+  "name": "YLETF (4D) S&P 500",
+  "heName": "ילין לפידות סל (4D)י S&P 500",
+  "heSymbol": "ילינ.ס1",
+  "isin": "IL0012016569",
+  "type": "ETF"
+ },
+ {
+  "symbol": "YELN-F2.TA",
+  "name": "YLETF (4A) S&P 500 Currency Hedged",
+  "heName": "ילין לפידות סל (4A)י S&P 500 מנוטרלת מט\"ח",
+  "heSymbol": "ילינ.ס2",
+  "isin": "IL0012016643",
+  "type": "ETF"
+ },
+ {
+  "symbol": "YELN-F3.TA",
+  "name": "YLETF (4D) Nasdaq 100",
+  "heName": "ילין לפידות סל (4D)י Nasdaq 100",
+  "heSymbol": "ילינ.ס3",
+  "isin": "IL0012016726",
+  "type": "ETF"
+ },
+ {
+  "symbol": "YELN-F4.TA",
+  "name": "YLETF (4A) Nasdaq 100 Currency Hedged",
+  "heName": "ילין לפידות סל (4A)י Nasdaq 100 מנוטרלת מט\"ח",
+  "heSymbol": "ילינ.ס4",
+  "isin": "IL0012016981",
+  "type": "ETF"
+ },
+ {
+  "symbol": "YELN-F5.TA",
+  "name": "YLETF (4A) Tel Aviv Stock Exchange Banks IL",
+  "heName": "ילין לפידות סל (4A) ת\"א בנקים",
+  "heSymbol": "ילינ.ס5",
+  "isin": "IL0012065491",
+  "type": "ETF"
+ },
+ {
+  "symbol": "YESD.TA",
+  "name": "YESODOT",
+  "heName": "יסודות",
+  "heSymbol": "יסוד",
+  "isin": "IL0011884165",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "YHNF.TA",
+  "name": "YOCHANANOF",
+  "heName": "יוחננוף",
+  "heSymbol": "יחנפ",
+  "isin": "IL0011612640",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ZNKL.TA",
+  "name": "ZANLAKOL",
+  "heName": "זנלכל",
+  "heSymbol": "זנכל",
+  "isin": "IL0001300131",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ZOOZ.TA",
+  "name": "ZOOZ STRATEGY",
+  "heName": "זוז אסטרטגיה",
+  "heSymbol": "זוז",
+  "isin": "IL0011741845",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ZPRS.TA",
+  "name": "ZEPHYRUS",
+  "heName": "זפירוס",
+  "heSymbol": "זפרס",
+  "isin": "IL0011946956",
+  "type": "EQUITY"
+ },
+ {
+  "symbol": "ZUR.TA",
+  "name": "ZUR",
+  "heName": "צור",
+  "heSymbol": "צור",
+  "isin": "IL0007300101",
+  "type": "EQUITY"
+ }
+]
