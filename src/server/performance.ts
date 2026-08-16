@@ -238,7 +238,15 @@ export async function getPerformance(
 
   // The fee ledger runs concurrently with the per-portfolio pass below —
   // its price_history read is the one extra query this payload costs.
-  const ledgerPromise = getUserCosts(userId, selectedYear, fx.rate);
+  // It stays account-wide (the account fee is owed once, not once per
+  // portfolio), but the scoped portfolios' transactions are already in hand,
+  // so hand them over rather than have it select the same rows again.
+  const ledgerPromise = getUserCosts(
+    userId,
+    selectedYear,
+    fx.rate,
+    new Map(computed.map(({ p, txs }) => [p.id, txs])),
+  );
 
   // The months shown are the scoped portfolios' — so their commission lines
   // are too, taken straight from the transactions already in hand.

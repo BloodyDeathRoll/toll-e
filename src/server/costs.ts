@@ -34,8 +34,21 @@ export interface CostsPortfolio {
  * a US and an IL portfolio at Meitav owes ₪15/month once — so this reads
  * every portfolio itself rather than taking the market-scoped set the
  * Performance read holds.
+ *
+ * `known` is a pure saving, never a scope change: the caller may already be
+ * holding some of those portfolios' transactions (the Performance read has
+ * just loaded the market-scoped ones), and re-selecting them costs the widest
+ * rows this payload touches. Which portfolios exist is still read here, in
+ * full; only rows already in memory are taken from the caller instead of the
+ * database. Safe because both reads happen inside one request and neither
+ * writes.
  */
-export async function getUserCosts(userId: string, year: number, usdIlsRate: number): Promise<CostsLedger> {
+export async function getUserCosts(
+  userId: string,
+  year: number,
+  usdIlsRate: number,
+  known?: Map<string, EngineTx[]>,
+): Promise<CostsLedger> {
   const [profile, rows] = await Promise.all([
     getBrokerProfile(userId),
     db.select().from(portfoliosTable).where(eq(portfoliosTable.userId, userId)),
@@ -44,7 +57,7 @@ export async function getUserCosts(userId: string, year: number, usdIlsRate: num
     rows.map(async (p) => ({
       id: p.id,
       currency: p.currency,
-      txs: (await listTransactions(p.id)).map(toEngineTx),
+      txs: known?.get(p.id) ?? (await listTransactions(p.id)).map(toEngineTx),
     })),
   );
   const today = new Date().toISOString().slice(0, 10);
