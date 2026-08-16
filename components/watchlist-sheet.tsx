@@ -61,6 +61,24 @@ export function WatchlistSheet({
     };
   }, [onClose]);
 
+  // The sheet is a place the user went to, so Back must leave it rather than
+  // leave the screen behind it — on Android that hardware button is how you
+  // dismiss anything. A history entry of its own is what makes Back mean
+  // "close": popping it closes the sheet, and closing any other way pops it.
+  useEffect(() => {
+    history.pushState({ sheet: true }, '');
+    let popped = false;
+    const onPop = () => {
+      popped = true;
+      onClose();
+    };
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      if (!popped) history.back();
+    };
+  }, [onClose]);
+
   const toggle = (id: string) =>
     setPicked((prev) => {
       const next = new Set(prev);
@@ -69,13 +87,15 @@ export function WatchlistSheet({
       return next;
     });
 
+  // Lists whose membership the user actually changed — nothing else is
+  // written, and with none of them Save has nothing to do and stays dead.
+  const changed = editable.filter((l) => picked.has(l.id) !== l.symbols.includes(symbol));
+  const dirty = changed.length > 0 || (creating && newName.trim().length > 0);
+
   const save = async () => {
     setBusy(true);
-    // Only touch lists whose membership actually changed.
-    for (const l of editable) {
+    for (const l of changed) {
       const should = picked.has(l.id);
-      const has = l.symbols.includes(symbol);
-      if (should === has) continue;
       await patchList(l.id, {
         symbols: should ? [...l.symbols, symbol] : l.symbols.filter((s) => s !== symbol),
       });
@@ -155,9 +175,9 @@ export function WatchlistSheet({
           <button
             type="button"
             onClick={save}
-            disabled={busy}
+            disabled={busy || !dirty}
             aria-label={t('save')}
-            className="flex size-14 items-center justify-center rounded-full bg-primary disabled:opacity-50"
+            className="flex size-14 items-center justify-center rounded-full bg-primary disabled:opacity-40"
           >
             <Check className="size-6 text-primary-foreground" aria-hidden />
           </button>
