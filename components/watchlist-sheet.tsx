@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import { Check } from 'lucide-react';
 import { useWatchlists, type WatchlistData } from '@/components/use-watchlists';
@@ -16,6 +17,10 @@ import { cn } from '@/lib/utils';
  * Holdings is listed when the symbol is in it, so the user can see why the
  * star is lit, but it is inert — that list mirrors the transactions and
  * cannot be edited by hand.
+ *
+ * Rendered through a portal: the callers sit inside stacking contexts of
+ * their own (the search overlay is z-40), and a nested z-50 loses to the
+ * bottom nav next to it — which is exactly the Save button the sheet needs.
  */
 export function WatchlistSheet({
   symbol,
@@ -39,9 +44,13 @@ export function WatchlistSheet({
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [busy, setBusy] = useState(false);
+  // Portals need a DOM; render nothing on the server pass.
+  const [mounted, setMounted] = useState(false);
 
   // Escape closes, and the page beneath must not scroll under the sheet.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- portal target exists only on the client
+    setMounted(true);
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKey);
     const prev = document.body.style.overflow;
@@ -79,8 +88,10 @@ export function WatchlistSheet({
     onClose();
   };
 
-  return (
-    <div className="app-frame fixed inset-0 z-50 flex flex-col justify-end">
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="app-frame fixed inset-0 z-[60] flex flex-col justify-end">
       <button
         type="button"
         aria-label={t('close')}
@@ -153,6 +164,7 @@ export function WatchlistSheet({
           <span className="text-xs text-foreground">{t('save')}</span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
