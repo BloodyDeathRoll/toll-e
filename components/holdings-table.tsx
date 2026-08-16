@@ -192,7 +192,10 @@ export function HoldingsTable({
                     <span className="w-16" aria-hidden />
                   )}
                 </span>
-                <span dir="ltr" className="text-end text-foreground">{fmtNum(price, nl)}</span>
+                <span dir="ltr" className="text-end text-foreground">
+                  {market.currencySymbol}
+                  {fmtNum(price, nl)}
+                </span>
                 {unpriced ? (
                   // A 0.00% change here would be a claim about today that no
                   // quote supports.

@@ -235,3 +235,16 @@ export function displaySymbol(symbol: string, market: MarketDef): string {
     ? symbol.slice(0, -market.symbolSuffix.length)
     : symbol;
 }
+
+/**
+ * Israeli mutual fund symbols are the TASE fund id under the IL suffix —
+ * '5118674.TA' (docs/mutual-funds-plan.md). Real TASE tickers are never all
+ * digits, so the shape is the discriminator: these route to the Maya adapter
+ * and must never reach Yahoo.
+ */
+export function isTaseFund(symbol: string): boolean {
+  return /^\d+\.TA$/.test(symbol);
+}
+
+export const taseFundSymbol = (fundId: string) => `${fundId}.TA`;
+export const taseFundId = (symbol: string) => symbol.slice(0, -'.TA'.length);

@@ -51,6 +51,7 @@ export function SearchResults({
     <section className="flex flex-col gap-6 px-6 py-6">
       {results.map((r) => {
         const q = quotes[r.symbol];
+        const rm = r.market ? getMarket(r.market) : market;
         const starred = inAny(r.symbol);
         return (
           <div key={r.symbol} className="flex items-center justify-between gap-4 border-b border-border pb-2.5">
@@ -59,12 +60,15 @@ export function SearchResults({
                 {r.market ? displaySymbol(r.symbol, getMarket(r.market)) : r.symbol}
               </span>
               <span className="truncate text-xs text-foreground">{r.name}</span>
-              <span className="text-xs text-foreground">{t('equity')}</span>
+              <span className="text-xs text-foreground">
+                {t(r.type === 'FUND' ? 'fund' : 'equity')}
+              </span>
             </Link>
             <span className="flex shrink-0 items-center gap-6">
               <span className="flex flex-col items-end gap-0.5">
                 {q && (
                   <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
+                    {rm.currencySymbol}
                     {fmtNum(q.price, nl)}
                   </span>
                 )}

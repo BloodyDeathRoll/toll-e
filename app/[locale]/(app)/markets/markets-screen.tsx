@@ -151,6 +151,7 @@ export function MarketsScreen() {
                 {spark(q.symbol, undefined, q.changePct >= 0)}
                 <span className="flex flex-col items-end gap-0.5">
                   <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
+                    {market.currencySymbol}
                     {fmtNum(q.price, nl)}
                   </span>
                   <ChangePill pct={q.changePct} numberLocale={nl} />

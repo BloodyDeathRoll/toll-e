@@ -11,6 +11,14 @@ import type { ChartSeries, FxRate } from './types';
 const num = (n: number | undefined) => (n === undefined ? null : String(n));
 
 export function persistDailyCloses(series: ChartSeries): void {
+  void persistDailyClosesNow(series).catch(() => {});
+}
+
+/**
+ * The awaited form — for callers that read the table straight after (the
+ * fund chart path serves *from* the persisted closes it just wrote).
+ */
+export async function persistDailyClosesNow(series: ChartSeries): Promise<void> {
   if (series.interval !== '1d' || series.points.length === 0) return;
   const rows = series.points.map((p) => ({
     symbol: series.symbol,
@@ -23,7 +31,8 @@ export function persistDailyCloses(series: ChartSeries): void {
     adjClose: null,
     volume: p.volume ?? null,
   }));
-  db.insert(priceHistory)
+  await db
+    .insert(priceHistory)
     .values(rows)
     // Today's bar mutates until the close — refresh it on re-persist.
     .onConflictDoUpdate({
@@ -35,8 +44,7 @@ export function persistDailyCloses(series: ChartSeries): void {
         close: sql`excluded.close`,
         volume: sql`excluded.volume`,
       },
-    })
-    .catch(() => {});
+    });
 }
 
 export function persistFx(fx: FxRate): void {

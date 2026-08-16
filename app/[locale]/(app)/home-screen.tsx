@@ -402,6 +402,7 @@ export function HomeScreen() {
                     )}
                     <span className="private flex flex-col items-end gap-0.5">
                       <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
+                        {market.currencySymbol}
                         {fmtNum(quote?.price ?? h.price, nl)}
                       </span>
                       {unpriced ? (

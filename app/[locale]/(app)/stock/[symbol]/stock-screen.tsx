@@ -24,7 +24,7 @@ import {
 } from '@/components/use-market-data';
 import type { ChartRange, StockAnalysis, StockFinancials } from '@/src/market-data/types';
 import { usePortfolioPositions } from '@/components/use-portfolio';
-import { marketForSymbol } from '@/src/markets/registry';
+import { isTaseFund, marketForSymbol } from '@/src/markets/registry';
 import { demo, getDemoHolding, getDemoStock } from '@/src/demo/data';
 import { fmtCompact, fmtDate, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -57,6 +57,16 @@ export function StockScreen({ symbol }: { symbol: string }) {
   const market = marketForSymbol(symbol);
   const nl = market.numberLocale;
   const sym = market.currencySymbol;
+  // A mutual fund is a NAV a day: no intraday ranges, no analyst coverage,
+  // no financials — Summary and (market) News are the whole page.
+  const fund = isTaseFund(symbol);
+  const visibleTabs = fund ? tabs.filter((k) => k === 'summary' || k === 'news') : [...tabs];
+  const shownMobileRanges = fund
+    ? mobileRanges.filter((r) => r !== '1D' && r !== '1W')
+    : [...mobileRanges];
+  const shownDesktopRanges = fund
+    ? desktopRanges.filter((r) => r !== '1D' && r !== '5D')
+    : [...desktopRanges];
   const stock = getDemoStock(symbol);
   // Your position comes from the portfolio of the market this instrument
   // trades in — not the browsed lens, which would answer for the wrong book.
@@ -68,7 +78,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
   const demoHolding =
     getDemoHolding(marketId, symbol) ?? getDemoHolding(marketId === 'US' ? 'IL' : 'US', symbol);
   const [tab, setTab] = useState<Tab>('summary');
-  const [range, setRange] = useState('1D');
+  const [range, setRange] = useState(fund ? '1M' : '1D');
   // The point under a scrubbing finger. The headline reads it out in place of
   // the live quote, Yahoo-style, and a range switch drops it — the index it
   // came from belongs to the series being replaced.
@@ -84,10 +94,11 @@ export function StockScreen({ symbol }: { symbol: string }) {
   // Deep-linkable tabs (?tab=news) — read after mount so SSR markup stays stable.
   useEffect(() => {
     const wanted = new URLSearchParams(window.location.search).get('tab');
-    if (wanted && (tabs as readonly string[]).includes(wanted)) {
+    if (wanted && (visibleTabs as readonly string[]).includes(wanted)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot URL-derived init
       setTab(wanted as Tab);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot URL read; visibleTabs is render-derived and stable for the page's lifetime
   }, []);
 
   // Live data overlays the demo fallback as it arrives (Phase 1).
@@ -98,8 +109,8 @@ export function StockScreen({ symbol }: { symbol: string }) {
   // Tab payloads are fetched lazily — only once their tab is opened (the
   // revenue/earnings card also shows on the desktop summary tab).
   const news = useNews(symbol, tab === 'news');
-  const analysis = useAnalysis(symbol, tab === 'analysis');
-  const financials = useFinancials(symbol, tab === 'financials' || tab === 'summary');
+  const analysis = useAnalysis(symbol, !fund && tab === 'analysis');
+  const financials = useFinancials(symbol, !fund && (tab === 'financials' || tab === 'summary'));
   const wl = useSymbolWatchlist(symbol);
 
   const price = live?.price ?? stock.price;
@@ -221,7 +232,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
   );
 
   const tabRow = (
-    <UnderlineTabs tabs={tabs} value={tab} onChange={setTab} label={(k) => t(k)} className="px-7" />
+    <UnderlineTabs tabs={visibleTabs} value={tab} onChange={setTab} label={(k) => t(k)} className="px-7" />
   );
 
   const positionCard = holding && (
@@ -499,7 +510,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
             <Share2 className="size-6 text-foreground" aria-hidden />
           </button>
         </div>
-        <UnderlineTabs tabs={tabs} value={tab} onChange={setTab} label={(k) => t(k)} grow className="mx-6" />
+        <UnderlineTabs tabs={visibleTabs} value={tab} onChange={setTab} label={(k) => t(k)} grow className="mx-6" />
 
         <div className="flex flex-col pb-[104px]">
           {tab === 'summary' && (
@@ -513,6 +524,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                 <div className="flex flex-col gap-1">
                   <span className="flex items-center gap-0.5 self-start" dir="ltr">
                     <span className="text-xl font-medium text-foreground tabular-nums">
+                      {sym}
                       {fmtNum(shownPrice, nl)}
                     </span>
                     <ChangePill pct={shownPct} numberLocale={nl} className="ms-0.5" />
@@ -528,6 +540,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   <div className="flex flex-col gap-1">
                     <span className="flex items-center gap-0.5 self-start" dir="ltr">
                       <span className="text-xl font-medium text-foreground tabular-nums">
+                        {sym}
                         {fmtNum(live.extended.price, nl)}
                       </span>
                       <ChangePill pct={live.extended.changePct} numberLocale={nl} className="ms-0.5" />
@@ -571,7 +584,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   )}
                 </div>
                 <div dir="ltr" className="flex gap-3 px-6">
-                  {mobileRanges.map((r) => (
+                  {shownMobileRanges.map((r) => (
                     <button
                       key={r}
                       type="button"
@@ -722,6 +735,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
               <div className="flex items-baseline gap-3.5" dir="ltr">
                 <span className="text-[28px] font-bold tracking-tight text-foreground">{stock.symbol}</span>
                 <span className="text-[28px] font-semibold text-foreground tabular-nums">
+                  {sym}
                   {fmtNum(shownPrice, nl)}
                 </span>
                 <span className={cn('text-[15px] tabular-nums', shownPct >= 0 ? 'text-gain' : 'text-loss')}>
@@ -753,7 +767,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
               <>
                 <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card px-6 py-5">
                   <div className="flex items-center justify-between">
-                    {rangePills(desktopRanges)}
+                    {rangePills(shownDesktopRanges)}
                     <div dir="ltr" className="flex gap-[18px] text-xs text-muted-foreground tabular-nums">
                       <span>
                         {t('open')} <span className="text-foreground">{fmtNum(stats.open, nl)}</span>

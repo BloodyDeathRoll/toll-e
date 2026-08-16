@@ -2,10 +2,13 @@ import 'server-only';
 
 import { cached } from './cache';
 import { getChartFromDb, getFxFallback, getQuotesFromDb } from './fallback';
-import { persistDailyCloses, persistFx } from './persist';
+import { persistDailyCloses, persistDailyClosesNow, persistFx } from './persist';
+import { getGlobesNews } from './globes';
+import { getFundHistory, getFundQuotes, getFundSummary } from './maya';
 import { YahooProvider } from './yahoo';
 import { localDateIn, sessionWindow } from '@/src/markets/calendar';
-import { getMarket, marketForSymbol } from '@/src/markets/registry';
+import { getMarket, isTaseFund, marketForSymbol } from '@/src/markets/registry';
+import { searchTaseFunds } from '@/src/markets/tase-funds';
 import { hasHebrew, searchTase, taseHeAbout } from '@/src/markets/tase-search';
 import type {
   ChartRange,
@@ -55,6 +58,9 @@ const TTL = {
   analysis: 6 * 60 * 60_000,
   financials: 24 * 60 * 60_000,
   fx: 12 * 60 * 60_000,
+  // Mutual fund NAVs move once a day; an hour keeps the day-of-publication
+  // update reasonably fresh without hammering Maya.
+  fund: 60 * 60_000,
 } as const;
 
 /**
@@ -86,19 +92,34 @@ const usableQuote = (q: Quote) => Number.isFinite(q.price) && q.price > 0;
 export async function getQuotes(symbols: string[]): Promise<Quote[]> {
   // Overlapping watchlists ask for the same ticker twice; the provider should
   // hear it once, and the cache key should not care about the order asked in.
-  const wanted = [...new Set(symbols)];
+  // Mutual funds peel off to the Maya adapter — Yahoo has never heard of them.
+  const unique = [...new Set(symbols)];
+  const funds = unique.filter(isTaseFund);
+  const wanted = unique.filter((s) => !isTaseFund(s));
+  const fundQuotes: Promise<Quote[]> = funds.length
+    ? cached(`fundquote:${[...funds].sort().join(',')}`, TTL.fund, async () => {
+        const live = await getFundQuotes(funds);
+        // A fund Maya dropped still deserves its last persisted NAV.
+        const missing = funds.filter((s) => !live.some((q) => q.symbol === s));
+        const fallback = missing.length ? await getQuotesFromDb(missing) : [];
+        return [...live, ...fallback].filter(usableQuote);
+      })
+    : Promise.resolve([]);
   const key = [...wanted].sort().join(',');
-  return cached(`quote:${key}`, TTL.quote, async () => {
-    try {
-      const batches = await Promise.all(
-        chunk(wanted, QUOTE_BATCH).map((part) => yahoo(() => provider.getQuote(part))),
-      );
-      return batches.flat().filter(usableQuote);
-    } catch {
-      // Degraded mode: last persisted closes (asOf tells the UI how old).
-      return (await getQuotesFromDb(wanted)).filter(usableQuote);
-    }
-  });
+  const stockQuotes: Promise<Quote[]> = wanted.length
+    ? cached(`quote:${key}`, TTL.quote, async () => {
+        try {
+          const batches = await Promise.all(
+            chunk(wanted, QUOTE_BATCH).map((part) => yahoo(() => provider.getQuote(part))),
+          );
+          return batches.flat().filter(usableQuote);
+        } catch {
+          // Degraded mode: last persisted closes (asOf tells the UI how old).
+          return (await getQuotesFromDb(wanted)).filter(usableQuote);
+        }
+      })
+    : Promise.resolve([]);
+  return (await Promise.all([stockQuotes, fundQuotes])).flat();
 }
 
 /**
@@ -118,6 +139,27 @@ function intradayTtl(symbol: string, now: number = Date.now()): number {
 }
 
 export async function getChart(symbol: string, range: ChartRange): Promise<ChartSeries> {
+  if (isTaseFund(symbol)) {
+    // Funds are NAV-a-day: Maya serves one month, the database accumulates the
+    // rest. Persist what Maya has, then answer from the persisted series —
+    // one code path whether Maya answered or not. Sub-monthly ranges widen to
+    // the month so a "1D" ask still draws a line rather than a dot.
+    const effective: ChartRange = range === '1d' || range === '5d' ? '1mo' : range;
+    return cached(`fundchart:${symbol}:${effective}`, TTL.fund, async () => {
+      const points = await getFundHistory(symbol).catch(() => []);
+      if (points.length > 0) {
+        await persistDailyClosesNow({
+          symbol,
+          currency: 'ILS',
+          range: effective,
+          interval: '1d',
+          timezone: 'Asia/Jerusalem',
+          points,
+        }).catch(() => {});
+      }
+      return getChartFromDb(symbol, effective);
+    });
+  }
   const intraday = range === '1d' || range === '5d';
   return cached(`chart:${symbol}:${range}`, intraday ? intradayTtl(symbol) : TTL.chartDaily, async () => {
     try {
@@ -151,17 +193,20 @@ export async function search(query: string, marketId?: string): Promise<SearchRe
           type: e.type,
           market: 'IL',
         }));
+  // Mutual funds close the IL list: securities first, funds after — the same
+  // order a broker's search presents them in.
+  const funds = !marketId || marketId === 'IL' ? searchTaseFunds(query) : [];
   let remote: SearchResult[] = [];
   if (!hasHebrew(query)) {
     // A provider outage degrades to catalogue-only rather than failing the
     // whole search — but only when the catalogue actually has an answer.
     const fetch = () =>
       cached(`search:${query.toLowerCase()}`, TTL.search, () => yahoo(() => provider.search(query)));
-    remote = local.length > 0 ? await fetch().catch(() => []) : await fetch();
+    remote = local.length + funds.length > 0 ? await fetch().catch(() => []) : await fetch();
   }
   const seen = new Set(remote.map((r) => r.symbol));
   // Provider rows win the dedupe: their names carry the fuller legal form.
-  const results = [...remote, ...local.filter((r) => !seen.has(r.symbol))];
+  const results = [...remote, ...local.filter((r) => !seen.has(r.symbol)), ...funds];
   if (!marketId) return results;
   // The lens filters: browsing TASE, a US ticker is not a result at all, and
   // vice versa. Listings on an exchange we do not carry (market undefined)
@@ -188,6 +233,9 @@ export async function getMovers(kind: MoversKind, marketId: string): Promise<Quo
 }
 
 export async function getSummary(symbol: string): Promise<Summary> {
+  if (isTaseFund(symbol)) {
+    return cached(`fundsummary:${symbol}`, TTL.fund, () => getFundSummary(symbol));
+  }
   const summary = await cached(`summary:${symbol}`, TTL.summary, () =>
     yahoo(() => provider.getSummary(symbol)),
   );
@@ -199,6 +247,21 @@ export async function getSummary(symbol: string): Promise<Summary> {
 }
 
 export async function getNews(symbol: string): Promise<NewsItem[]> {
+  // IL listings: Yahoo has next to nothing on TASE, so the market's own press
+  // (Globes' capital-market feed) fills the tab — provider items, when any
+  // exist (dual-listed names), lead.
+  if (marketForSymbol(symbol).id === 'IL') {
+    return cached(`news:${symbol}`, TTL.news, async () => {
+      const [own, market] = await Promise.all([
+        isTaseFund(symbol)
+          ? Promise.resolve<NewsItem[]>([])
+          : yahoo(() => provider.getNews(symbol)).catch(() => []),
+        getGlobesNews().catch(() => []),
+      ]);
+      const seen = new Set(own.map((n) => n.link));
+      return [...own, ...market.filter((n) => !seen.has(n.link))];
+    });
+  }
   return cached(`news:${symbol}`, TTL.news, () => yahoo(() => provider.getNews(symbol)));
 }
 

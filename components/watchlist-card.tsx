@@ -57,6 +57,7 @@ export function WatchlistCard({ marketId }: { marketId: string }) {
               <span className="flex items-center gap-3">
                 <Sparkline points={q.spark} up={q.changePct >= 0} width={52} height={30} />
                 <span dir="ltr" className="min-w-[60px] text-end text-sm text-foreground">
+                  {marketForSymbol(q.symbol).currencySymbol}
                   {fmtNum(q.price, market.numberLocale)}
                 </span>
                 <span
@@ -115,7 +116,7 @@ function LiveRow({
           <span className="w-[52px]" aria-hidden />
         )}
         <span dir="ltr" className="min-w-[60px] text-end text-sm text-foreground">
-          {quote ? fmtNum(quote.price, numberLocale) : '—'}
+          {quote ? `${marketForSymbol(symbol).currencySymbol}${fmtNum(quote.price, numberLocale)}` : '—'}
         </span>
         <span
           dir="ltr"
