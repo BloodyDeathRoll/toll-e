@@ -69,6 +69,19 @@ function chunk<T>(items: T[], size: number): T[][] {
   return out;
 }
 
+/**
+ * A price has to be a positive finite number — the instrument-side twin of
+ * {@link usableRate}, and against the same `?? 0`. Yahoo answers for a halted,
+ * delisted or just-listed symbol with a full quote envelope (name, currency,
+ * exchange) and no `regularMarketPrice`, which the adapter maps to a price of
+ * 0. Nothing downstream can tell that apart from a real price: the position
+ * screen renders the holding at 0 and −100%, and — because a quote object
+ * *did* come back — without the `unpriced` badge that exists to say the number
+ * is not a market number. A missing quote is already survivable everywhere; a
+ * priceless one has to take the same route rather than invent a price.
+ */
+const usableQuote = (q: Quote) => Number.isFinite(q.price) && q.price > 0;
+
 export async function getQuotes(symbols: string[]): Promise<Quote[]> {
   // Overlapping watchlists ask for the same ticker twice; the provider should
   // hear it once, and the cache key should not care about the order asked in.
@@ -79,10 +92,10 @@ export async function getQuotes(symbols: string[]): Promise<Quote[]> {
       const batches = await Promise.all(
         chunk(wanted, QUOTE_BATCH).map((part) => yahoo(() => provider.getQuote(part))),
       );
-      return batches.flat();
+      return batches.flat().filter(usableQuote);
     } catch {
       // Degraded mode: last persisted closes (asOf tells the UI how old).
-      return getQuotesFromDb(wanted);
+      return (await getQuotesFromDb(wanted)).filter(usableQuote);
     }
   });
 }

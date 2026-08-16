@@ -108,11 +108,22 @@ export async function getPositions(
   const positions = holdings
     .map((h) => {
       const q = bySymbol.get(h.symbol);
+      // A quote that carries no usable price is a quote miss, not a price of
+      // zero — the provider hands one back for halted and delisted symbols.
+      // The facade filters those out, and this is the second half of the same
+      // sentence: everything priced off `q` has to agree that the row is
+      // unpriced, or the badge and the numbers say different things.
+      const priced = q && Number.isFinite(q.price) && q.price > 0 ? q : undefined;
       const view = positionView(h, {
-        price: q?.price ?? h.avgCost,
-        previousClose: q?.previousClose,
+        price: priced?.price ?? h.avgCost,
+        previousClose: priced?.previousClose,
       });
-      return { ...view, name: q?.name, dayChangePct: q?.changePct, unpriced: q ? undefined : true };
+      return {
+        ...view,
+        name: q?.name,
+        dayChangePct: priced?.changePct,
+        unpriced: priced ? undefined : true,
+      };
     })
     .sort((a, b) => b.marketValue - a.marketValue);
 
