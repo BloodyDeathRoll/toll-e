@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { signIn } from '@/lib/auth-client';
+import { LocalePicker } from '@/components/locale-picker';
 
 // Google is the only sign-in route (no passwords to lose, and Google already
 // holds the identity most Israeli brokerages' users sign up with). Signing in
@@ -26,9 +27,12 @@ export function AuthForm() {
   return (
     <main className="flex flex-1 items-center justify-center p-6">
       <div className="flex w-full max-w-sm flex-col gap-5 rounded-2xl border border-border bg-card p-6">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-[22px] font-bold tracking-tight text-foreground">toll-e</span>
-          <h1 className="text-sm text-muted-foreground">{t('tagline')}</h1>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[22px] font-bold tracking-tight text-foreground">toll-e</span>
+            <h1 className="text-sm text-muted-foreground">{t('tagline')}</h1>
+          </div>
+          <LocalePicker />
         </div>
 
         <button

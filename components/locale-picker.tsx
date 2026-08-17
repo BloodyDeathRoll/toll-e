@@ -9,11 +9,11 @@ import { routing } from '@/src/i18n/routing';
 const localeNames: Record<string, string> = { en: 'English', he: 'עברית' };
 
 /**
- * The EN/HE dropdown, shared between Settings and the onboarding gate — the
- * gate is the first thing a new user sees, before Settings is reachable, so
- * it cannot be the one screen you can't read. These two are the *only* places
- * language can be changed: flags in the app chrome mean market now, and a
- * flag never meant a language anyway (which English? whose Hebrew?).
+ * The EN/HE dropdown, shared between Settings, the onboarding gate, and the
+ * sign-in screens — each is reachable before Settings is, so none can be the
+ * one screen you can't read. These are the *only* places language can be
+ * changed: flags in the app chrome mean market now, and a flag never meant a
+ * language anyway (which English? whose Hebrew?).
  *
  * Textual, therefore, and no badge.
  */

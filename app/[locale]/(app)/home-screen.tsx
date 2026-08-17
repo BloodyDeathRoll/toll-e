@@ -18,6 +18,7 @@ import { NoPriceBadge } from '@/components/no-price-badge';
 import { DevLogin } from '@/components/dev-login';
 import { ErrorCard } from '@/components/error-card';
 import { GoogleButton } from '@/components/google-button';
+import { LocalePicker } from '@/components/locale-picker';
 import { Logo } from '@/components/logo';
 import { ReserveBar } from '@/components/reserve-bar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -199,6 +200,7 @@ export function HomeScreen() {
         </p>
         <GoogleButton />
         <DevLogin />
+        <LocalePicker />
       </main>
     );
   }
