@@ -25,6 +25,7 @@
   --accent-foreground: #000000;
   --destructive: #ff6666;
   --border: #eff0f4; /* base/Grey */
+  --border-harder: #e2e4ea; /* a step darker: visible against --well/--border greys */
   --input: #eff0f4;
   --ring: #faab00;
   --chart-1: #faab00;
@@ -117,6 +118,7 @@
   --accent-foreground: #ffffff;
   --destructive: #ff6666;
   --border: hsla(228, 40%, 12%, 0.733); /* border/default */
+  --border-harder: hsl(228, 40%, 18%);
   --input: #2e2e2e;
   --ring: #faab00;
   --chart-1: #faab00;
@@ -212,6 +214,7 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-border-harder: var(--border-harder);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);

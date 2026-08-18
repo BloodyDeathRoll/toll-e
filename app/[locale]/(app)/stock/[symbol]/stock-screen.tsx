@@ -883,7 +883,7 @@ function RangeSlider({
       </div>
       {/* 4px rounded track, 20px marker — Figma key-statistics rows. */}
       <div dir="ltr" className="relative h-5">
-        <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-border" />
+        <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-border-harder" />
         <span
           className="absolute top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary"
           style={{ left: `${pct}%` }}
