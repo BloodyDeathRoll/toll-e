@@ -26,7 +26,7 @@ import type { ChartRange, StockAnalysis, StockFinancials } from '@/src/market-da
 import { usePortfolioPositions } from '@/components/use-portfolio';
 import { isTaseFund, marketForSymbol } from '@/src/markets/registry';
 import { demo, getDemoHolding, getDemoStock } from '@/src/demo/data';
-import { fmtCompact, fmtDate, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
+import { fmtCompact, fmtDate, fmtMoneySigned, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 const tabs = ['summary', 'news', 'analysis', 'financials'] as const;
@@ -133,6 +133,12 @@ export function StockScreen({ symbol }: { symbol: string }) {
     beta: summary?.stats.beta ?? stock.stats.beta,
     atr14: summary?.stats.atr14,
   };
+  // ATR in the instrument's own currency, with the % of price it represents —
+  // ₪2 on a ₪20 stock and $2 on a $200 one are very different moves.
+  const atrDisplay =
+    stats.atr14 !== undefined
+      ? `${sym}${fmtNum(stats.atr14, nl)}${price > 0 ? ` (${fmtNum((stats.atr14 / price) * 100, nl)}%)` : ''}`
+      : '—';
   const headline = {
     name: summary?.name ?? stock.name,
     exchange: summary?.exchange ?? stock.exchange,
@@ -245,8 +251,8 @@ export function StockScreen({ symbol }: { symbol: string }) {
         <PositionCell label={t('avgCost')} value={fmtNum(holding.avgCost, nl)} />
         <PositionCell label={t('marketValue')} value={fmtNum(holding.marketValue, nl)} />
         <PositionCell label={t('totalCost')} value={fmtNum(holding.totalCost, nl)} />
-        <PositionCell label={t('totalGain')} value={fmtSigned(holding.totalGain, nl)} gain={holding.totalGain >= 0} loss={holding.totalGain < 0} />
-        <PositionCell label={t('daysGain')} value={fmtSigned(daysGain, nl)} gain={daysGain >= 0} loss={daysGain < 0} />
+        <PositionCell label={t('totalGain')} value={fmtMoneySigned(holding.totalGain, market.currency, nl)} gain={holding.totalGain >= 0} loss={holding.totalGain < 0} />
+        <PositionCell label={t('daysGain')} value={fmtMoneySigned(daysGain, market.currency, nl)} gain={daysGain >= 0} loss={daysGain < 0} />
       </div>
       {taxRatePct > 0 && (
         <>
@@ -611,13 +617,13 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   <div className="flex flex-col gap-1">
                     <span className="text-xs text-muted-foreground">{t('daysGain')}</span>
                     <span dir="ltr" className={cn('private self-start text-base font-bold tabular-nums', daysGain >= 0 ? 'text-gain' : 'text-loss')}>
-                      {fmtSigned(daysGain, nl)} ({fmtPct(changePct, nl)})
+                      {fmtMoneySigned(daysGain, market.currency, nl)} ({fmtPct(changePct, nl)})
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-xs text-muted-foreground">{t('totalGain')}</span>
                     <span dir="ltr" className={cn('private self-start text-base font-bold tabular-nums', holding.totalGain >= 0 ? 'text-gain' : 'text-loss')}>
-                      {fmtSigned(holding.totalGain, nl)} ({fmtPct(holding.totalGainPct ?? 0, nl)})
+                      {fmtMoneySigned(holding.totalGain, market.currency, nl)} ({fmtPct(holding.totalGainPct ?? 0, nl)})
                     </span>
                   </div>
                   <div className="flex items-center justify-between tabular-nums">
@@ -684,11 +690,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   <StatCell label={t('divYield')} value={`${fmtNum(stats.divYieldPct, nl)}%`} end />
                 </div>
                 <div className="flex items-center justify-between tabular-nums">
-                  <StatCell
-                    label={t('atr')}
-                    value={stats.atr14 !== undefined ? fmtNum(stats.atr14, nl) : '—'}
-                    note={t('aboutAtr')}
-                  />
+                  <StatCell label={t('atr')} value={atrDisplay} note={t('aboutAtr')} />
                   <StatCell label={t('earningsDate')} value={fmtDate(eventDate, locale)} end />
                 </div>
               </section>
@@ -834,11 +836,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                 <Row label={t('epsTtm')} value={fmtNum(stats.eps, nl)} />
                 <Row label={t('divYield')} value={`${fmtNum(stats.divYieldPct, nl)}%`} />
                 <Row label={t('beta')} value={fmtNum(stats.beta, nl)} />
-                <Row
-                  label={t('atr')}
-                  value={stats.atr14 !== undefined ? fmtNum(stats.atr14, nl) : '—'}
-                  note={t('aboutAtr')}
-                />
+                <Row label={t('atr')} value={atrDisplay} note={t('aboutAtr')} />
               </div>
             </section>
             <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card p-5">
