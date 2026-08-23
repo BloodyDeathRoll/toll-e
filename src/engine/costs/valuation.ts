@@ -1,4 +1,4 @@
-import { computePortfolio, type EngineTx } from '../portfolio';
+import { computeSortedPortfolio, sortTxs, type EngineTx } from '../portfolio';
 
 // Reconstructing what a portfolio was worth at past dates, for the bank
 // custody fee — banks bill quarterly on portfolio value, which toll-e does
@@ -69,8 +69,16 @@ export function quarterValuation(
   let costedLots = 0;
   const sampleValues: number[] = [];
 
+  // Order the timeline once, then take each sample as a prefix of it. The
+  // sample dates ascend, so a single advancing cursor covers all three —
+  // where filtering and re-sorting per sample replayed the whole history
+  // three times over for a figure only `holdings` is read from.
+  const sorted = sortTxs(txs);
+  let upto = 0;
+
   for (const date of quarterSampleDates(year, quarter)) {
-    const { holdings } = computePortfolio(txs.filter((t) => t.tradeDate <= date));
+    while (upto < sorted.length && sorted[upto].tradeDate <= date) upto++;
+    const { holdings } = computeSortedPortfolio(sorted.slice(0, upto));
     let value = 0;
     for (const h of holdings) {
       const close = nearestClose(closes.get(h.symbol), date);

@@ -94,10 +94,23 @@ const EPS = 1e-9;
  * its date — write-time validation should make that unreachable.
  */
 export function computePortfolio(txs: EngineTx[]): PortfolioComputation {
+  return computeSortedPortfolio(sortTxs(txs));
+}
+
+/**
+ * The replay itself, over a timeline already in {@link sortTxs} order.
+ *
+ * Split out for callers that replay the *same* transactions at several cutoff
+ * dates — the custody valuation samples three month-ends per quarter — so the
+ * timeline is ordered once and every sample is a prefix of it, instead of
+ * re-sorting the same rows for each sample. Passing an unsorted array here is
+ * a caller bug: use {@link computePortfolio}.
+ */
+export function computeSortedPortfolio(txs: EngineTx[]): PortfolioComputation {
   const lotsBySymbol = new Map<string, Lot[]>();
   const realized: RealizedEvent[] = [];
 
-  for (const tx of sortTxs(txs)) {
+  for (const tx of txs) {
     const lots = lotsBySymbol.get(tx.symbol) ?? [];
     if (!lotsBySymbol.has(tx.symbol)) lotsBySymbol.set(tx.symbol, lots);
 
