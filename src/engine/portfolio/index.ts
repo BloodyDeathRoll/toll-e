@@ -61,12 +61,26 @@ export class OversellError extends Error {
   }
 }
 
+/**
+ * `createdAt` as an epoch-ms instant, whichever documented representation it
+ * arrived in. Comparing the raw values is not an option: a string never
+ * compares true against a number in either direction, so one ISO-stamped row
+ * among epoch-stamped ones makes the comparator inconsistent and the sorted
+ * order depend on the input permutation — which FIFO then turns into a
+ * different realized gain for the same transaction set.
+ */
+const createdAtMs = (v: string | number | undefined): number => {
+  if (typeof v !== 'string') return v ?? 0;
+  const ms = Date.parse(v);
+  return Number.isNaN(ms) ? 0 : ms;
+};
+
 /** Deterministic timeline: trade date, then insertion order. */
 export function sortTxs(txs: EngineTx[]): EngineTx[] {
   return [...txs].sort((a, b) => {
     if (a.tradeDate !== b.tradeDate) return a.tradeDate < b.tradeDate ? -1 : 1;
-    const ca = a.createdAt ?? 0;
-    const cb = b.createdAt ?? 0;
+    const ca = createdAtMs(a.createdAt);
+    const cb = createdAtMs(b.createdAt);
     if (ca !== cb) return ca < cb ? -1 : 1;
     return a.id < b.id ? -1 : 1;
   });
