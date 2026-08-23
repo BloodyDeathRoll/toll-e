@@ -207,3 +207,23 @@ export async function getQuotesFromDb(symbols: string[]): Promise<Quote[]> {
   if (quotes.length === 0) throw new Error('no persisted closes for any requested symbol');
   return quotes;
 }
+
+/**
+ * Last persisted close on or before `date` — the backdated-prefill fallback.
+ *
+ * `getCloseOn` answers from the cached `1y` daily chart, so a transaction
+ * backdated further than that returns nothing even when `price_history` holds
+ * the close: fund NAVs accumulate indefinitely, and any symbol ever charted at
+ * `5y`/`max` persisted what those ranges carried. Backdating is a first-class
+ * operation here (the tax engine recomputes on any backdate), and a >1y
+ * backdate is exactly the tax-relevant kind — a prior-year loss entered late.
+ */
+export async function getCloseOnFromDb(symbol: string, date: string): Promise<number | null> {
+  const [row] = await db
+    .select({ close: priceHistory.close })
+    .from(priceHistory)
+    .where(and(eq(priceHistory.symbol, symbol), lte(priceHistory.date, date)))
+    .orderBy(desc(priceHistory.date))
+    .limit(1);
+  return row ? Number(row.close) : null;
+}

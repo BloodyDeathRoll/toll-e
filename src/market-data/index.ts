@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { cached } from './cache';
-import { getChartFromDb, getFxFallback, getQuotesFromDb } from './fallback';
+import { getChartFromDb, getCloseOnFromDb, getFxFallback, getQuotesFromDb } from './fallback';
 import { persistDailyCloses, persistDailyClosesNow, persistFx } from './persist';
 import { getGlobesNews } from './globes';
 import { getFundHistory, getFundQuotes, getFundSummary } from './maya';
@@ -326,6 +326,12 @@ export type {
  * Last close on or before `date` (ISO, exchange-local) — prefills backdated
  * transaction prices. Served from the cached daily chart, which also
  * persists the closes to price_history.
+ *
+ * Past the chart's one-year window the chart has nothing to say, but
+ * price_history often does — so fall back to it rather than answering `null`
+ * and prefilling an empty field on exactly the backdate that matters most.
+ * The value is a suggestion the user confirms, which is what makes serving a
+ * genuinely old close acceptable here.
  */
 export async function getCloseOn(symbol: string, date: string): Promise<number | null> {
   const series = await getChart(symbol, '1y');
@@ -335,5 +341,6 @@ export async function getCloseOn(symbol: string, date: string): Promise<number |
     if (localDate <= date) best = p.close;
     else break;
   }
-  return best;
+  if (best !== null) return best;
+  return getCloseOnFromDb(symbol, date).catch(() => null);
 }
