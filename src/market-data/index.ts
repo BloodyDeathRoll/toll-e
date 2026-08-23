@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { cached } from './cache';
+import { cachedQuotes } from './quote-cache';
 import { getChartFromDb, getCloseOnFromDb, getFxFallback, getQuotesFromDb } from './fallback';
 import { persistDailyCloses, persistDailyClosesNow, persistFx } from './persist';
 import { getGlobesNews } from './globes';
@@ -70,12 +71,6 @@ const TTL = {
  */
 const QUOTE_BATCH = 20;
 
-function chunk<T>(items: T[], size: number): T[][] {
-  const out: T[][] = [];
-  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
-  return out;
-}
-
 /**
  * A price has to be a positive finite number — the instrument-side twin of
  * {@link usableRate}, and against the same `?? 0`. Yahoo answers for a halted,
@@ -91,34 +86,38 @@ const usableQuote = (q: Quote) => Number.isFinite(q.price) && q.price > 0;
 
 export async function getQuotes(symbols: string[]): Promise<Quote[]> {
   // Overlapping watchlists ask for the same ticker twice; the provider should
-  // hear it once, and the cache key should not care about the order asked in.
+  // hear it once. The cache is keyed per SYMBOL (see ./quote-cache), so the
+  // positions screen, the holdings list and a user list share every name they
+  // have in common instead of each paying a full round trip for its own set.
   // Mutual funds peel off to the Maya adapter — Yahoo has never heard of them.
   const unique = [...new Set(symbols)];
   const funds = unique.filter(isTaseFund);
   const wanted = unique.filter((s) => !isTaseFund(s));
-  const fundQuotes: Promise<Quote[]> = funds.length
-    ? cached(`fundquote:${[...funds].sort().join(',')}`, TTL.fund, async () => {
-        const live = await getFundQuotes(funds);
-        // A fund Maya dropped still deserves its last persisted NAV.
-        const missing = funds.filter((s) => !live.some((q) => q.symbol === s));
-        const fallback = missing.length ? await getQuotesFromDb(missing) : [];
-        return [...live, ...fallback].filter(usableQuote);
+
+  // A symbol the provider answered pricelessly (halted, delisted) or dropped
+  // from a successful batch is a per-symbol miss, and it takes the same route
+  // a fund Maya dropped takes: its last persisted close, with `asOf` saying
+  // how old it is — rather than vanishing and leaving the position priced at
+  // its own cost. The same route serves a batch that failed outright.
+  const fromDb = async (missing: string[]) =>
+    (await getQuotesFromDb(missing).catch(() => [])).filter(usableQuote);
+
+  const stockQuotes = wanted.length
+    ? cachedQuotes(wanted, {
+        ttlMs: TTL.quote,
+        batchSize: QUOTE_BATCH,
+        fetchBatch: async (part) => (await yahoo(() => provider.getQuote(part))).filter(usableQuote),
+        onMiss: fromDb,
       })
-    : Promise.resolve([]);
-  const key = [...wanted].sort().join(',');
-  const stockQuotes: Promise<Quote[]> = wanted.length
-    ? cached(`quote:${key}`, TTL.quote, async () => {
-        try {
-          const batches = await Promise.all(
-            chunk(wanted, QUOTE_BATCH).map((part) => yahoo(() => provider.getQuote(part))),
-          );
-          return batches.flat().filter(usableQuote);
-        } catch {
-          // Degraded mode: last persisted closes (asOf tells the UI how old).
-          return (await getQuotesFromDb(wanted)).filter(usableQuote);
-        }
+    : Promise.resolve<Quote[]>([]);
+  const fundQuotes = funds.length
+    ? cachedQuotes(funds, {
+        ttlMs: TTL.fund,
+        batchSize: funds.length,
+        fetchBatch: async (part) => (await getFundQuotes(part)).filter(usableQuote),
+        onMiss: fromDb,
       })
-    : Promise.resolve([]);
+    : Promise.resolve<Quote[]>([]);
   return (await Promise.all([stockQuotes, fundQuotes])).flat();
 }
 
