@@ -6,6 +6,7 @@ import { portfolios } from '@/src/db/schema';
 import { computeTax, shieldEnteringYear } from '@/src/engine/tax';
 import { getFx, getSummary } from '@/src/market-data';
 import { OTHER_SLICE } from '@/src/allocation';
+import { getBrokerProfile, resolveSchedule } from './broker-profile';
 import { getUserCosts } from './costs';
 import { makeConvert } from './fx-convert';
 import { getPositions, listTransactions, toEngineTx } from './portfolios';
@@ -228,10 +229,29 @@ export async function getPerformance(
   for (const { txs } of computed) {
     for (const tx of txs) yearSet.add(Number(tx.tradeDate.slice(0, 4)));
   }
+  const thisYear = new Date().getFullYear();
+  // A year can also be reachable purely because the account was CHARGED in
+  // it: at a broker with periodic fees the account-fee clock runs from
+  // accountOpenedAt (or the first trade) whether or not anything traded, so a
+  // backdated opening — or a gap year between trades — bills months in years
+  // no other set here contains. Those years' only story is the Costs card,
+  // and without them the picker cannot reach it. (getUserCosts re-reads the
+  // profile below; one extra indexed select on a path that already fans out.)
+  const profile = await getBrokerProfile(userId);
+  const schedule = resolveSchedule(profile, new Date().toISOString().slice(0, 10));
+  if (schedule?.accountFee || schedule?.custodyFee) {
+    const tradeYears = [...yearSet];
+    const openYear = profile?.accountOpenedAt
+      ? Number(profile.accountOpenedAt.slice(0, 4))
+      : undefined;
+    const from = openYear ?? (tradeYears.length ? Math.min(...tradeYears) : undefined);
+    if (from !== undefined) {
+      for (let y = from; y <= thisYear; y++) yearSet.add(y);
+    }
+  }
   // The current year is always offered and is always the default, whether or
   // not anything has been sold in it yet — "nothing realized this year" is an
   // answer, and silently landing on an older year is not.
-  const thisYear = new Date().getFullYear();
   yearSet.add(thisYear);
   const years = [...yearSet].sort((a, b) => b - a);
   const selectedYear = year && yearSet.has(year) ? year : thisYear;
