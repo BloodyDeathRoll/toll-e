@@ -13,6 +13,30 @@ interface Drag {
   height: number;
 }
 
+/** How close to an edge the finger has to be before the list scrolls itself. */
+const EDGE = 64;
+/** Fastest auto-scroll, in px per frame. */
+const MAX_SPEED = 16;
+
+/** The scroller the list lives in — an ancestor with its own overflow, else the page. */
+function scrollerFor(el: HTMLElement | null): HTMLElement | Window {
+  for (let n = el?.parentElement ?? null; n; n = n.parentElement) {
+    const { overflowY } = getComputedStyle(n);
+    if ((overflowY === 'auto' || overflowY === 'scroll') && n.scrollHeight > n.clientHeight) return n;
+  }
+  return window;
+}
+
+const scrollTopOf = (s: HTMLElement | Window) =>
+  s instanceof Window ? s.scrollY : s.scrollTop;
+
+/** The band of the viewport the scroller shows, in client coordinates. */
+const viewportOf = (s: HTMLElement | Window) => {
+  if (s instanceof Window) return { top: 0, bottom: s.innerHeight };
+  const r = s.getBoundingClientRect();
+  return { top: r.top, bottom: r.bottom };
+};
+
 /**
  * A list whose rows are dragged by a grip to reorder them.
  *
@@ -23,8 +47,14 @@ interface Drag {
  * The grip also takes arrow keys, so the list can be reordered without a
  * pointer at all.
  *
- * Row geometry is measured once, at the grab: rows move under `transform`
- * during the drag, so their live rects would chase the animation.
+ * Holding a row against the top or bottom edge scrolls the list under it, so
+ * a move from one end to the other is one gesture rather than one gesture per
+ * screenful.
+ *
+ * Row geometry is measured once, at the grab, and kept in the scroller's own
+ * content coordinates: rows move under `transform` during the drag, so their
+ * live rects would chase the animation, and the content offset is what keeps
+ * the measurement honest while the list scrolls beneath the finger.
  */
 export function ReorderList<T>({
   items,
@@ -47,35 +77,78 @@ export function ReorderList<T>({
 }) {
   const [drag, setDrag] = useState<Drag | null>(null);
   const rows = useRef<Array<HTMLLIElement | null>>([]);
-  const grab = useRef<{ y: number; rects: DOMRect[] } | null>(null);
+  const grab = useRef<{ y: number; rects: DOMRect[]; scroller: HTMLElement | Window } | null>(null);
+  /** Latest pointer position, so the auto-scroll frame can re-aim without a move. */
+  const pointerY = useRef(0);
+  const frame = useRef<number | null>(null);
+
+  /** Recompute the drag from where the finger is, in content coordinates. */
+  const aim = (clientY: number) => {
+    const start = grab.current;
+    if (!start) return;
+    const y = clientY + scrollTopOf(start.scroller);
+    setDrag((d) => {
+      if (!d) return d;
+      const rects = start.rects;
+      const dy = y - start.y;
+      const centre = rects[d.from].top + rects[d.from].height / 2 + dy;
+      let to = d.from;
+      if (centre <= rects[0].top) to = 0;
+      else if (centre >= rects[rects.length - 1].bottom) to = rects.length - 1;
+      else {
+        const hit = rects.findIndex((r) => centre >= r.top && centre <= r.bottom);
+        if (hit !== -1) to = hit;
+      }
+      return { ...d, dy, to };
+    });
+  };
+
+  /** While the finger sits in an edge band, scroll and keep re-aiming. */
+  const tick = () => {
+    frame.current = null;
+    const start = grab.current;
+    if (!start) return;
+    const { top, bottom } = viewportOf(start.scroller);
+    const y = pointerY.current;
+    let speed = 0;
+    if (y < top + EDGE) speed = -Math.min(MAX_SPEED, (top + EDGE - y) / 3);
+    else if (y > bottom - EDGE) speed = Math.min(MAX_SPEED, (y - (bottom - EDGE)) / 3);
+    if (speed !== 0) {
+      const before = scrollTopOf(start.scroller);
+      start.scroller.scrollBy(0, speed);
+      // At either end of the list there is nothing left to scroll; stop
+      // spinning frames rather than re-aiming at an unchanged position.
+      if (scrollTopOf(start.scroller) !== before) aim(y);
+    }
+    frame.current = requestAnimationFrame(tick);
+  };
 
   const onPointerDown = (from: number) => (e: React.PointerEvent<HTMLButtonElement>) => {
     // Ignore secondary buttons; a right-click should not start a drag.
     if (e.button !== 0) return;
-    const rects = rows.current.slice(0, items.length).map((el) => el?.getBoundingClientRect());
+    const scroller = scrollerFor(rows.current[from]);
+    const offset = scrollTopOf(scroller);
+    const rects = rows.current.slice(0, items.length).map((el) => {
+      const r = el?.getBoundingClientRect();
+      return r && new DOMRect(r.x, r.y + offset, r.width, r.height);
+    });
     if (rects.some((r) => !r)) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    grab.current = { y: e.clientY, rects: rects as DOMRect[] };
+    grab.current = { y: e.clientY + offset, rects: rects as DOMRect[], scroller };
+    pointerY.current = e.clientY;
     setDrag({ from, to: from, dy: 0, height: (rects[from] as DOMRect).height });
+    frame.current = requestAnimationFrame(tick);
   };
 
   const onPointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
-    const start = grab.current;
-    if (!drag || !start) return;
-    const dy = e.clientY - start.y;
-    const rects = start.rects;
-    const centre = rects[drag.from].top + rects[drag.from].height / 2 + dy;
-    let to = drag.from;
-    if (centre <= rects[0].top) to = 0;
-    else if (centre >= rects[rects.length - 1].bottom) to = rects.length - 1;
-    else {
-      const hit = rects.findIndex((r) => centre >= r.top && centre <= r.bottom);
-      if (hit !== -1) to = hit;
-    }
-    setDrag({ ...drag, dy, to });
+    if (!drag || !grab.current) return;
+    pointerY.current = e.clientY;
+    aim(e.clientY);
   };
 
   const end = () => {
+    if (frame.current !== null) cancelAnimationFrame(frame.current);
+    frame.current = null;
     if (drag && drag.to !== drag.from) onReorder(drag.from, drag.to);
     grab.current = null;
     setDrag(null);
