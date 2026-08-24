@@ -193,6 +193,27 @@ export const fxRates = pgTable(
   (t) => [primaryKey({ columns: [t.pair, t.date] })],
 );
 
+// Hebrew name and About text per symbol, filled once and shared by everyone.
+//
+// Three sources feed it, best first: Hebrew Wikipedia, Wikidata, and the
+// reader's own browser (Chrome's on-device Translator). Whichever answers
+// first for a symbol is what every later reader gets — the point of the table
+// is that no symbol is ever fetched, or translated, twice.
+export const symbolI18n = pgTable(
+  'symbol_i18n',
+  {
+    symbol: text('symbol').notNull(),
+    lang: text('lang').notNull(), // 'he'
+    field: text('field').notNull(), // 'name' | 'about'
+    text: text('text').notNull(),
+    origin: text('origin').notNull(), // 'wiki' | 'device'
+    /** hewiki article, for the CC BY-SA credit the licence asks for. */
+    sourceUrl: text('source_url'),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.symbol, t.lang, t.field] })],
+);
+
 export const portfolioRelations = relations(portfolios, ({ one, many }) => ({
   user: one(user, { fields: [portfolios.userId], references: [user.id] }),
   transactions: many(transactions),

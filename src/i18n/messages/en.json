@@ -198,12 +198,9 @@
     "aboutVol": "Volume: shares traded today. Compare it with the average — unusually heavy trading means news, and it makes a price move more meaningful.",
     "aboutMktCap": "Market cap: share price times shares outstanding, the whole company's price tag. It is what \"large cap\" and \"small cap\" mean, and it drives how steady a stock tends to be.",
     "aboutBeta": "Beta: how hard the stock swings against the wider market. Above 1 moves more than the market, below 1 moves less, and a negative beta moves the other way.",
-    "translate": "Translate",
-    "translating": "Translating…",
-    "showOriginal": "Show original",
-    "showTranslation": "Show translation",
     "atr": "ATR (14d)",
-    "aboutAtr": "A technical indicator that measures market volatility by calculating the average of true ranges over a specified period, typically 14 days - good estimator for stop losses"
+    "aboutAtr": "A technical indicator that measures market volatility by calculating the average of true ranges over a specified period, typically 14 days - good estimator for stop losses",
+    "viaWikipedia": "Via Wikipedia"
   },
   "tx": {
     "title": "Add transaction",

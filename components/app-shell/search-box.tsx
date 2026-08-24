@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Search } from 'lucide-react';
 import { useRouter } from '@/src/i18n/navigation';
 import { useMarket } from './market-context';
@@ -31,6 +31,7 @@ export function SearchBox({
   fullPageResults?: boolean;
 }) {
   const t = useTranslations('nav');
+  const locale = useLocale();
   const router = useRouter();
   const { marketId } = useMarket();
   const [globalQuery, setGlobalQuery] = useState('');
@@ -134,7 +135,9 @@ export function SearchBox({
                 <span className="min-w-14 text-[13px] font-semibold text-foreground">
                   {r.market ? displaySymbol(r.symbol, getMarket(r.market)) : r.symbol}
                 </span>
-                <span className="flex-1 truncate text-[13px] text-muted-foreground">{r.name}</span>
+                <span className="flex-1 truncate text-[13px] text-muted-foreground">
+                  {locale === 'he' ? (r.heName ?? r.name) : r.name}
+                </span>
                 {r.exchange && (
                   <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] text-secondary-foreground">
                     {r.exchange}

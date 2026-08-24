@@ -66,6 +66,8 @@ export interface ChartSeries {
 export interface SearchResult {
   symbol: string;
   name: string;
+  /** The company's Hebrew name, where one is known. */
+  heName?: string;
   exchange?: string;
   type?: string; // EQUITY | ETF | INDEX | …
   /** Registry market id when recognizable ('US', 'IL'), else undefined. */
@@ -99,6 +101,10 @@ export interface Summary {
   description?: string;
   /** TASE listings: the company's own Hebrew description (shipped catalogue), not a translation. */
   heDescription?: string;
+  /** The company's name in Hebrew — Wikipedia/Wikidata, or a reader's browser. */
+  heName?: string;
+  /** hewiki article behind `heDescription`, when that is where it came from (CC BY-SA). */
+  heSourceUrl?: string;
   stats: KeyStats;
   nextEarningsDate?: string; // ISO date
 }

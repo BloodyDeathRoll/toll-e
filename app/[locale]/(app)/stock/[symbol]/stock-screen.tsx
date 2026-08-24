@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft, Share2 } from 'lucide-react';
 import { useSymbolWatchlist, WatchlistMenuButton, WatchlistStar } from '@/components/watchlist-star';
@@ -26,7 +26,7 @@ import type { ChartRange, StockAnalysis, StockFinancials } from '@/src/market-da
 import { usePortfolioPositions } from '@/components/use-portfolio';
 import { isTaseFund, marketForSymbol } from '@/src/markets/registry';
 import { demo, getDemoHolding, getDemoStock } from '@/src/demo/data';
-import { fmtCompact, fmtDate, fmtMoneySigned, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
+import { fmtCompact, fmtDate, fmtMoneySigned, fmtNum, fmtPct } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 const tabs = ['summary', 'news', 'analysis', 'financials'] as const;
@@ -89,7 +89,6 @@ export function StockScreen({ symbol }: { symbol: string }) {
   };
   const [finPeriod, setFinPeriod] = useState<'annual' | 'quarterly'>('annual');
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [showOriginal, setShowOriginal] = useState(false);
 
   // Deep-linkable tabs (?tab=news) — read after mount so SSR markup stays stable.
   useEffect(() => {
@@ -125,8 +124,8 @@ export function StockScreen({ symbol }: { symbol: string }) {
     volume: live?.volume !== undefined ? fmtCompact(live.volume, nl) : stock.stats.volume,
     marketCap:
       (live?.marketCap ?? summary?.stats.marketCap) !== undefined
-        ? fmtCompact((live?.marketCap ?? summary?.stats.marketCap) as number, nl)
-        : stock.stats.marketCap,
+        ? `${sym}${fmtCompact((live?.marketCap ?? summary?.stats.marketCap) as number, nl)}`
+        : `${sym}${stock.stats.marketCap}`,
     pe: summary?.stats.peTtm ?? stock.stats.pe,
     eps: summary?.stats.epsTtm ?? stock.stats.eps,
     divYieldPct: summary?.stats.dividendYieldPct ?? stock.stats.divYieldPct,
@@ -139,20 +138,38 @@ export function StockScreen({ symbol }: { symbol: string }) {
     stats.atr14 !== undefined
       ? `${sym}${fmtNum(stats.atr14, nl)}${price > 0 ? ` (${fmtNum((stats.atr14 / price) * 100, nl)}%)` : ''}`
       : '—';
+  // A Hebrew reader gets Hebrew: the shipped TASE catalogue, or Wikipedia, or
+  // — for anything neither covers — the reader's own browser, translating
+  // unasked. Whatever the browser produces is posted back, so the next reader
+  // of this symbol is served from the store on any browser at all.
+  const heAbout = locale === 'he' ? summary?.heDescription : undefined;
+  const heName = locale === 'he' ? summary?.heName : undefined;
+  const contribute = useCallback(
+    (field: 'name' | 'about') => (text: string) => {
+      void fetch('/api/i18n', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol, field, text }),
+      }).catch(() => {});
+    },
+    [symbol],
+  );
+  const about = useOnDeviceTranslation(
+    heAbout ? undefined : summary?.description,
+    locale,
+    contribute('about'),
+  );
+  const translatedName = useOnDeviceTranslation(
+    heName ? undefined : summary?.name,
+    locale,
+    contribute('name'),
+  );
+  const aboutText = heAbout ?? (about.state === 'done' ? about.translated : summary?.description);
   const headline = {
-    name: summary?.name ?? stock.name,
+    name: heName ?? translatedName.translated ?? summary?.name ?? stock.name,
     exchange: summary?.exchange ?? stock.exchange,
     sector: summary?.sector ?? stock.sector,
   };
-  // An Israeli company's Hebrew description is the origin text (shipped
-  // catalogue), so a Hebrew reader gets that outright — no translation
-  // controls. Everything else arrives in English whatever locale asked for
-  // it, and is translated on the device where that is possible.
-  const heAbout = locale === 'he' ? summary?.heDescription : undefined;
-  const about = useOnDeviceTranslation(heAbout ? undefined : summary?.description, locale);
-  const aboutText =
-    heAbout ??
-    (about.state === 'done' && !showOriginal ? about.translated : summary?.description);
   const eventDate = summary?.nextEarningsDate ?? stock.nextEvent.date;
   const up = changePct >= 0;
 
@@ -248,9 +265,9 @@ export function StockScreen({ symbol }: { symbol: string }) {
       </h2>
       <div className="grid grid-cols-2 gap-3 tabular-nums">
         <PositionCell label={t('shares')} value={fmtNum(holding.shares, nl, 1)} />
-        <PositionCell label={t('avgCost')} value={fmtNum(holding.avgCost, nl)} />
-        <PositionCell label={t('marketValue')} value={fmtNum(holding.marketValue, nl)} />
-        <PositionCell label={t('totalCost')} value={fmtNum(holding.totalCost, nl)} />
+        <PositionCell label={t('avgCost')} value={`${sym}${fmtNum(holding.avgCost, nl)}`} />
+        <PositionCell label={t('marketValue')} value={`${sym}${fmtNum(holding.marketValue, nl)}`} />
+        <PositionCell label={t('totalCost')} value={`${sym}${fmtNum(holding.totalCost, nl)}`} />
         <PositionCell label={t('totalGain')} value={fmtMoneySigned(holding.totalGain, market.currency, nl)} gain={holding.totalGain >= 0} loss={holding.totalGain < 0} />
         <PositionCell label={t('daysGain')} value={fmtMoneySigned(daysGain, market.currency, nl)} gain={daysGain >= 0} loss={daysGain < 0} />
       </div>
@@ -266,7 +283,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
               </span>
             </div>
             <span className="max-w-[150px] text-end text-xs leading-snug text-faint">
-              {t('taxIfSoldNote', { rate: taxRatePct, gain: fmtNum(holding.totalGain, nl) })}
+              {t('taxIfSoldNote', { rate: taxRatePct, gain: `${sym}${fmtNum(holding.totalGain, nl)}` })}
             </span>
           </div>
         </>
@@ -328,25 +345,16 @@ export function StockScreen({ symbol }: { symbol: string }) {
             {aboutOpen ? t('readLess') : t('readMore')}
           </button>
         )}
-        {/* The provider writes in English only. Chrome can translate on the
-            device; where it cannot, this whole control is absent and the
-            original stands. */}
-        {about.state === 'idle' && (
-          <button type="button" onClick={() => void about.translate()} className="text-sm font-semibold text-primary">
-            {t('translate')}
-          </button>
-        )}
-        {about.state === 'working' && (
-          <span className="text-sm text-muted-foreground">{t('translating')}</span>
-        )}
-        {about.state === 'done' && (
-          <button
-            type="button"
-            onClick={() => setShowOriginal((v) => !v)}
-            className="text-sm font-semibold text-primary"
+        {/* Hebrew Wikipedia's text is CC BY-SA: using it means crediting it. */}
+        {heAbout && summary?.heSourceUrl && (
+          <a
+            href={summary.heSourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm text-muted-foreground underline"
           >
-            {showOriginal ? t('showTranslation') : t('showOriginal')}
-          </button>
+            {t('viaWikipedia')}
+          </a>
         )}
       </div>
       <div className="flex flex-wrap gap-2 pt-1">
@@ -485,10 +493,10 @@ export function StockScreen({ symbol }: { symbol: string }) {
   );
 
   const epsCard = financials.data && financials.data.epsHistory.length > 0 && (
-    <EpsBeatsCard eps={financials.data.epsHistory} nl={nl} />
+    <EpsBeatsCard eps={financials.data.epsHistory} sym={sym} nl={nl} />
   );
   const holdersCard = financials.data && (
-    <HoldersCard holders={financials.data.holders} nl={nl} />
+    <HoldersCard holders={financials.data.holders} sym={sym} nl={nl} />
   );
 
   return (
@@ -633,11 +641,11 @@ export function StockScreen({ symbol }: { symbol: string }) {
                     </span>
                     <span className="flex flex-col gap-2">
                       <span className="text-xs text-muted-foreground">{t('avgCost')}</span>
-                      <span dir="ltr" className="private text-base font-medium text-foreground">{fmtNum(holding.avgCost, nl)}</span>
+                      <span dir="ltr" className="private text-base font-medium text-foreground">{sym}{fmtNum(holding.avgCost, nl)}</span>
                     </span>
                     <span className="flex flex-col items-end gap-2">
                       <span className="text-xs text-muted-foreground">{t('marketValue')}</span>
-                      <span dir="ltr" className="private text-base font-medium text-foreground">{fmtNum(holding.marketValue, nl)}</span>
+                      <span dir="ltr" className="private text-base font-medium text-foreground">{sym}{fmtNum(holding.marketValue, nl)}</span>
                     </span>
                   </div>
                   {taxRatePct > 0 && (
@@ -660,6 +668,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   high={stats.dayHigh}
                   value={price}
                   label={t('dayRange')}
+                  sym={sym}
                   nl={nl}
                 />
                 <RangeSlider
@@ -667,11 +676,12 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   high={stats.wk52High}
                   value={price}
                   label={t('wk52Range')}
+                  sym={sym}
                   nl={nl}
                 />
                 <div className="flex items-center justify-between tabular-nums">
-                  <StatCell label={t('prevClose')} value={live?.previousClose !== undefined ? fmtNum(live.previousClose, nl) : '—'} />
-                  <StatCell label={t('open')} value={fmtNum(stats.open, nl)} end />
+                  <StatCell label={t('prevClose')} value={live?.previousClose !== undefined ? `${sym}${fmtNum(live.previousClose, nl)}` : '—'} />
+                  <StatCell label={t('open')} value={`${sym}${fmtNum(stats.open, nl)}`} end />
                 </div>
                 <div className="flex items-center justify-between tabular-nums">
                   <StatCell label={t('vol')} value={stats.volume} note={t('aboutVol')} />
@@ -741,7 +751,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   {fmtNum(shownPrice, nl)}
                 </span>
                 <span className={cn('text-[15px] tabular-nums', shownPct >= 0 ? 'text-gain' : 'text-loss')}>
-                  {fmtSigned(shownChange, nl)} ({fmtPct(shownPct, nl)})
+                  {fmtMoneySigned(shownChange, market.currency, nl)} ({fmtPct(shownPct, nl)})
                 </span>
                 {scrubStamp && <span className="text-[13px] text-muted-foreground">{scrubStamp}</span>}
               </div>
@@ -772,18 +782,18 @@ export function StockScreen({ symbol }: { symbol: string }) {
                     {rangePills(shownDesktopRanges)}
                     <div dir="ltr" className="flex gap-[18px] text-xs text-muted-foreground tabular-nums">
                       <span>
-                        {t('open')} <span className="text-foreground">{fmtNum(stats.open, nl)}</span>
+                        {t('open')} <span className="text-foreground">{sym}{fmtNum(stats.open, nl)}</span>
                       </span>
                       <span>
                         {t('day')}{' '}
                         <span className="text-foreground">
-                          {fmtNum(stats.dayLow, nl)} – {fmtNum(stats.dayHigh, nl)}
+                          {sym}{fmtNum(stats.dayLow, nl)} – {sym}{fmtNum(stats.dayHigh, nl)}
                         </span>
                       </span>
                       <span>
                         {t('wk52')}{' '}
                         <span className="text-foreground">
-                          {fmtNum(stats.wk52Low, nl)} – {fmtNum(stats.wk52High, nl)}
+                          {sym}{fmtNum(stats.wk52Low, nl)} – {sym}{fmtNum(stats.wk52High, nl)}
                         </span>
                       </span>
                       <span>
@@ -833,7 +843,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
               <div className="flex flex-col gap-3 text-[13px] tabular-nums">
                 <Row label={t('marketCap')} value={stats.marketCap} />
                 <Row label={t('peTtm')} value={fmtNum(stats.pe, nl, 1)} />
-                <Row label={t('epsTtm')} value={fmtNum(stats.eps, nl)} />
+                <Row label={t('epsTtm')} value={`${sym}${fmtNum(stats.eps, nl)}`} />
                 <Row label={t('divYield')} value={`${fmtNum(stats.divYieldPct, nl)}%`} />
                 <Row label={t('beta')} value={fmtNum(stats.beta, nl)} />
                 <Row label={t('atr')} value={atrDisplay} note={t('aboutAtr')} />
@@ -863,21 +873,23 @@ function RangeSlider({
   high,
   value,
   label,
+  sym,
   nl,
 }: {
   low: number;
   high: number;
   value: number;
   label: string;
+  sym: string;
   nl: string;
 }) {
   const pct = high > low ? Math.min(100, Math.max(0, ((value - low) / (high - low)) * 100)) : 50;
   return (
     <div className="flex flex-col gap-2">
       <div dir="ltr" className="flex items-center justify-between text-xs font-medium tabular-nums">
-        <span className="text-foreground">{fmtNum(low, nl)}</span>
+        <span className="text-foreground">{sym}{fmtNum(low, nl)}</span>
         <span className="text-muted-foreground">{label}</span>
-        <span className="text-foreground">{fmtNum(high, nl)}</span>
+        <span className="text-foreground">{sym}{fmtNum(high, nl)}</span>
       </div>
       {/* 4px rounded track, 20px marker — Figma key-statistics rows. */}
       <div dir="ltr" className="relative h-5">
@@ -1155,7 +1167,7 @@ function UpgradesCard({ upgrades }: { upgrades: StockAnalysis['upgrades'] }) {
 }
 
 /** Estimate (hollow) vs actual (filled, gain/loss) EPS dots per quarter. */
-function EpsBeatsCard({ eps, nl }: { eps: StockFinancials['epsHistory']; nl: string }) {
+function EpsBeatsCard({ eps, sym, nl }: { eps: StockFinancials['epsHistory']; sym: string; nl: string }) {
   const t = useTranslations('stock');
   const vals = eps.flatMap((q) => [q.actual, q.estimate]).filter((v): v is number => v !== undefined);
   if (vals.length === 0) return null;
@@ -1193,7 +1205,7 @@ function EpsBeatsCard({ eps, nl }: { eps: StockFinancials['epsHistory']; nl: str
                   <span
                     className="absolute left-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-chart-2 bg-card"
                     style={{ top: y(q.estimate) }}
-                    title={`${t('estimate')} ${fmtNum(q.estimate, nl)}`}
+                    title={`${t('estimate')} ${sym}${fmtNum(q.estimate, nl)}`}
                   />
                 )}
                 {q.actual !== undefined && (
@@ -1203,7 +1215,7 @@ function EpsBeatsCard({ eps, nl }: { eps: StockFinancials['epsHistory']; nl: str
                       beat ? 'bg-gain' : 'bg-loss',
                     )}
                     style={{ top: y(q.actual) }}
-                    title={`${t('actual')} ${fmtNum(q.actual, nl)}`}
+                    title={`${t('actual')} ${sym}${fmtNum(q.actual, nl)}`}
                   />
                 )}
               </div>
@@ -1223,7 +1235,7 @@ function EpsBeatsCard({ eps, nl }: { eps: StockFinancials['epsHistory']; nl: str
   );
 }
 
-function HoldersCard({ holders, nl }: { holders: StockFinancials['holders']; nl: string }) {
+function HoldersCard({ holders, sym, nl }: { holders: StockFinancials['holders']; sym: string; nl: string }) {
   const t = useTranslations('stock');
   const hasBreakdown = holders.insidersPctHeld !== undefined || holders.institutionsPctHeld !== undefined;
   if (!hasBreakdown && holders.top.length === 0) return null;
@@ -1272,7 +1284,7 @@ function HoldersCard({ holders, nl }: { holders: StockFinancials['holders']; nl:
                   <span dir="ltr">{fmtNum(h.pctHeld, nl)}%</span>
                 </span>
                 <span className="w-20 text-end text-muted-foreground">
-                  <span dir="ltr">{fmtCompact(h.value, nl)}</span>
+                  <span dir="ltr">{sym}{fmtCompact(h.value, nl)}</span>
                 </span>
               </span>
             </div>

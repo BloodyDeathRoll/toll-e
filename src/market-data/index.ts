@@ -8,9 +8,11 @@ import { getGlobesNews } from './globes';
 import { getFundHistory, getFundQuotes, getFundSummary } from './maya';
 import { YahooProvider } from './yahoo';
 import { localDateIn, sessionWindow } from '@/src/markets/calendar';
-import { getMarket, isTaseFund, marketForSymbol } from '@/src/markets/registry';
+import { getMarket, isTaseFund, marketForSymbol, marketIdForSymbol } from '@/src/markets/registry';
 import { searchTaseFunds } from '@/src/markets/tase-funds';
 import { hasHebrew, searchTase, taseHeAbout } from '@/src/markets/tase-search';
+import { getHe, getHeNames, putHe, searchHeNames } from '@/src/server/symbol-i18n';
+import { lookupHe } from './wikidata';
 import type {
   ChartRange,
   ChartSeries,
@@ -62,6 +64,9 @@ const TTL = {
   // Mutual fund NAVs move once a day; an hour keeps the day-of-publication
   // update reasonably fresh without hammering Maya.
   fund: 60 * 60_000,
+  // Hebrew text barely changes, but it does arrive: a browser translation
+  // written while the page is warm should surface within minutes, not a day.
+  he: 5 * 60_000,
 } as const;
 
 /**
@@ -203,9 +208,33 @@ export async function search(query: string, marketId?: string): Promise<SearchRe
       cached(`search:${query.toLowerCase()}`, TTL.search, () => yahoo(() => provider.search(query)));
     remote = local.length + funds.length > 0 ? await fetch().catch(() => []) : await fetch();
   }
+  // Stored Hebrew names (symbol_i18n) — 'אנבידיה' finds NVDA, which no other
+  // path here can do: the provider refuses Hebrew queries and the TASE
+  // catalogue only knows Israeli listings.
+  const heNamed = hasHebrew(query)
+    ? (await searchHeNames(query).catch(() => [])).map((r) => ({
+        symbol: r.symbol,
+        name: r.name,
+        heName: r.name,
+        market: marketIdForSymbol(r.symbol),
+      }))
+    : [];
+
   const seen = new Set(remote.map((r) => r.symbol));
   // Provider rows win the dedupe: their names carry the fuller legal form.
-  const results = [...remote, ...local.filter((r) => !seen.has(r.symbol)), ...funds];
+  const merged = [
+    ...remote,
+    ...local.filter((r) => !seen.has(r.symbol)),
+    ...funds,
+    ...heNamed.filter((r) => !seen.has(r.symbol)),
+  ];
+  // Label every row we hold a Hebrew name for, so a Hebrew reader reads Hebrew
+  // whichever path found the row.
+  const names = await getHeNames(merged.map((r) => r.symbol)).catch(() => new Map<string, string>());
+  const results: SearchResult[] = merged.map((r) => {
+    const heName = r.heName ?? names.get(r.symbol);
+    return heName ? { ...r, heName } : r;
+  });
   if (!marketId) return results;
   // The lens filters: browsing TASE, a US ticker is not a result at all, and
   // vice versa. Listings on an exchange we do not carry (market undefined)
@@ -242,7 +271,56 @@ export async function getSummary(symbol: string): Promise<Summary> {
   // only; the catalogue carries the company's own Hebrew text, so a Hebrew
   // reader gets the origin rather than a translation.
   const heAbout = taseHeAbout(symbol);
-  return heAbout ? { ...summary, heDescription: heAbout } : summary;
+  if (heAbout) return { ...summary, heDescription: heAbout };
+  return { ...summary, ...(await hebrewFor(symbol, summary.name)) };
+}
+
+/**
+ * The Hebrew half of a summary, from the shared store — and, the first time a
+ * symbol is ever asked for, from Wikipedia on the way in.
+ *
+ * Merged outside the cached summary (as the TASE catalogue is) so text that
+ * lands later — a reader's browser translating the About — shows up without
+ * waiting out the 24h summary TTL. The store read is cached briefly of its own
+ * accord so a busy symbol is not a query per request.
+ *
+ * Nothing here can fail a summary: no store, no Wikipedia, no Hebrew is a
+ * perfectly good answer, and the page falls through to on-device translation.
+ */
+async function hebrewFor(
+  symbol: string,
+  englishName: string,
+): Promise<{ heName?: string; heDescription?: string; heSourceUrl?: string }> {
+  try {
+    return await cached(`he:${symbol}`, TTL.he, async () => {
+      let he = await getHe(symbol);
+      if (!he.name && !he.about) {
+        // First time anyone has asked for this symbol in Hebrew. One lookup,
+        // stored, and no reader after this one pays for it again.
+        const found = await lookupHe(englishName);
+        await Promise.all([
+          found.name
+            ? putHe(symbol, 'name', { text: found.name, origin: 'wiki' })
+            : Promise.resolve(),
+          found.about
+            ? putHe(symbol, 'about', {
+                text: found.about,
+                origin: 'wiki',
+                sourceUrl: found.sourceUrl,
+              })
+            : Promise.resolve(),
+        ]);
+        if (found.name || found.about) he = await getHe(symbol);
+      }
+      return {
+        heName: he.name?.text,
+        heDescription: he.about?.text,
+        heSourceUrl: he.about?.sourceUrl,
+      };
+    });
+  } catch {
+    return {};
+  }
 }
 
 export async function getNews(symbol: string): Promise<NewsItem[]> {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Star } from 'lucide-react';
 import { Link, useRouter } from '@/src/i18n/navigation';
 import { ChangePill } from '@/components/quote-bits';
@@ -28,6 +28,7 @@ export function SearchResults({
   onPick: () => void;
 }) {
   const t = useTranslations('lists');
+  const locale = useLocale();
   const tn = useTranslations('nav');
   const market = getMarket(marketId);
   const nl = market.numberLocale;
@@ -59,7 +60,9 @@ export function SearchResults({
               <span className="text-base font-bold text-foreground">
                 {r.market ? displaySymbol(r.symbol, getMarket(r.market)) : r.symbol}
               </span>
-              <span className="truncate text-xs text-foreground">{r.name}</span>
+              <span className="truncate text-xs text-foreground">
+                {locale === 'he' ? (r.heName ?? r.name) : r.name}
+              </span>
               <span className="text-xs text-foreground">
                 {t(r.type === 'FUND' ? 'fund' : 'equity')}
               </span>
