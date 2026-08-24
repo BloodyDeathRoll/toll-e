@@ -54,7 +54,7 @@ export function useSymbolWatchlist(symbol: string): SymbolWatchlist {
 
   const toggleIn = async (list: WatchlistData) => {
     await patchList(list.id, {
-      symbols: isIn(list) ? list.symbols.filter((s) => s !== symbol) : [...list.symbols, symbol],
+      symbols: isIn(list) ? list.symbols.filter((s) => s !== symbol) : [symbol, ...list.symbols],
     });
   };
 

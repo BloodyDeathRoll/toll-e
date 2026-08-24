@@ -12,6 +12,7 @@ import { ErrorCard } from '@/components/error-card';
 import { ReorderList } from '@/components/reorder-list';
 import { RowLink } from '@/components/row-link';
 import { ChangePill, NO_VALUE } from '@/components/quote-bits';
+import { WatchlistSheet } from '@/components/watchlist-sheet';
 import { useQuotes, useSearch } from '@/components/use-market-data';
 import { useWatchlists, type WatchlistData } from '@/components/use-watchlists';
 import { demoWatchlists } from '@/src/demo/data';
@@ -48,6 +49,10 @@ export function WatchlistsScreen({
       : { kind: 'browse' },
   );
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  // A row's ★ never removes on the spot — it opens the same "include in
+  // watchlists" sheet the stock page and search use, so one gesture means
+  // one thing everywhere.
+  const [sheetFor, setSheetFor] = useState<string | null>(null);
 
   /** Leaving a flow: back to the list when deep-linked, in place otherwise. */
   const toBrowse = () => {
@@ -263,11 +268,8 @@ export function WatchlistsScreen({
                       </RowLink>
                       <button
                         type="button"
-                        aria-label={t('removeFromList')}
-                        disabled={Boolean(l.demo || l.managed)}
-                        onClick={() =>
-                          patchList(l.id, { symbols: l.symbols.filter((x) => x !== s) })
-                        }
+                        aria-label={t('includeIn')}
+                        onClick={() => (l.demo ? router.push('/sign-in') : setSheetFor(s))}
                       >
                         <Star className="size-5 fill-primary text-primary" aria-hidden />
                       </button>
@@ -289,6 +291,10 @@ export function WatchlistsScreen({
         <div className="px-6 pb-6">
           <ErrorCard onRetry={reload} />
         </div>
+      )}
+
+      {sheetFor && real && (
+        <WatchlistSheet symbol={sheetFor} lists={real} onClose={() => setSheetFor(null)} />
       )}
     </main>
   );
@@ -326,20 +332,33 @@ function EditList({
 }) {
   const t = useTranslations('lists');
   const market = getMarket(marketId);
-  const { quotes } = useQuotes(list.symbols, 60_000);
   const [name, setName] = useState(list.name);
   const [searchOpen, setSearchOpen] = useState(addOpen && !managed);
   const [query, setQuery] = useState('');
+  // A dropped row must stay where it was dropped. The write is a round trip
+  // (PATCH, then reload), and rendering the server's copy in the meantime
+  // snaps the row back for as long as that takes — so the order the user just
+  // made is what we render, until the list gains or loses a symbol and the
+  // server's copy is the only one that knows the membership.
+  const [dropped, setDropped] = useState<string[] | null>(null);
+  const symbols =
+    dropped &&
+    dropped.length === list.symbols.length &&
+    dropped.every((s) => list.symbols.includes(s))
+      ? dropped
+      : list.symbols;
+  const { quotes } = useQuotes(symbols, 60_000);
   // Add-ticker search looks in the list's own market, not the browsing lens.
   const results = useSearch(query, list.market ?? marketId)
-    .filter((r) => !list.symbols.includes(r.symbol))
+    .filter((r) => !symbols.includes(r.symbol))
     .slice(0, 6);
 
   const reorder = async (from: number, to: number) => {
     if (from === to) return;
-    const next = [...list.symbols];
+    const next = [...symbols];
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
+    setDropped(next);
     await onPatch(list.id, { symbols: next });
   };
 
@@ -395,7 +414,7 @@ function EditList({
                   <button
                     type="button"
                     onClick={() => {
-                      void onPatch(list.id, { symbols: [...list.symbols, r.symbol] });
+                      void onPatch(list.id, { symbols: [r.symbol, ...symbols] });
                       setQuery('');
                     }}
                     className={cn(
@@ -434,7 +453,7 @@ function EditList({
           )}
         </div>
         <ReorderList
-          items={list.symbols}
+          items={symbols}
           keyOf={(s) => s}
           onReorder={(from, to) => void reorder(from, to)}
           handleLabel={(s) => t('reorder', { name: displaySymbol(s, market) })}
@@ -451,7 +470,7 @@ function EditList({
                 <button
                   type="button"
                   aria-label={t('removeFromList')}
-                  onClick={() => void onPatch(list.id, { symbols: list.symbols.filter((x) => x !== s) })}
+                  onClick={() => void onPatch(list.id, { symbols: symbols.filter((x) => x !== s) })}
                 >
                   <Trash2 className="size-5 text-muted-foreground" aria-hidden />
                 </button>
@@ -528,7 +547,7 @@ function CreateList({
                   <button
                     type="button"
                     onClick={() => {
-                      if (!symbols.includes(r.symbol)) setSymbols([...symbols, r.symbol]);
+                      if (!symbols.includes(r.symbol)) setSymbols([r.symbol, ...symbols]);
                       setQuery('');
                     }}
                     className={cn(

@@ -97,7 +97,7 @@ export function WatchlistSheet({
     for (const l of changed) {
       const should = picked.has(l.id);
       await patchList(l.id, {
-        symbols: should ? [...l.symbols, symbol] : l.symbols.filter((s) => s !== symbol),
+        symbols: should ? [symbol, ...l.symbols] : l.symbols.filter((s) => s !== symbol),
       });
     }
     if (creating && newName.trim()) {
