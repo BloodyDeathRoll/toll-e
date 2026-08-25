@@ -10,6 +10,7 @@ import { SessionSparkline } from '@/components/charts';
 import { StaleBadge } from '@/components/stale-badge';
 import { useCharts, useQuotes } from '@/components/use-market-data';
 import { getMarket, displaySymbol } from '@/src/markets/registry';
+import { lastTradeByMarket } from '@/src/markets/last-trade';
 import { demo } from '@/src/demo/data';
 import { fmtCompact, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -78,6 +79,9 @@ export function HoldingsTable({
   // Live quotes (price/change/volume) + 1D sparks for every row.
   const symbols = displayRows.map((r) => r.symbol);
   const { quotes, stale } = useQuotes(symbols);
+  // Liveness is the exchange's, not a row's: one post-bell print anywhere in
+  // the market keeps every row on the session-in-progress view.
+  const lastTrades = lastTradeByMarket(Object.values(quotes));
   const sparks = useCharts(symbols, '1d');
 
   return (
@@ -185,6 +189,7 @@ export function HoldingsTable({
                       calendar={market.calendar}
                       price={q?.price}
                       priceAt={q?.asOf}
+                      lastTradeAt={lastTrades[market.id]}
                       width={64}
                       height={30}
                     />

@@ -110,6 +110,7 @@ export function SessionSparkline({
   calendar,
   price,
   priceAt,
+  lastTradeAt,
   width = 91,
   height = 36,
   className,
@@ -121,6 +122,14 @@ export function SessionSparkline({
   price?: number;
   /** Epoch ms of that quote's last trade (`Quote.asOf`). */
   priceAt?: number;
+  /**
+   * The market's newest last-trade stamp (`lastTradeByMarket`). One ticker
+   * printing after the bell means the exchange is open for all of them, so a
+   * row whose own quote still carries yesterday's stamp — a lagging feed, or
+   * a persisted-close fallback — draws the session in progress rather than
+   * yesterday's finished day.
+   */
+  lastTradeAt?: number;
   width?: number;
   height?: number;
   className?: string;
@@ -129,7 +138,7 @@ export function SessionSparkline({
   const { points: shown, from, to, live } = sessionLine(
     calendar,
     points.map((p) => ({ t: p.t, v: p.close })),
-    { previousClose, price, priceAt },
+    { previousClose, price, priceAt, lastTradeAt },
   );
   if (shown.length === 0) return <span style={{ width, height }} className={className} aria-hidden />;
 

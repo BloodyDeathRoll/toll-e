@@ -12,6 +12,7 @@ import { useCharts, useQuotes } from '@/components/use-market-data';
 import { useWatchlists } from '@/components/use-watchlists';
 import { HOLDINGS_LIST, listInMarket } from '@/src/watchlists/constants';
 import { displaySymbol, getMarket, marketForSymbol } from '@/src/markets/registry';
+import { lastTradeByMarket } from '@/src/markets/last-trade';
 import { fmtNum } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -43,6 +44,9 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
   const shown = lists.filter((l) => !collapsed.has(l.id)).flatMap((l) => l.symbols);
   const { quotes } = useQuotes(shown, 60_000);
   const charts = useCharts(shown, '1d');
+  // Liveness is the exchange's, not a row's: one post-bell print anywhere in
+  // the market keeps every row on the session-in-progress view.
+  const lastTrades = lastTradeByMarket(Object.values(quotes));
 
   if (lists.length === 0) return null;
 
@@ -114,6 +118,7 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
                             calendar={sm.calendar}
                             price={q?.price}
                             priceAt={q?.asOf}
+                            lastTradeAt={lastTrades[sm.id]}
                             width={91}
                             height={36}
                           />

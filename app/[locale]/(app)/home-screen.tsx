@@ -33,6 +33,7 @@ import { useCharts, useIndexQuotes, useQuotes } from '@/components/use-market-da
 import { usePortfolioPositions } from '@/components/use-portfolio';
 import { useTax } from '@/components/use-tax';
 import { getMarket } from '@/src/markets/registry';
+import { lastTradeByMarket } from '@/src/markets/last-trade';
 import { demo } from '@/src/demo/data';
 import { fmtDate, fmtMoneySigned, fmtNum, fmtPct } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -164,6 +165,10 @@ export function HomeScreen() {
   const portfolioAsOf = overlayRows
     .map((r) => holdingQuotes[r.symbol]?.asOf)
     .reduce<number | undefined>((max, t) => (t !== undefined && (max === undefined || t > max) ? t : max), undefined);
+  // The same question per market rather than per portfolio: liveness is the
+  // exchange's, so one post-bell print anywhere keeps every row on the
+  // session-in-progress view even when its own quote lags the bell.
+  const lastTrades = lastTradeByMarket([...Object.values(indexQuotes), ...Object.values(holdingQuotes)]);
 
   const emptyCard = (
     <section className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6">
@@ -296,6 +301,7 @@ export function HomeScreen() {
                       calendar={market.calendar}
                       price={live?.price}
                       priceAt={live?.asOf}
+                      lastTradeAt={lastTrades[market.id]}
                       width={90}
                       height={30}
                     />
@@ -398,6 +404,7 @@ export function HomeScreen() {
                         calendar={market.calendar}
                         price={quote?.price}
                         priceAt={quote?.asOf}
+                        lastTradeAt={lastTrades[market.id]}
                         width={91}
                         height={36}
                       />

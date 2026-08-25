@@ -297,6 +297,25 @@ describe('sessionLine', () => {
     expect(l.points).toEqual([{ t: open, v: 100 }, bar]);
   });
 
+  it("takes the market's stamp when the row's own quote lags the bell", () => {
+    const now = at('2026-08-04T13:32:00Z');
+    const yesterday = [
+      { t: at('2026-08-03T13:30:00Z'), v: 98 },
+      { t: at('2026-08-03T20:00:00Z'), v: 100 },
+    ];
+    const stale = { previousClose: 100, price: 100, priceAt: at('2026-08-03T20:00:00Z'), now };
+    // On its own stamp this row looks like a shut exchange, and yesterday's
+    // whole session gets redrawn as today.
+    expect(sessionLine(us, yesterday, stale).live).toBe(false);
+    // Another ticker printed after the bell, so the market is open: today's
+    // axis, yesterday's bars dropped, anchored at the previous close.
+    const l = sessionLine(us, yesterday, { ...stale, lastTradeAt: now });
+    expect(l.live).toBe(true);
+    expect(l.from).toBe(open);
+    expect(l.to).toBe(close);
+    expect(l.points).toEqual([{ t: open, v: 100 }]);
+  });
+
   it('adds nothing off hours — the finished session is the line', () => {
     const points = [
       { t: open, v: 100 },

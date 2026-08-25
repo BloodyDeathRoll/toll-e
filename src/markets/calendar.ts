@@ -404,10 +404,21 @@ export interface SeriesPoint {
 export function sessionLine(
   cal: TradingCalendar,
   points: SeriesPoint[],
-  opts: { previousClose?: number; price?: number; priceAt?: number; now?: number } = {},
+  opts: {
+    previousClose?: number;
+    price?: number;
+    priceAt?: number;
+    /**
+     * The market's newest last-trade stamp, when the caller has one (see
+     * `lastTradeByMarket`). Liveness belongs to the exchange, so a row whose
+     * own quote lags the bell still draws the session in progress.
+     */
+    lastTradeAt?: number;
+    now?: number;
+  } = {},
 ): { points: SeriesPoint[]; from: number; to: number; live: boolean } {
   const now = opts.now ?? Date.now();
-  const win = intradaySeries(cal, points, now, opts.priceAt);
+  const win = intradaySeries(cal, points, now, opts.lastTradeAt ?? opts.priceAt);
   if (!win.live) return win;
 
   const line = [...win.points];

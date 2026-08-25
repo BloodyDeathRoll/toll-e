@@ -13,6 +13,7 @@ import { ChangePill, AfterHours } from '@/components/quote-bits';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { useCharts, useFx, useIndexQuotes, useMovers, useQuotes } from '@/components/use-market-data';
 import { displaySymbol, getMarket } from '@/src/markets/registry';
+import { lastTradeByMarket } from '@/src/markets/last-trade';
 import { demo, demoFx } from '@/src/demo/data';
 import { fmtNum } from '@/lib/format';
 
@@ -51,6 +52,10 @@ export function MarketsScreen() {
   const moverCharts = useCharts(moverSymbols, '1d');
   const indexCharts = useCharts(data.indexes.map((ix) => ix.symbol), '1d');
 
+  // Liveness is the exchange's, not a row's: one post-bell print anywhere in
+  // the market keeps every row on the session-in-progress view.
+  const lastTrades = lastTradeByMarket([...Object.values(indexQuotes), ...Object.values(liveQuotes)]);
+
   const spark = (symbol: string, fallback: number[] | undefined, up: boolean) => {
     const series = (symbol in indexCharts ? indexCharts : moverCharts)[symbol];
     const q = indexQuotes[symbol] ?? liveQuotes[symbol];
@@ -62,6 +67,7 @@ export function MarketsScreen() {
           calendar={market.calendar}
           price={q?.price}
           priceAt={q?.asOf}
+          lastTradeAt={lastTrades[market.id]}
           width={91}
           height={36}
         />

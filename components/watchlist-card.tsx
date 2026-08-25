@@ -8,6 +8,7 @@ import { useChart, useQuotes } from '@/components/use-market-data';
 import { useWatchlists } from '@/components/use-watchlists';
 import { demoWatchlists } from '@/src/demo/data';
 import { getMarket, displaySymbol, marketForSymbol } from '@/src/markets/registry';
+import { lastTradeByMarket } from '@/src/markets/last-trade';
 import { fmtNum, fmtPct } from '@/lib/format';
 import type { Quote } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,9 @@ export function WatchlistCard({ marketId }: { marketId: string }) {
   const symbols =
     realList?.symbols.filter((s) => marketForSymbol(s).id === marketId).slice(0, 5) ?? [];
   const { quotes } = useQuotes(symbols, 60_000);
+  // Liveness is the exchange's, not a row's: one post-bell print anywhere in
+  // the market keeps every row on the session-in-progress view.
+  const lastTrades = lastTradeByMarket(Object.values(quotes));
 
   // Signed in with no lists yet: prompt instead of confusing demo data.
   const noLists = state.status === 'data' && !realList;
@@ -45,7 +49,13 @@ export function WatchlistCard({ marketId }: { marketId: string }) {
       )}
       {realList
         ? symbols.map((s) => (
-            <LiveRow key={s} symbol={s} quote={quotes[s]} numberLocale={marketForSymbol(s).numberLocale} />
+            <LiveRow
+              key={s}
+              symbol={s}
+              quote={quotes[s]}
+              lastTradeAt={lastTrades[marketForSymbol(s).id]}
+              numberLocale={marketForSymbol(s).numberLocale}
+            />
           ))
         : !noLists && demoWatchlists[0].items.slice(3, 6).map((q) => (
             <Link
@@ -84,10 +94,12 @@ export function WatchlistCard({ marketId }: { marketId: string }) {
 function LiveRow({
   symbol,
   quote,
+  lastTradeAt,
   numberLocale,
 }: {
   symbol: string;
   quote?: Quote;
+  lastTradeAt?: number;
   numberLocale: string;
 }) {
   const { data: series } = useChart(symbol, '1d');
@@ -109,6 +121,7 @@ function LiveRow({
             calendar={marketForSymbol(symbol).calendar}
             price={quote?.price}
             priceAt={quote?.asOf}
+            lastTradeAt={lastTradeAt}
             width={52}
             height={30}
           />
