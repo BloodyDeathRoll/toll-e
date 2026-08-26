@@ -237,6 +237,21 @@ export function displaySymbol(symbol: string, market: MarketDef): string {
 }
 
 /**
+ * An index rather than a listing — the registry decides, so adding an index
+ * to a market's `indexes` is all it takes for that symbol to be treated as
+ * one. An index has a level, not a price: no currency symbol, no position, no
+ * fundamentals, and nothing to buy.
+ */
+export function isIndexSymbol(symbol: string): boolean {
+  return Object.values(markets).some((m) => m.indexes.includes(symbol));
+}
+
+/** The market an index symbol belongs to, or undefined if it is not one. */
+export function marketForIndex(symbol: string): MarketDef | undefined {
+  return Object.values(markets).find((m) => m.indexes.includes(symbol));
+}
+
+/**
  * Israeli mutual fund symbols are the TASE fund id under the IL suffix —
  * '5118674.TA' (docs/mutual-funds-plan.md). Real TASE tickers are never all
  * digits, so the shape is the discriminator: these route to the Maya adapter

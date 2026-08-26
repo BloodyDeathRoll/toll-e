@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Link, useRouter } from '@/src/i18n/navigation';
 import { useMarket } from '@/components/app-shell/market-context';
 import { MarketMenu } from '@/components/app-shell/market-menu';
+import { RowLink } from '@/components/row-link';
 import { SessionStatus } from '@/components/session-indicator';
 import { StaleBadge } from '@/components/stale-badge';
 import { SessionSparkline, Sparkline } from '@/components/charts';
@@ -15,7 +16,7 @@ import { useCharts, useFx, useIndexQuotes, useMovers, useQuotes } from '@/compon
 import { displaySymbol, getMarket } from '@/src/markets/registry';
 import { lastTradeByMarket } from '@/src/markets/last-trade';
 import { demo, demoFx } from '@/src/demo/data';
-import { fmtNum } from '@/lib/format';
+import { fmtNum, fmtWithSym } from '@/lib/format';
 
 const quoteTabs = ['mostActive', 'gainers', 'losers'] as const;
 
@@ -99,8 +100,9 @@ export function MarketsScreen() {
           const value = live?.price ?? ix.value;
           const pct = live?.changePct ?? ix.changePct;
           return (
-            <div
+            <RowLink
               key={ix.symbol}
+              href={`/stock/${encodeURIComponent(ix.symbol)}`}
               className={
                 i < data.indexes.length - 1
                   ? 'flex items-center justify-between border-b border-border pb-2.5'
@@ -117,7 +119,7 @@ export function MarketsScreen() {
                   <ChangePill pct={pct} numberLocale={nl} />
                 </span>
               </span>
-            </div>
+            </RowLink>
           );
         })}
       </section>
@@ -157,8 +159,7 @@ export function MarketsScreen() {
                 {spark(q.symbol, undefined, q.changePct >= 0)}
                 <span className="flex flex-col items-end gap-0.5">
                   <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
-                    {market.currencySymbol}
-                    {fmtNum(q.price, nl)}
+                    {fmtWithSym(fmtNum(q.price, nl), market.currencySymbol)}
                   </span>
                   <ChangePill pct={q.changePct} numberLocale={nl} />
                   <AfterHours quote={live} numberLocale={nl} />

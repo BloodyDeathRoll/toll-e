@@ -24,9 +24,9 @@ import {
 } from '@/components/use-market-data';
 import type { ChartRange, StockAnalysis, StockFinancials } from '@/src/market-data/types';
 import { usePortfolioPositions } from '@/components/use-portfolio';
-import { isTaseFund, marketForSymbol } from '@/src/markets/registry';
+import { isIndexSymbol, isTaseFund, marketForSymbol } from '@/src/markets/registry';
 import { demo, getDemoHolding, getDemoStock } from '@/src/demo/data';
-import { fmtCompact, fmtDate, fmtMoneySigned, fmtNum, fmtPct } from '@/lib/format';
+import { fmtCompact, fmtDate, fmtMoneySigned, fmtNum, fmtPct, fmtSigned, fmtWithSym } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 const tabs = ['summary', 'news', 'analysis', 'financials'] as const;
@@ -60,7 +60,16 @@ export function StockScreen({ symbol }: { symbol: string }) {
   // A mutual fund is a NAV a day: no intraday ranges, no analyst coverage,
   // no financials — Summary and (market) News are the whole page.
   const fund = isTaseFund(symbol);
-  const visibleTabs = fund ? tabs.filter((k) => k === 'summary' || k === 'news') : [...tabs];
+  // An index is a level, not a listing: it has history and news, and none of
+  // the things a company has — no earnings, no multiple, no dividend, no
+  // shares to hold. It reads the same page with those parts absent rather
+  // than a page of its own, so one chart, one range bar and one news feed
+  // serve both.
+  const index = isIndexSymbol(symbol);
+  const visibleTabs =
+    fund || index ? tabs.filter((k) => k === 'summary' || k === 'news') : [...tabs];
+  // A level carries no currency: '4,120.55', never '$4,120.55'.
+  const px = (n: number) => (index ? fmtNum(n, nl) : fmtWithSym(fmtNum(n, nl), sym));
   const shownMobileRanges = fund
     ? mobileRanges.filter((r) => r !== '1D' && r !== '1W')
     : [...mobileRanges];
@@ -124,8 +133,8 @@ export function StockScreen({ symbol }: { symbol: string }) {
     volume: live?.volume !== undefined ? fmtCompact(live.volume, nl) : stock.stats.volume,
     marketCap:
       (live?.marketCap ?? summary?.stats.marketCap) !== undefined
-        ? `${sym}${fmtCompact((live?.marketCap ?? summary?.stats.marketCap) as number, nl)}`
-        : `${sym}${stock.stats.marketCap}`,
+        ? fmtWithSym(fmtCompact((live?.marketCap ?? summary?.stats.marketCap) as number, nl), sym)
+        : fmtWithSym(stock.stats.marketCap, sym),
     pe: summary?.stats.peTtm ?? stock.stats.pe,
     eps: summary?.stats.epsTtm ?? stock.stats.eps,
     divYieldPct: summary?.stats.dividendYieldPct ?? stock.stats.divYieldPct,
@@ -136,7 +145,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
   // ₪2 on a ₪20 stock and $2 on a $200 one are very different moves.
   const atrDisplay =
     stats.atr14 !== undefined
-      ? `${sym}${fmtNum(stats.atr14, nl)}${price > 0 ? ` (${fmtNum((stats.atr14 / price) * 100, nl)}%)` : ''}`
+      ? `${fmtWithSym(fmtNum(stats.atr14, nl), sym)}${price > 0 ? ` (${fmtNum((stats.atr14 / price) * 100, nl)}%)` : ''}`
       : '—';
   // A Hebrew reader gets Hebrew: the shipped TASE catalogue, or Wikipedia, or
   // — for anything neither covers — the reader's own browser, translating
@@ -165,8 +174,19 @@ export function StockScreen({ symbol }: { symbol: string }) {
     contribute('name'),
   );
   const aboutText = heAbout ?? (about.state === 'done' ? about.translated : summary?.description);
+  // An index is named by the registry's own strip entry, in the reader's
+  // language — the provider answers '^IXIC' with "NASDAQ Composite" and the
+  // demo fallback answers with another instrument's name entirely.
+  const indexEntry = index
+    ? demo[market.id]?.indexes.find((ix) => ix.symbol === symbol)
+    : undefined;
+  const indexName = indexEntry
+    ? (locale === 'he' ? (indexEntry.longNameHe ?? indexEntry.nameHe) : indexEntry.longName) ??
+      (locale === 'he' ? indexEntry.nameHe : undefined) ??
+      indexEntry.name
+    : undefined;
   const headline = {
-    name: heName ?? translatedName.translated ?? summary?.name ?? stock.name,
+    name: indexName ?? heName ?? translatedName.translated ?? summary?.name ?? stock.name,
     exchange: summary?.exchange ?? stock.exchange,
     sector: summary?.sector ?? stock.sector,
   };
@@ -258,16 +278,16 @@ export function StockScreen({ symbol }: { symbol: string }) {
     <UnderlineTabs tabs={visibleTabs} value={tab} onChange={setTab} label={(k) => t(k)} className="px-7" />
   );
 
-  const positionCard = holding && (
+  const positionCard = !index && holding && (
     <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
       <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
         {t('yourPosition')}
       </h2>
       <div className="grid grid-cols-2 gap-3 tabular-nums">
         <PositionCell label={t('shares')} value={fmtNum(holding.shares, nl, 1)} />
-        <PositionCell label={t('avgCost')} value={`${sym}${fmtNum(holding.avgCost, nl)}`} />
-        <PositionCell label={t('marketValue')} value={`${sym}${fmtNum(holding.marketValue, nl)}`} />
-        <PositionCell label={t('totalCost')} value={`${sym}${fmtNum(holding.totalCost, nl)}`} />
+        <PositionCell label={t('avgCost')} value={fmtWithSym(fmtNum(holding.avgCost, nl), sym)} />
+        <PositionCell label={t('marketValue')} value={fmtWithSym(fmtNum(holding.marketValue, nl), sym)} />
+        <PositionCell label={t('totalCost')} value={fmtWithSym(fmtNum(holding.totalCost, nl), sym)} />
         <PositionCell label={t('totalGain')} value={fmtMoneySigned(holding.totalGain, market.currency, nl)} gain={holding.totalGain >= 0} loss={holding.totalGain < 0} />
         <PositionCell label={t('daysGain')} value={fmtMoneySigned(daysGain, market.currency, nl)} gain={daysGain >= 0} loss={daysGain < 0} />
       </div>
@@ -278,12 +298,11 @@ export function StockScreen({ symbol }: { symbol: string }) {
             <div className="flex flex-col gap-1">
               <span className="text-[13px] text-muted-foreground">{t('taxIfSoldAll')}</span>
               <span dir="ltr" className="private text-xl font-semibold text-foreground tabular-nums">
-                {sym}
-                {fmtNum(holding.taxIfSold, nl)}
+                {fmtWithSym(fmtNum(holding.taxIfSold, nl), sym)}
               </span>
             </div>
             <span className="max-w-[150px] text-end text-xs leading-snug text-faint">
-              {t('taxIfSoldNote', { rate: taxRatePct, gain: `${sym}${fmtNum(holding.totalGain, nl)}` })}
+              {t('taxIfSoldNote', { rate: taxRatePct, gain: fmtWithSym(fmtNum(holding.totalGain, nl), sym) })}
             </span>
           </div>
         </>
@@ -513,7 +532,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
             iconClassName="start-4 size-4"
             fullPageResults
           />
-          <WatchlistStar wl={wl} symbol={symbol} className="size-6" />
+          {!index && <WatchlistStar wl={wl} symbol={symbol} className="size-6" />}
           <button
             type="button"
             aria-label={t('share')}
@@ -538,8 +557,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                 <div className="flex flex-col gap-1">
                   <span className="flex items-center gap-0.5 self-start" dir="ltr">
                     <span className="text-xl font-medium text-foreground tabular-nums">
-                      {sym}
-                      {fmtNum(shownPrice, nl)}
+                      {px(shownPrice)}
                     </span>
                     <ChangePill pct={shownPct} numberLocale={nl} className="ms-0.5" />
                   </span>
@@ -547,15 +565,16 @@ export function StockScreen({ symbol }: { symbol: string }) {
                     {scrubStamp ??
                       (live?.asOf
                         ? t('atClose', { time: new Date(live.asOf).toLocaleString(locale, { hour: '2-digit', minute: '2-digit' }) })
-                        : `${headline.exchange} · ${live?.currency ?? market.currency}`)}
+                        : index
+                          ? headline.name
+                          : `${headline.exchange} · ${live?.currency ?? market.currency}`)}
                   </span>
                 </div>
                 {live?.extended && (
                   <div className="flex flex-col gap-1">
                     <span className="flex items-center gap-0.5 self-start" dir="ltr">
                       <span className="text-xl font-medium text-foreground tabular-nums">
-                        {sym}
-                        {fmtNum(live.extended.price, nl)}
+                        {px(live.extended.price)}
                       </span>
                       <ChangePill pct={live.extended.changePct} numberLocale={nl} className="ms-0.5" />
                     </span>
@@ -616,7 +635,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
 
               {/* Your position — a card, like its desktop twin: these two are
                   self-contained readings, not another stretch of the page. */}
-              {holding && (
+              {!index && holding && (
                 <section className="mx-4 mt-4 flex flex-col gap-6 rounded-2xl border border-border bg-card p-5">
                   <h2 className="text-xs uppercase text-muted-foreground">{t('yourPosition')}</h2>
                   {/* Label above value, both on the start edge: a two-column
@@ -641,19 +660,18 @@ export function StockScreen({ symbol }: { symbol: string }) {
                     </span>
                     <span className="flex flex-col gap-2">
                       <span className="text-xs text-muted-foreground">{t('avgCost')}</span>
-                      <span dir="ltr" className="private text-base font-medium text-foreground">{sym}{fmtNum(holding.avgCost, nl)}</span>
+                      <span dir="ltr" className="private text-base font-medium text-foreground">{fmtWithSym(fmtNum(holding.avgCost, nl), sym)}</span>
                     </span>
                     <span className="flex flex-col items-end gap-2">
                       <span className="text-xs text-muted-foreground">{t('marketValue')}</span>
-                      <span dir="ltr" className="private text-base font-medium text-foreground">{sym}{fmtNum(holding.marketValue, nl)}</span>
+                      <span dir="ltr" className="private text-base font-medium text-foreground">{fmtWithSym(fmtNum(holding.marketValue, nl), sym)}</span>
                     </span>
                   </div>
                   {taxRatePct > 0 && (
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">{t('taxIfSoldAll')}</span>
                       <span dir="ltr" className="private text-base font-medium text-foreground tabular-nums">
-                        {sym}
-                        {fmtNum(holding.taxIfSold, nl)}
+                        {fmtWithSym(fmtNum(holding.taxIfSold, nl), sym)}
                       </span>
                     </div>
                   )}
@@ -668,7 +686,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   high={stats.dayHigh}
                   value={price}
                   label={t('dayRange')}
-                  sym={sym}
+                  sym={index ? '' : sym}
                   nl={nl}
                 />
                 <RangeSlider
@@ -676,12 +694,12 @@ export function StockScreen({ symbol }: { symbol: string }) {
                   high={stats.wk52High}
                   value={price}
                   label={t('wk52Range')}
-                  sym={sym}
+                  sym={index ? '' : sym}
                   nl={nl}
                 />
                 <div className="flex items-center justify-between tabular-nums">
-                  <StatCell label={t('prevClose')} value={live?.previousClose !== undefined ? `${sym}${fmtNum(live.previousClose, nl)}` : '—'} />
-                  <StatCell label={t('open')} value={`${sym}${fmtNum(stats.open, nl)}`} end />
+                  <StatCell label={t('prevClose')} value={live?.previousClose !== undefined ? px(live.previousClose) : '—'} />
+                  <StatCell label={t('open')} value={px(stats.open)} end />
                 </div>
                 <div className="flex items-center justify-between tabular-nums">
                   <StatCell label={t('vol')} value={stats.volume} note={t('aboutVol')} />
@@ -691,18 +709,26 @@ export function StockScreen({ symbol }: { symbol: string }) {
                     end
                   />
                 </div>
-                <div className="flex items-center justify-between tabular-nums">
-                  <StatCell label={t('pe')} value={fmtNum(stats.pe, nl, 1)} note={t('aboutPe')} />
-                  <StatCell label={t('mktCap')} value={stats.marketCap} note={t('aboutMktCap')} end />
-                </div>
-                <div className="flex items-center justify-between tabular-nums">
-                  <StatCell label={t('beta')} value={fmtNum(stats.beta, nl)} note={t('aboutBeta')} />
-                  <StatCell label={t('divYield')} value={`${fmtNum(stats.divYieldPct, nl)}%`} end />
-                </div>
-                <div className="flex items-center justify-between tabular-nums">
-                  <StatCell label={t('atr')} value={atrDisplay} note={t('aboutAtr')} />
-                  <StatCell label={t('earningsDate')} value={fmtDate(eventDate, locale)} end />
-                </div>
+                {/* A multiple, a market cap, a dividend and an earnings date
+                    are a company's. An index has none of them, and the demo
+                    fallback behind these cells would answer with another
+                    instrument's numbers rather than admit it. */}
+                {!index && (
+                  <>
+                    <div className="flex items-center justify-between tabular-nums">
+                      <StatCell label={t('pe')} value={fmtNum(stats.pe, nl, 1)} note={t('aboutPe')} />
+                      <StatCell label={t('mktCap')} value={stats.marketCap} note={t('aboutMktCap')} end />
+                    </div>
+                    <div className="flex items-center justify-between tabular-nums">
+                      <StatCell label={t('beta')} value={fmtNum(stats.beta, nl)} note={t('aboutBeta')} />
+                      <StatCell label={t('divYield')} value={`${fmtNum(stats.divYieldPct, nl)}%`} end />
+                    </div>
+                    <div className="flex items-center justify-between tabular-nums">
+                      <StatCell label={t('atr')} value={atrDisplay} note={t('aboutAtr')} />
+                      <StatCell label={t('earningsDate')} value={fmtDate(eventDate, locale)} end />
+                    </div>
+                  </>
+                )}
               </section>
 
               {aboutCard}
@@ -741,35 +767,42 @@ export function StockScreen({ symbol }: { symbol: string }) {
         <div className="flex items-end justify-between px-7 pt-5">
           <div className="flex flex-col gap-1.5">
             <span className="text-[13px] text-muted-foreground">
-              {headline.name} · {headline.exchange} · {headline.sector}
+              {index
+                ? headline.name
+                : `${headline.name} · ${headline.exchange} · ${headline.sector}`}
             </span>
             <div className="flex items-center gap-3.5">
               <div className="flex items-baseline gap-3.5" dir="ltr">
                 <span className="text-[28px] font-bold tracking-tight text-foreground">{stock.symbol}</span>
                 <span className="text-[28px] font-semibold text-foreground tabular-nums">
-                  {sym}
-                  {fmtNum(shownPrice, nl)}
+                  {px(shownPrice)}
                 </span>
                 <span className={cn('text-[15px] tabular-nums', shownPct >= 0 ? 'text-gain' : 'text-loss')}>
-                  {fmtMoneySigned(shownChange, market.currency, nl)} ({fmtPct(shownPct, nl)})
+                  {index ? fmtSigned(shownChange, nl) : fmtMoneySigned(shownChange, market.currency, nl)} (
+                  {fmtPct(shownPct, nl)})
                 </span>
                 {scrubStamp && <span className="text-[13px] text-muted-foreground">{scrubStamp}</span>}
               </div>
               <SessionBadge marketId={market.id} />
             </div>
           </div>
-          <div className="flex items-center gap-2.5">
-            <WatchlistMenuButton wl={wl} />
-            <button type="button" className="rounded-lg border border-border bg-card px-3.5 py-2 text-[13px] text-subtle">
-              {t('setAlert')}
-            </button>
-            <Link
-              href={`/transactions/new?symbol=${stock.symbol}`}
-              className="rounded-lg bg-primary px-[18px] py-2.5 text-[13px] font-semibold text-primary-foreground hover:opacity-90"
-            >
-              {t('addTransaction')}
-            </Link>
-          </div>
+          {/* An index cannot be held, so it carries neither a watchlist nor
+              an add-transaction button — the market tab is a data wall, and
+              an index in a watchlist would be a position that cannot exist. */}
+          {!index && (
+            <div className="flex items-center gap-2.5">
+              <WatchlistMenuButton wl={wl} />
+              <button type="button" className="rounded-lg border border-border bg-card px-3.5 py-2 text-[13px] text-subtle">
+                {t('setAlert')}
+              </button>
+              <Link
+                href={`/transactions/new?symbol=${stock.symbol}`}
+                className="rounded-lg bg-primary px-[18px] py-2.5 text-[13px] font-semibold text-primary-foreground hover:opacity-90"
+              >
+                {t('addTransaction')}
+              </Link>
+            </div>
+          )}
         </div>
         <div className="mt-4">{tabRow}</div>
 
@@ -782,18 +815,18 @@ export function StockScreen({ symbol }: { symbol: string }) {
                     {rangePills(shownDesktopRanges)}
                     <div dir="ltr" className="flex gap-[18px] text-xs text-muted-foreground tabular-nums">
                       <span>
-                        {t('open')} <span className="text-foreground">{sym}{fmtNum(stats.open, nl)}</span>
+                        {t('open')} <span className="text-foreground">{px(stats.open)}</span>
                       </span>
                       <span>
                         {t('day')}{' '}
                         <span className="text-foreground">
-                          {sym}{fmtNum(stats.dayLow, nl)} – {sym}{fmtNum(stats.dayHigh, nl)}
+                          {px(stats.dayLow)} – {px(stats.dayHigh)}
                         </span>
                       </span>
                       <span>
                         {t('wk52')}{' '}
                         <span className="text-foreground">
-                          {sym}{fmtNum(stats.wk52Low, nl)} – {sym}{fmtNum(stats.wk52High, nl)}
+                          {px(stats.wk52Low)} – {px(stats.wk52High)}
                         </span>
                       </span>
                       <span>
@@ -840,26 +873,49 @@ export function StockScreen({ symbol }: { symbol: string }) {
               <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
                 {t('keyStats')}
               </h2>
+              {/* The session's own figures are the whole card for an index —
+                  the rest of this list belongs to a company. */}
               <div className="flex flex-col gap-3 text-[13px] tabular-nums">
-                <Row label={t('marketCap')} value={stats.marketCap} />
-                <Row label={t('peTtm')} value={fmtNum(stats.pe, nl, 1)} />
-                <Row label={t('epsTtm')} value={`${sym}${fmtNum(stats.eps, nl)}`} />
-                <Row label={t('divYield')} value={`${fmtNum(stats.divYieldPct, nl)}%`} />
-                <Row label={t('beta')} value={fmtNum(stats.beta, nl)} />
-                <Row label={t('atr')} value={atrDisplay} note={t('aboutAtr')} />
+                {index ? (
+                  <>
+                    <Row
+                      label={t('prevClose')}
+                      value={live?.previousClose !== undefined ? px(live.previousClose) : '—'}
+                    />
+                    <Row label={t('open')} value={px(stats.open)} />
+                    <Row label={t('dayRange')} value={`${px(stats.dayLow)} – ${px(stats.dayHigh)}`} />
+                    <Row label={t('wk52Range')} value={`${px(stats.wk52Low)} – ${px(stats.wk52High)}`} />
+                    <Row label={t('vol')} value={stats.volume} />
+                    <Row
+                      label={t('avgVol')}
+                      value={live?.avgVolume !== undefined ? fmtCompact(live.avgVolume, nl) : '—'}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Row label={t('marketCap')} value={stats.marketCap} />
+                    <Row label={t('peTtm')} value={fmtNum(stats.pe, nl, 1)} />
+                    <Row label={t('epsTtm')} value={fmtWithSym(fmtNum(stats.eps, nl), sym)} />
+                    <Row label={t('divYield')} value={`${fmtNum(stats.divYieldPct, nl)}%`} />
+                    <Row label={t('beta')} value={fmtNum(stats.beta, nl)} />
+                    <Row label={t('atr')} value={atrDisplay} note={t('aboutAtr')} />
+                  </>
+                )}
               </div>
             </section>
-            <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card p-5">
-              <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-                {t('nextEvent')}
-              </h2>
-              <span className="text-[15px] text-foreground">
-                {eventTitle} · {fmtDate(eventDate, locale)}
-              </span>
-              <span className="text-[13px] text-muted-foreground">
-                {t('daysOut', { days: daysOut })} · <span className="text-brand">{t('setReminder')}</span>
-              </span>
-            </section>
+            {!index && (
+              <section className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card p-5">
+                <h2 className="text-xs font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+                  {t('nextEvent')}
+                </h2>
+                <span className="text-[15px] text-foreground">
+                  {eventTitle} · {fmtDate(eventDate, locale)}
+                </span>
+                <span className="text-[13px] text-muted-foreground">
+                  {t('daysOut', { days: daysOut })} · <span className="text-brand">{t('setReminder')}</span>
+                </span>
+              </section>
+            )}
           </div>
         </div>
       </div>
@@ -887,9 +943,9 @@ function RangeSlider({
   return (
     <div className="flex flex-col gap-2">
       <div dir="ltr" className="flex items-center justify-between text-xs font-medium tabular-nums">
-        <span className="text-foreground">{sym}{fmtNum(low, nl)}</span>
+        <span className="text-foreground">{fmtWithSym(fmtNum(low, nl), sym)}</span>
         <span className="text-muted-foreground">{label}</span>
-        <span className="text-foreground">{sym}{fmtNum(high, nl)}</span>
+        <span className="text-foreground">{fmtWithSym(fmtNum(high, nl), sym)}</span>
       </div>
       {/* 4px rounded track, 20px marker — Figma key-statistics rows. */}
       <div dir="ltr" className="relative h-5">
@@ -1013,9 +1069,9 @@ function RevEarnBars({
   return (
     <div dir="ltr" className="flex gap-3.5">
       <div className="relative h-[150px] w-[52px] shrink-0 text-[11px] text-muted-foreground tabular-nums">
-        <span className="absolute -top-1.5 end-0">{sym}{fmtCompact(max, nl)}</span>
-        <span className="absolute end-0" style={{ top: zeroTop - 6 }}>{sym}0</span>
-        {min < 0 && <span className="absolute -bottom-1.5 end-0">-{sym}{fmtCompact(-min, nl)}</span>}
+        <span className="absolute -top-1.5 end-0">{fmtWithSym(fmtCompact(max, nl), sym)}</span>
+        <span className="absolute end-0" style={{ top: zeroTop - 6 }}>{fmtWithSym('0', sym)}</span>
+        {min < 0 && <span className="absolute -bottom-1.5 end-0">{fmtWithSym(`-${fmtCompact(-min, nl)}`, sym)}</span>}
       </div>
       <div className="relative flex-1">
         {[0, zeroTop, ...(min < 0 ? [H] : [])].map((y) => (
@@ -1107,8 +1163,7 @@ function TargetCard({
     >
       <span className={cn('size-5 rounded-full', tone)} />
       <span className="whitespace-nowrap text-[11px] text-muted-foreground tabular-nums">
-        {label} {sym}
-        {fmtNum(v, nl, 0)}
+        {label} {fmtWithSym(fmtNum(v, nl, 0), sym)}
       </span>
     </span>
   );
@@ -1119,12 +1174,10 @@ function TargetCard({
       <div dir="ltr" className="flex flex-col gap-3">
         <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
           <span>
-            {t('targetLow')}: {sym}
-            {fmtNum(target.low, nl)}
+            {t('targetLow')}: {fmtWithSym(fmtNum(target.low, nl), sym)}
           </span>
           <span>
-            {t('targetHigh')}: {sym}
-            {fmtNum(target.high, nl)}
+            {t('targetHigh')}: {fmtWithSym(fmtNum(target.high, nl), sym)}
           </span>
         </div>
         <div className="relative h-12">
@@ -1205,7 +1258,7 @@ function EpsBeatsCard({ eps, sym, nl }: { eps: StockFinancials['epsHistory']; sy
                   <span
                     className="absolute left-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-chart-2 bg-card"
                     style={{ top: y(q.estimate) }}
-                    title={`${t('estimate')} ${sym}${fmtNum(q.estimate, nl)}`}
+                    title={`${t('estimate')} ${fmtWithSym(fmtNum(q.estimate, nl), sym)}`}
                   />
                 )}
                 {q.actual !== undefined && (
@@ -1215,7 +1268,7 @@ function EpsBeatsCard({ eps, sym, nl }: { eps: StockFinancials['epsHistory']; sy
                       beat ? 'bg-gain' : 'bg-loss',
                     )}
                     style={{ top: y(q.actual) }}
-                    title={`${t('actual')} ${sym}${fmtNum(q.actual, nl)}`}
+                    title={`${t('actual')} ${fmtWithSym(fmtNum(q.actual, nl), sym)}`}
                   />
                 )}
               </div>
@@ -1284,7 +1337,7 @@ function HoldersCard({ holders, sym, nl }: { holders: StockFinancials['holders']
                   <span dir="ltr">{fmtNum(h.pctHeld, nl)}%</span>
                 </span>
                 <span className="w-20 text-end text-muted-foreground">
-                  <span dir="ltr">{sym}{fmtCompact(h.value, nl)}</span>
+                  <span dir="ltr">{fmtWithSym(fmtCompact(h.value, nl), sym)}</span>
                 </span>
               </span>
             </div>
