@@ -12,7 +12,7 @@ import { useCharts, useQuotes } from '@/components/use-market-data';
 import { getMarket, displaySymbol } from '@/src/markets/registry';
 import { lastTradeByMarket } from '@/src/markets/last-trade';
 import { demo } from '@/src/demo/data';
-import { fmtCompact, fmtNum, fmtPct, fmtSigned } from '@/lib/format';
+import { fmtCompact, fmtNum, fmtPct, fmtSigned, fmtWithSym } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 export interface HoldingRow {
@@ -198,8 +198,7 @@ export function HoldingsTable({
                   )}
                 </span>
                 <span dir="ltr" className="text-end text-foreground">
-                  {market.currencySymbol}
-                  {fmtNum(price, nl)}
+                  {fmtWithSym(fmtNum(price, nl), market.currencySymbol)}
                 </span>
                 {unpriced ? (
                   // A 0.00% change here would be a claim about today that no

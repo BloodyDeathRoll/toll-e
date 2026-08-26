@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTax } from '@/components/use-tax';
 import { getMarket, displaySymbol } from '@/src/markets/registry';
 import { demo } from '@/src/demo/data';
-import { fmtDate, fmtMonth, fmtNum, fmtSigned } from '@/lib/format';
+import { fmtDate, fmtMonth, fmtNum, fmtSigned, fmtWithSym } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 const mobileTabs = ['monthly', 'yearly'] as const;
@@ -470,25 +470,23 @@ export function TaxScreen() {
                     </span>
                     {!open && (
                       <span dir="ltr" className="private self-start text-xl font-bold text-foreground tabular-nums">
-                        {sym}
-                        {fmtNum(m.paid ?? 0, nl)}
+                        {fmtWithSym(fmtNum(m.paid ?? 0, nl), sym)}
                       </span>
                     )}
                   </button>
                   {open && (
                     <div className="flex flex-col gap-2 pt-1">
                       <p dir="ltr" className="private self-start text-[28px] font-bold tracking-tight text-foreground tabular-nums">
-                        {sym}
-                        {fmtNum(m.paid ?? 0, nl)}
+                        {fmtWithSym(fmtNum(m.paid ?? 0, nl), sym)}
                       </p>
                       <div className="flex flex-col gap-[7px] text-sm tabular-nums">
-                        <Row label={t('realizedGains')} value={`${sym}${fmtNum(m.gains ?? 0, nl)}`} />
+                        <Row label={t('realizedGains')} value={fmtWithSym(fmtNum(m.gains ?? 0, nl), sym)} />
                         {/* MonthRow.losses is stored already-negated (or null
                             for a month with none), so negating it again both
                             printed "-0.00" on a quiet month and showed a real
                             loss as a positive number — the one place in the
                             app that did. */}
-                        <Row label={t('realizedLosses')} value={`${sym}${fmtNum(m.losses ?? 0, nl)}`} />
+                        <Row label={t('realizedLosses')} value={fmtWithSym(fmtNum(m.losses ?? 0, nl), sym)} />
                         {/* A rule earns room on both sides of it. The 7px flex
                             gap that separates two rows is not enough to
                             separate two *groups* — it left every rule pressed
@@ -503,14 +501,14 @@ export function TaxScreen() {
                             a rule reads 25px, the same as the one under the
                             month's total. */}
                         <div className="mt-[10px] mb-[13px] h-px bg-border" />
-                        <Row label={t('taxable')} value={`${sym}${fmtNum(m.net, nl)}`} bold />
+                        <Row label={t('taxable')} value={fmtWithSym(fmtNum(m.net, nl), sym)} bold />
                         <div className="flex justify-end">
                           <MoreLink href="/transactions">{t('transactionsDetails')}</MoreLink>
                         </div>
                         {/* Only earlier losses in this same year reach a month;
                             the registered shield settles at filing, not here. */}
                         {m.poolUsed > 0 && (
-                          <Row label={t('offsetByPool')} value={`${sym}${fmtNum(-m.poolUsed, nl)}`} />
+                          <Row label={t('offsetByPool')} value={fmtWithSym(fmtNum(-m.poolUsed, nl), sym)} />
                         )}
                         <div className="mt-3 mb-[15px] h-px bg-border" />
                         {/* The rate rides on the total rather than standing as
@@ -519,7 +517,7 @@ export function TaxScreen() {
                             the one right under it. */}
                         <Row
                           label={t('taxRowAt', { rate: view.ratePct })}
-                          value={m.paid === null ? t('shielded') : `${sym}${fmtNum(m.paid, nl)}`}
+                          value={m.paid === null ? t('shielded') : fmtWithSym(fmtNum(m.paid, nl), sym)}
                           bold
                           big
                         />
@@ -558,8 +556,7 @@ export function TaxScreen() {
                     </span>
                     {!open && (
                       <span dir="ltr" className="private self-start text-xl font-bold text-foreground tabular-nums">
-                        {sym}
-                        {fmtNum(y.paid, nl)}
+                        {fmtWithSym(fmtNum(y.paid, nl), sym)}
                       </span>
                     )}
                   </button>
@@ -570,8 +567,7 @@ export function TaxScreen() {
                           <div className="flex flex-col gap-0.5">
                             <span className="text-xs text-muted-foreground">{t('withheldThisYear')}</span>
                             <span dir="ltr" className="private self-start text-[28px] font-bold tracking-tight text-foreground tabular-nums">
-                              {sym}
-                              {fmtNum(y.paid, nl)}
+                              {fmtWithSym(fmtNum(y.paid, nl), sym)}
                             </span>
                           </div>
                           <div className="flex items-end justify-between">
@@ -580,15 +576,13 @@ export function TaxScreen() {
                                 {t('trueLiability', { date: fmtDate(`${y.year + 1}-04-30`, locale) })}
                               </span>
                               <span dir="ltr" className="private self-start text-xl font-bold text-loss tabular-nums">
-                                {sym}
-                                {fmtNum(y.owed, nl)}
+                                {fmtWithSym(fmtNum(y.owed, nl), sym)}
                               </span>
                             </div>
                             <div className="flex flex-col items-end gap-0.5 text-end">
                               <span className="text-xs text-muted-foreground">{t('taxableShort')}</span>
                               <span dir="ltr" className="private self-end text-xl font-bold text-foreground tabular-nums">
-                                {sym}
-                                {fmtNum(y.taxable, nl)}
+                                {fmtWithSym(fmtNum(y.taxable, nl), sym)}
                               </span>
                             </div>
                           </div>
@@ -599,8 +593,7 @@ export function TaxScreen() {
                                 {t('refundIn', { year: y.year + 1 })}
                               </span>
                               <span dir="ltr" className="private self-start text-xl font-bold text-gain tabular-nums">
-                                {sym}
-                                {fmtNum(y.refund, nl)}
+                                {fmtWithSym(fmtNum(y.refund, nl), sym)}
                               </span>
                             </div>
                           )}
@@ -613,8 +606,7 @@ export function TaxScreen() {
                           <span className="flex items-center gap-2">
                             <Shield className="size-5 text-gain" aria-hidden />
                             <span dir="ltr" className="private text-[28px] font-bold tracking-tight text-foreground tabular-nums">
-                              {sym}
-                              {fmtNum(y.shieldOut, nl)}
+                              {fmtWithSym(fmtNum(y.shieldOut, nl), sym)}
                             </span>
                           </span>
                         </div>
@@ -668,8 +660,7 @@ export function TaxScreen() {
                   {t('withheldThisYear')}
                 </h2>
                 <p dir="ltr" className="private self-start text-[32px] font-semibold tracking-tight text-foreground tabular-nums">
-                  {sym}
-                  {fmtNum(view.paid, nl)}
+                  {fmtWithSym(fmtNum(view.paid, nl), sym)}
                 </p>
                 {view.cash ? (
                   <>
@@ -683,7 +674,7 @@ export function TaxScreen() {
                   <p className="text-[13px] text-muted-foreground">
                     {view.refund > 0
                       ? t('refundNote', {
-                          amount: `${sym}${fmtNum(view.refund, nl)}`,
+                          amount: fmtWithSym(fmtNum(view.refund, nl), sym),
                           year: view.year + 1,
                         })
                       : t('withheldNote', { year: view.year })}
@@ -709,14 +700,13 @@ export function TaxScreen() {
                   {t('lossShieldLeft')}
                 </h2>
                 <p dir="ltr" className="private self-start text-[32px] font-semibold tracking-tight text-foreground tabular-nums">
-                  {sym}
-                  {fmtNum(view.shieldLeft, nl, 0)}
+                  {fmtWithSym(fmtNum(view.shieldLeft, nl, 0), sym)}
                 </p>
                 {/* Money value leads; the loss standing behind it is secondary. */}
                 <p className="text-[13px] text-muted-foreground tabular-nums">
                   {view.shieldLossLeft > 0 && (
                     <span className="private">
-                      {t('behindLosses', { amount: `${sym}${fmtNum(view.shieldLossLeft, nl, 0)}` })}{' '}
+                      {t('behindLosses', { amount: fmtWithSym(fmtNum(view.shieldLossLeft, nl, 0), sym) })}{' '}
                     </span>
                   )}
                   {view.shieldApplied > 0
@@ -803,13 +793,13 @@ export function TaxScreen() {
               <p className="private text-sm leading-relaxed text-foreground">
                 {view.shieldApplied > 0
                   ? t('shieldNoteApplied', {
-                      amount: `${sym}${fmtNum(view.shieldApplied, nl, 0)}`,
+                      amount: fmtWithSym(fmtNum(view.shieldApplied, nl, 0), sym),
                       taxYear: view.year,
                       refundYear: view.year + 1,
                     })
                   : t('shieldNoteNone', {
-                      amount: `${sym}${fmtNum(view.shieldLeft, nl, 0)}`,
-                      losses: `${sym}${fmtNum(view.shieldLossLeft, nl, 0)}`,
+                      amount: fmtWithSym(fmtNum(view.shieldLeft, nl, 0), sym),
+                      losses: fmtWithSym(fmtNum(view.shieldLossLeft, nl, 0), sym),
                     })}
               </p>
               <MoreLink href="/tax">{t('howCarriedLossesWork')}</MoreLink>

@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { InfoDot } from '@/components/info-dot';
-import { fmtNum } from '@/lib/format';
+import { fmtNum, fmtWithSym } from '@/lib/format';
 
 /**
  * The two tax shields, side by side wherever they appear — the Tax screen and
@@ -61,8 +61,7 @@ export function ShieldRows({
             <InfoDot label={r.label} note={r.note} className="static" />
           </span>
           <span dir="ltr" className="private text-base font-semibold text-foreground tabular-nums">
-            {sym}
-            {fmtNum(r.value, numberLocale, 0)}
+            {fmtWithSym(fmtNum(r.value, numberLocale, 0), sym)}
           </span>
         </div>
       ))}

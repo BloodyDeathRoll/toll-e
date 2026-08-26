@@ -9,7 +9,7 @@ import { lineMatches } from '@/components/app-shell/search-scope';
 import { ErrorCard } from '@/components/error-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMarket } from '@/src/markets/registry';
-import { fmtDate, fmtNum } from '@/lib/format';
+import { fmtDate, fmtNum, fmtWithSym } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface TxRow {
@@ -282,8 +282,7 @@ export function JournalPane({
                   </Link>
                   <span className="private flex flex-col items-end tabular-nums">
                     <span dir="ltr" className="text-base font-bold text-foreground">
-                      {market.currencySymbol}
-                      {fmtNum(shares * price, nl)}
+                      {fmtWithSym(fmtNum(shares * price, nl), market.currencySymbol)}
                     </span>
                     <span dir="ltr" className="text-xs text-muted-foreground">
                       {fmtNum(shares, nl, 0)} X {fmtNum(price, nl)}

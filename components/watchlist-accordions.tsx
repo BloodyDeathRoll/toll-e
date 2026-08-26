@@ -13,7 +13,7 @@ import { useWatchlists } from '@/components/use-watchlists';
 import { HOLDINGS_LIST, listInMarket } from '@/src/watchlists/constants';
 import { displaySymbol, getMarket, marketForSymbol } from '@/src/markets/registry';
 import { lastTradeByMarket } from '@/src/markets/last-trade';
-import { fmtNum } from '@/lib/format';
+import { fmtNum, fmtWithSym } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 /**
@@ -128,7 +128,7 @@ export function WatchlistAccordions({ marketId }: { marketId: string }) {
                               says nothing, rather than the row silently
                               losing its price line. */}
                           <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
-                            {q ? `${sm.currencySymbol}${fmtNum(q.price, sm.numberLocale)}` : NO_VALUE}
+                            {q ? fmtWithSym(fmtNum(q.price, sm.numberLocale), sm.currencySymbol) : NO_VALUE}
                           </span>
                           <ChangePill pct={q?.changePct} numberLocale={nl} className="text-[16px]" />
                           <AfterHours quote={q} numberLocale={nl} />

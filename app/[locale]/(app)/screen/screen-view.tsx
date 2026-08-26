@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useScreen } from '@/components/use-market-data';
 import { displaySymbol, getMarket, marketForSymbol } from '@/src/markets/registry';
 import type { ScreenKind } from '@/src/market-data/types';
-import { fmtCompact, fmtNum } from '@/lib/format';
+import { fmtCompact, fmtNum, fmtWithSym } from '@/lib/format';
 
 /**
  * A classification's leading names, largest first — a search-results page for
@@ -75,15 +75,13 @@ export function ScreenView({ kind, name }: { kind: ScreenKind; name: string }) {
                 <span className="truncate text-xs text-foreground">{q.name}</span>
                 {q.marketCap !== undefined && (
                   <span dir="ltr" className="text-xs text-muted-foreground tabular-nums">
-                    {sm.currencySymbol}
-                    {fmtCompact(q.marketCap, nl)}
+                    {fmtWithSym(fmtCompact(q.marketCap, nl), sm.currencySymbol)}
                   </span>
                 )}
               </span>
               <span className="flex shrink-0 flex-col items-end gap-0.5">
                 <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
-                  {sm.currencySymbol}
-                  {fmtNum(q.price, sm.numberLocale)}
+                  {fmtWithSym(fmtNum(q.price, sm.numberLocale), sm.currencySymbol)}
                 </span>
                 <ChangePill pct={q.changePct} numberLocale={nl} className="text-[16px]" />
               </span>

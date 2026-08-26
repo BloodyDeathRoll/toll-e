@@ -15,7 +15,7 @@ import { tradeCommission } from '@/src/brokers/fees';
 import { applyOverrides } from '@/src/brokers/overrides';
 import { brokers, scheduleFor } from '@/src/brokers/registry';
 import { getMarket } from '@/src/markets/registry';
-import { fmtNum, fmtSigned } from '@/lib/format';
+import { fmtNum, fmtSigned, fmtWithSym } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 export function TxScreen() {
@@ -548,8 +548,7 @@ export function TxScreen() {
       <div className="mx-6 flex items-center justify-between gap-3 border-t border-border py-6">
         <span className="text-base font-medium text-foreground">{t('total')}</span>
         <span dir="ltr" className="private text-base font-bold text-foreground tabular-nums">
-          {sym}
-          {fmtNum((shares || 0) * (price || 0), nl)}
+          {fmtWithSym(fmtNum((shares || 0) * (price || 0), nl), sym)}
         </span>
       </div>
 
@@ -601,8 +600,7 @@ export function TxScreen() {
             <div className="flex justify-between font-semibold">
               <span className="text-foreground">{t('taxRow')}</span>
               <span dir="ltr" className="text-[15px] text-foreground">
-                {sym}
-                {fmtNum(serverPreview.taxDelta, nl)}
+                {fmtWithSym(fmtNum(serverPreview.taxDelta, nl), sym)}
               </span>
             </div>
             {/* The fee, as one line and no more: what it cost, next to what
@@ -612,8 +610,7 @@ export function TxScreen() {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('brokerFees')}</span>
                 <span dir="ltr" className="text-foreground">
-                  {sym}
-                  {fmtNum(commission, nl)}
+                  {fmtWithSym(fmtNum(commission, nl), sym)}
                 </span>
               </div>
             )}

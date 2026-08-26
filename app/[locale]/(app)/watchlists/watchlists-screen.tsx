@@ -18,7 +18,7 @@ import { useWatchlists, type WatchlistData } from '@/components/use-watchlists';
 import { demoWatchlists } from '@/src/demo/data';
 import { HOLDINGS_LIST, listInMarket } from '@/src/watchlists/constants';
 import { getMarket, displaySymbol, marketForSymbol } from '@/src/markets/registry';
-import { fmtNum } from '@/lib/format';
+import { fmtNum, fmtWithSym } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 type Mode =
@@ -260,7 +260,7 @@ export function WatchlistsScreen({
                         <span className="flex shrink-0 flex-col items-end gap-0.5">
                           <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
                             {price !== undefined
-                              ? `${sm.currencySymbol}${fmtNum(price, sm.numberLocale)}`
+                              ? fmtWithSym(fmtNum(price, sm.numberLocale), sm.currencySymbol)
                               : NO_VALUE}
                           </span>
                           <ChangePill pct={pct} numberLocale={nl} variant="soft" className="text-[16px]" />

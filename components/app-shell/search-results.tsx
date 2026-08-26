@@ -10,7 +10,7 @@ import { useWatchlists } from '@/components/use-watchlists';
 import { WatchlistSheet } from '@/components/watchlist-sheet';
 import { displaySymbol, getMarket } from '@/src/markets/registry';
 import type { SearchResult } from '@/src/market-data/types';
-import { fmtNum } from '@/lib/format';
+import { fmtNum, fmtWithSym } from '@/lib/format';
 
 /**
  * Typeahead results (Figma "HP search auto complete"): a full-page list under
@@ -71,8 +71,7 @@ export function SearchResults({
               <span className="flex flex-col items-end gap-0.5">
                 {q && (
                   <span dir="ltr" className="text-sm font-bold text-foreground tabular-nums">
-                    {rm.currencySymbol}
-                    {fmtNum(q.price, nl)}
+                    {fmtWithSym(fmtNum(q.price, nl), rm.currencySymbol)}
                   </span>
                 )}
                 {q && <ChangePill pct={q.changePct} numberLocale={nl} />}

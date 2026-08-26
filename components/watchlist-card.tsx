@@ -9,7 +9,7 @@ import { useWatchlists } from '@/components/use-watchlists';
 import { demoWatchlists } from '@/src/demo/data';
 import { getMarket, displaySymbol, marketForSymbol } from '@/src/markets/registry';
 import { lastTradeByMarket } from '@/src/markets/last-trade';
-import { fmtNum, fmtPct } from '@/lib/format';
+import { fmtNum, fmtPct, fmtWithSym } from '@/lib/format';
 import type { Quote } from '@/src/market-data/types';
 import { cn } from '@/lib/utils';
 
@@ -67,8 +67,7 @@ export function WatchlistCard({ marketId }: { marketId: string }) {
               <span className="flex items-center gap-3">
                 <Sparkline points={q.spark} up={q.changePct >= 0} width={52} height={30} />
                 <span dir="ltr" className="min-w-[60px] text-end text-sm text-foreground">
-                  {marketForSymbol(q.symbol).currencySymbol}
-                  {fmtNum(q.price, market.numberLocale)}
+                  {fmtWithSym(fmtNum(q.price, market.numberLocale), marketForSymbol(q.symbol).currencySymbol)}
                 </span>
                 <span
                   dir="ltr"
@@ -129,7 +128,7 @@ function LiveRow({
           <span className="w-[52px]" aria-hidden />
         )}
         <span dir="ltr" className="min-w-[60px] text-end text-sm text-foreground">
-          {quote ? `${marketForSymbol(symbol).currencySymbol}${fmtNum(quote.price, numberLocale)}` : '—'}
+          {quote ? fmtWithSym(fmtNum(quote.price, numberLocale), marketForSymbol(symbol).currencySymbol) : '—'}
         </span>
         <span
           dir="ltr"
