@@ -78,6 +78,9 @@ export interface PositionsPayload {
     totalGainPct: number;
     dayGain: number;
     dayGainPct: number;
+    /** All-time realized P&L (FIFO), and it against the cost it was made on. */
+    realizedGain: number;
+    realizedGainPct: number;
   };
 }
 
@@ -93,7 +96,7 @@ export async function getPositions(
   txs?: EngineTx[],
 ): Promise<PositionsPayload> {
   txs ??= (await listTransactions(portfolio.id)).map(toEngineTx);
-  const { holdings } = computePortfolio(txs);
+  const { holdings, realized } = computePortfolio(txs);
 
   const symbols = holdings.map((h) => h.symbol);
   // A quote miss is already survivable per symbol (below: price falls back to
@@ -137,6 +140,11 @@ export async function getPositions(
     { marketValue: 0, totalCost: 0, totalGain: 0, dayGain: 0 },
   );
   const prevValue = totals.marketValue - totals.dayGain;
+  // Realized is the whole sale history, not the open positions' — so it comes
+  // from the FIFO events, and its percent is measured against the cost those
+  // sales consumed, never against what is still held.
+  const realizedGain = realized.reduce((s, e) => s + e.gain, 0);
+  const realizedCost = realized.reduce((s, e) => s + e.costBasis, 0);
   return {
     portfolioId: portfolio.id,
     currency: portfolio.currency,
@@ -145,6 +153,8 @@ export async function getPositions(
       ...totals,
       totalGainPct: totals.totalCost > 0 ? (totals.totalGain / totals.totalCost) * 100 : 0,
       dayGainPct: prevValue > 0 ? (totals.dayGain / prevValue) * 100 : 0,
+      realizedGain,
+      realizedGainPct: realizedCost > 0 ? (realizedGain / realizedCost) * 100 : 0,
     },
   };
 }

@@ -68,6 +68,8 @@ export interface DemoMarketData {
     dayChangePct: number;
     allTimeChange: number;
     allTimePct: number;
+    realizedChange: number;
+    realizedPct: number;
     /** Portfolio value curve, y-coords in a 0–150 viewBox. */
     chart: number[];
   };
@@ -99,6 +101,8 @@ export const demo: Record<string, DemoMarketData> = {
       dayChangePct: 3.68,
       allTimeChange: 8_357.89,
       allTimePct: 7.1,
+      realizedChange: 2_140.5,
+      realizedPct: 4.32,
       chart: [124, 116, 131, 100, 110, 92, 98, 74, 84, 58, 68, 42, 52, 30, 38, 20, 14],
     },
     indexes: [
@@ -155,6 +159,8 @@ export const demo: Record<string, DemoMarketData> = {
       dayChangePct: 2.34,
       allTimeChange: 24_030.6,
       allTimePct: 6.18,
+      realizedChange: 7_310.4,
+      realizedPct: 3.94,
       chart: [118, 110, 124, 96, 104, 88, 94, 72, 80, 58, 66, 44, 52, 34, 40, 28, 24],
     },
     indexes: [

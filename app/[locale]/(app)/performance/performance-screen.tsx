@@ -27,8 +27,10 @@ type State =
   | { status: 'data'; data: PerformancePayload };
 
 /**
- * Performance (§3.4) — two cards and nothing else: where the money is, and
- * what it has done.
+ * Performance (§3.4) — what the money did, then where it sits, then what
+ * stands against the bill, then what it cost to get there. The result of the
+ * year leads because it is the question the screen is opened with; the shield
+ * and the fees qualify that answer rather than precede it.
  *
  * They were one card on the Activity screen, stacked above the tabs, which
  * made every visit to the transaction list begin by scrolling past a page of
@@ -156,105 +158,6 @@ export function PerformanceScreen() {
         )}
 
         {data && (
-          /* What the tax authority had registered when the selected year
-             opened — last year's balance plus whatever last year's own result
-             added to or drew from it. It is a standing figure the year is
-             filed against rather than a result of the year, so it sits in its
-             own card directly under the picker, the way the Tax screen gives
-             the brokerage shield its own card. */
-          <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
-            <ShieldRows
-              show="irs"
-              pool={data.totals.pool}
-              shield={data.totals.irsShield}
-              sym={market.currencySymbol}
-              numberLocale={nl}
-            />
-          </section>
-        )}
-
-        {data && data.year === thisYear && slices.length > 0 && (
-          /* Where the money is — the holdings as they stand, which is the only
-             sense a breakdown of a portfolio has. It therefore has no reading
-             for a past year, so it shows only while the current one is
-             picked rather than sitting under an older year's figures. */
-          <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
-            <h2 className="text-[11px] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-              {t('sectors')}
-            </h2>
-            <AllocationDonut slices={slices} numberLocale={nl} />
-          </section>
-        )}
-
-        {data && data.costs.totalConverted > 0 && (
-          /* What the year cost in fees — the tax engine's quieter sibling.
-             Commission rows stay native per currency and are never summed
-             across; only the total converts, at the payload's rate. */
-          <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
-            <h2 className="text-[11px] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-              {t('costsTitle')}
-            </h2>
-            <div className="flex flex-col gap-1.5 text-sm tabular-nums">
-              {Object.entries(data.costs.tradeCommissions).map(([ccy, amount]) => (
-                <div key={ccy} className="flex justify-between gap-3">
-                  <span className="flex items-center gap-1.5 text-muted-foreground">
-                    {Object.keys(data.costs.tradeCommissions).length > 1
-                      ? `${t('tradeCommissions')} (${ccy})`
-                      : t('tradeCommissions')}
-                    <InfoDot label={t('tradeCommissions')} note={t('commissionsInPnlNote')} />
-                  </span>
-                  <span dir="ltr" className="private text-foreground">
-                    {money(amount, ccy)}
-                  </span>
-                </div>
-              ))}
-              {data.costs.accountFee && (
-                <div className="flex justify-between gap-3">
-                  <span className="flex items-center gap-1.5 text-muted-foreground">
-                    {t('accountFees')}
-                    <InfoDot label={t('accountFees')} note={t('accountLevelNote')} />
-                  </span>
-                  <span dir="ltr" className="private text-foreground">
-                    {money(data.costs.accountFee.amount, data.costs.accountFee.currency)}
-                  </span>
-                </div>
-              )}
-              {data.costs.custody && (
-                <div className="flex justify-between gap-3">
-                  <span className="flex items-center gap-1.5 text-muted-foreground">
-                    {t('custodyEstimated')}
-                    <InfoDot
-                      label={t('custodyEstimated')}
-                      note={
-                        data.costs.custody.quartersAtCost > 0
-                          ? `${t('custodyEstNote')} ${t('quartersAtCost', {
-                              atCost: data.costs.custody.quartersAtCost,
-                              quarters: data.costs.custody.quarters,
-                            })}`
-                          : t('custodyEstNote')
-                      }
-                    />
-                  </span>
-                  <span dir="ltr" className="private text-foreground">
-                    {money(data.costs.custody.amount, data.costs.custody.currency)}
-                  </span>
-                </div>
-              )}
-              <div className="h-px bg-border" />
-              <Row label={t('costsTotal')} value={money(data.costs.totalConverted, data.displayCurrency)} bold big />
-            </div>
-            {/* Only worth saying when a figure was actually converted. */}
-            {(Object.keys(data.costs.tradeCommissions).some((c) => c !== data.displayCurrency) ||
-              (data.costs.accountFee && data.costs.accountFee.currency !== data.displayCurrency) ||
-              (data.costs.custody && data.costs.custody.currency !== data.displayCurrency)) && (
-              <p className="text-xs text-muted-foreground">
-                {t('fxNote', { rate: fmtNum(data.fx.rate, nl, 3), date: fmtDate(data.fx.asOf, locale) })}
-              </p>
-            )}
-          </section>
-        )}
-
-        {data && (
           <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
             {/* Realized above unrealized rather than beside it: one is money
                 that has happened and the other money that has not, and stacked
@@ -344,6 +247,105 @@ export function PerformanceScreen() {
 
           </section>
         )}
+        {data && data.year === thisYear && slices.length > 0 && (
+          /* Where the money is — the holdings as they stand, which is the only
+             sense a breakdown of a portfolio has. It therefore has no reading
+             for a past year, so it shows only while the current one is
+             picked rather than sitting under an older year's figures. */
+          <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
+            <h2 className="text-[11px] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+              {t('sectors')}
+            </h2>
+            <AllocationDonut slices={slices} numberLocale={nl} />
+          </section>
+        )}
+
+        {data && (
+          /* What the tax authority had registered when the selected year
+             opened — last year's balance plus whatever last year's own result
+             added to or drew from it. It is a standing figure the year is
+             filed against rather than a result of the year, so it keeps a
+             card of its own — the way the Tax screen gives the brokerage
+             shield one — below the year's result and what holds it. */
+          <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5">
+            <ShieldRows
+              show="irs"
+              pool={data.totals.pool}
+              shield={data.totals.irsShield}
+              sym={market.currencySymbol}
+              numberLocale={nl}
+            />
+          </section>
+        )}
+
+        {data && data.costs.totalConverted > 0 && (
+          /* What the year cost in fees — the tax engine's quieter sibling.
+             Commission rows stay native per currency and are never summed
+             across; only the total converts, at the payload's rate. */
+          <section className="flex flex-col gap-3.5 rounded-2xl border border-border bg-card p-5">
+            <h2 className="text-[11px] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+              {t('costsTitle')}
+            </h2>
+            <div className="flex flex-col gap-1.5 text-sm tabular-nums">
+              {Object.entries(data.costs.tradeCommissions).map(([ccy, amount]) => (
+                <div key={ccy} className="flex justify-between gap-3">
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                    {Object.keys(data.costs.tradeCommissions).length > 1
+                      ? `${t('tradeCommissions')} (${ccy})`
+                      : t('tradeCommissions')}
+                    <InfoDot label={t('tradeCommissions')} note={t('commissionsInPnlNote')} />
+                  </span>
+                  <span dir="ltr" className="private text-foreground">
+                    {money(amount, ccy)}
+                  </span>
+                </div>
+              ))}
+              {data.costs.accountFee && (
+                <div className="flex justify-between gap-3">
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                    {t('accountFees')}
+                    <InfoDot label={t('accountFees')} note={t('accountLevelNote')} />
+                  </span>
+                  <span dir="ltr" className="private text-foreground">
+                    {money(data.costs.accountFee.amount, data.costs.accountFee.currency)}
+                  </span>
+                </div>
+              )}
+              {data.costs.custody && (
+                <div className="flex justify-between gap-3">
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                    {t('custodyEstimated')}
+                    <InfoDot
+                      label={t('custodyEstimated')}
+                      note={
+                        data.costs.custody.quartersAtCost > 0
+                          ? `${t('custodyEstNote')} ${t('quartersAtCost', {
+                              atCost: data.costs.custody.quartersAtCost,
+                              quarters: data.costs.custody.quarters,
+                            })}`
+                          : t('custodyEstNote')
+                      }
+                    />
+                  </span>
+                  <span dir="ltr" className="private text-foreground">
+                    {money(data.costs.custody.amount, data.costs.custody.currency)}
+                  </span>
+                </div>
+              )}
+              <div className="h-px bg-border" />
+              <Row label={t('costsTotal')} value={money(data.costs.totalConverted, data.displayCurrency)} bold big />
+            </div>
+            {/* Only worth saying when a figure was actually converted. */}
+            {(Object.keys(data.costs.tradeCommissions).some((c) => c !== data.displayCurrency) ||
+              (data.costs.accountFee && data.costs.accountFee.currency !== data.displayCurrency) ||
+              (data.costs.custody && data.costs.custody.currency !== data.displayCurrency)) && (
+              <p className="text-xs text-muted-foreground">
+                {t('fxNote', { rate: fmtNum(data.fx.rate, nl, 3), date: fmtDate(data.fx.asOf, locale) })}
+              </p>
+            )}
+          </section>
+        )}
+
       </div>
     </main>
   );

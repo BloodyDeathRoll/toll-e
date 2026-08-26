@@ -35,7 +35,7 @@ import { useTax } from '@/components/use-tax';
 import { getMarket } from '@/src/markets/registry';
 import { lastTradeByMarket } from '@/src/markets/last-trade';
 import { demo } from '@/src/demo/data';
-import { fmtDate, fmtMoneySigned, fmtNum, fmtPct } from '@/lib/format';
+import { fmtDate, fmtMoneySigned, fmtNum, fmtPct, fmtWithSym } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 const ranges = ['1D', '1M', '6M', 'YTD', '1Y', 'All'] as const;
@@ -138,6 +138,8 @@ export function HomeScreen() {
         dayChangePct: real.totals.dayGainPct,
         allTimeChange: real.totals.totalGain,
         allTimePct: real.totals.totalGainPct,
+        realizedChange: real.totals.realizedGain,
+        realizedPct: real.totals.realizedGainPct,
       }
     : data.portfolio;
   const up = p.dayChange >= 0;
@@ -232,39 +234,42 @@ export function HomeScreen() {
         {empty && <div className="px-6">{emptyCard}</div>}
         {!loading && !empty && (
           <>
-            <section className="flex flex-col gap-1 px-6 pb-6">
-              <p dir="ltr" className="private self-start text-[32px] font-bold tracking-tight text-foreground tabular-nums">
-                {sym}
-                {fmtNum(p.value, nl)}
-              </p>
-              <p className="private flex items-baseline gap-1">
-                <span
-                  dir="ltr"
-                  className={cn('text-[22px] font-semibold tracking-tight tabular-nums', up ? 'text-gain' : 'text-loss')}
-                >
-                  {fmtMoneySigned(p.dayChange, market.currency, nl)} ({fmtPct(p.dayChangePct, nl)})
-                </span>
-                <span className="text-xs text-muted-foreground">{t('home.today')}</span>
-              </p>
-              <p className="private flex items-baseline gap-1">
-                <span
-                  dir="ltr"
-                  className={cn(
-                    'text-[22px] font-semibold tracking-tight tabular-nums',
-                    p.allTimeChange >= 0 ? 'text-gain' : 'text-loss',
-                  )}
-                >
-                  {fmtMoneySigned(p.allTimeChange, market.currency, nl)} ({fmtPct(p.allTimePct, nl)})
-                </span>
-                <span className="text-xs text-muted-foreground">{t('home.allTimeWord')}</span>
-              </p>
-              {/* The way from the two numbers to what is behind them: what is
+            <section className="flex flex-col gap-3 px-6 pb-6">
+              {/* The way from the numbers to what is behind them: what is
                   realized against what is not, the sectors it sits in, and the
-                  tax already withheld. Between the figures and the chart
-                  because it belongs to the figures, not to the chart. */}
-              <MoreLink href="/performance" className="pt-1">
-                {t('home.openPerformance')}
-              </MoreLink>
+                  tax already withheld. Across from the headline figure rather
+                  than under the row of columns, because it belongs to the
+                  whole block and not to the last number in it. */}
+              <div className="flex items-baseline justify-between gap-3">
+                <p dir="ltr" className="private text-[32px] font-bold tracking-tight text-foreground tabular-nums">
+                  {fmtWithSym(fmtNum(p.value, nl), sym)}
+                </p>
+                <MoreLink href="/performance">{t('home.performance')}</MoreLink>
+              </div>
+              {/* Today · unrealized · realized, one column each. The percent
+                  carries the color as a pill, the way a ticker row does, so
+                  three figures side by side read as one scale. */}
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: t('home.today'), amount: p.dayChange, pct: p.dayChangePct },
+                  { label: t('home.ttlUnrealized'), amount: p.allTimeChange, pct: p.allTimePct },
+                  { label: t('home.ttlRealized'), amount: p.realizedChange, pct: p.realizedPct },
+                ].map((col) => (
+                  <div key={col.label} className="flex flex-col items-start gap-1">
+                    <span className="text-[11px] text-muted-foreground">{col.label}</span>
+                    <span
+                      dir="ltr"
+                      className={cn(
+                        'private text-[15px] font-semibold tracking-tight tabular-nums',
+                        col.amount >= 0 ? 'text-gain' : 'text-loss',
+                      )}
+                    >
+                      {fmtMoneySigned(col.amount, market.currency, nl)}
+                    </span>
+                    <ChangePill pct={col.pct} numberLocale={nl} variant="soft" className="text-[11px]" />
+                  </div>
+                ))}
+              </div>
             </section>
 
             {/* Full-bleed chart + range pills */}
@@ -289,8 +294,9 @@ export function HomeScreen() {
               const pct = live?.changePct ?? ix.changePct;
               const ixSeries = indexCharts[ix.symbol];
               return (
-                <div
+                <RowLink
                   key={ix.symbol}
+                  href={`/stock/${encodeURIComponent(ix.symbol)}`}
                   className="flex h-full flex-col gap-1 rounded-lg border border-border bg-card p-2.5"
                 >
                   <span className="truncate text-sm font-medium text-foreground">{name(ix)}</span>
@@ -320,7 +326,7 @@ export function HomeScreen() {
                   >
                     {fmtPct(pct, nl)}
                   </span>
-                </div>
+                </RowLink>
               );
             })}
           </SwipeRow>
@@ -395,6 +401,16 @@ export function HomeScreen() {
                     <span className="text-xs text-foreground/80">
                       {t('home.sharesCount', { shares: fmtNum(h.shares, nl, 0) })}
                     </span>
+                    {/* What the shares are worth, off the same price the row
+                        shows on the right — deriving it from the live quote
+                        rather than the server's stored value keeps the two
+                        figures from disagreeing between polls. */}
+                    <span dir="ltr" className="private text-xs text-muted-foreground tabular-nums">
+                      {fmtWithSym(
+                        fmtNum(quote?.price !== undefined ? h.shares * quote.price : h.marketValue, nl),
+                        market.currencySymbol,
+                      )}
+                    </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-6">
                     {hSeries && (
@@ -411,8 +427,7 @@ export function HomeScreen() {
                     )}
                     <span className="private flex flex-col items-end gap-0.5">
                       <span dir="ltr" className="text-[16px] font-bold text-foreground tabular-nums">
-                        {market.currencySymbol}
-                        {fmtNum(quote?.price ?? h.price, nl)}
+                        {fmtWithSym(fmtNum(quote?.price ?? h.price, nl), market.currencySymbol)}
                       </span>
                       {unpriced ? (
                         // A 0% pill here would be a claim about today that no
@@ -449,8 +464,7 @@ export function HomeScreen() {
                   {t('home.holdingsCurrency', { currency: currencyLabel })}
                 </h2>
                 <p dir="ltr" className="private self-start text-[32px] font-bold tracking-tight text-foreground tabular-nums">
-                  {sym}
-                  {fmtNum(p.value, nl)}
+                  {fmtWithSym(fmtNum(p.value, nl), sym)}
                 </p>
                 <p className="private flex items-baseline gap-4 tabular-nums">
                   <span className={cn('text-lg font-semibold', up ? 'text-gain' : 'text-loss')}>
@@ -545,8 +559,7 @@ export function HomeScreen() {
               {t('home.taxWithheldYear', { year: reserve.year })}
             </h2>
             <p dir="ltr" className="private self-start text-[30px] font-semibold tracking-tight text-foreground tabular-nums">
-              {sym}
-              {fmtNum(reserve.paid, nl)}
+              {fmtWithSym(fmtNum(reserve.paid, nl), sym)}
             </p>
             {!reserve.isReal && (
               <>
