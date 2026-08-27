@@ -20,3 +20,20 @@ describe('lastTradeByMarket', () => {
     expect(got.IL).toBeUndefined();
   });
 });
+
+describe('futures never speak for the exchange', () => {
+  it('drops a futures print, however fresh', () => {
+    // 03:00 ET on a weekday: NQ=F is trading, the NYSE is hours from its bell.
+    // Bucketing the contract under US would tell every stock row to redraw an
+    // empty session-in-progress.
+    expect(lastTradeByMarket([{ symbol: 'NQ=F', asOf: 900 }])).toEqual({});
+  });
+
+  it('leaves the cash market’s own stamp untouched beside one', () => {
+    const got = lastTradeByMarket([
+      { symbol: 'NQ=F', asOf: 900 },
+      { symbol: 'AAPL', asOf: 100 },
+    ]);
+    expect(got).toEqual({ US: 100 });
+  });
+});

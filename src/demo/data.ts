@@ -106,11 +106,11 @@ export const demo: Record<string, DemoMarketData> = {
       chart: [124, 116, 131, 100, 110, 92, 98, 74, 84, 58, 68, 42, 52, 30, 38, 20, 14],
     },
     indexes: [
-      { symbol: '^GSPC', name: 'S&P 500', value: 6_412.08, changePct: 0.62, spark: [17, 15, 18, 12, 14, 9, 11, 6, 4] },
-      { symbol: '^IXIC', name: 'Nasdaq', value: 21_880.44, changePct: 0.94, spark: [16, 14, 15, 11, 13, 10, 8, 7, 5] },
-      { symbol: '^DJI', name: 'Dow 30', value: 44_102.19, changePct: -0.18, spark: [10, 12, 9, 13, 11, 15, 13, 17, 16] },
-      { symbol: '^RUT', name: 'Russell 2000', value: 2_388.61, changePct: 0.31, spark: [12, 14, 11, 9, 12, 8, 10, 9, 7] },
-      { symbol: '^VIX', name: 'VIX', value: 14.02, changePct: -2.44, spark: [8, 10, 7, 12, 10, 14, 13, 16, 17] },
+      { symbol: 'ES=F', name: 'S&P Futures', nameHe: 'עתידי S&P', longName: 'S&P 500 Futures', longNameHe: 'חוזים עתידיים S&P 500', value: 6_448.75, changePct: 0.62, spark: [17, 15, 18, 12, 14, 9, 11, 6, 4] },
+      { symbol: 'NQ=F', name: 'Nasdaq Futures', nameHe: 'עתידי נאסד״ק', longName: 'Nasdaq 100 Futures', longNameHe: 'חוזים עתידיים נאסד״ק 100', value: 23_704.25, changePct: 0.94, spark: [16, 14, 15, 11, 13, 10, 8, 7, 5] },
+      { symbol: 'YM=F', name: 'Dow Futures', nameHe: 'עתידי דאו', longName: 'Dow Jones Futures', longNameHe: 'חוזים עתידיים דאו ג׳ונס', value: 44_285, changePct: -0.18, spark: [10, 12, 9, 13, 11, 15, 13, 17, 16] },
+      { symbol: 'RTY=F', name: 'Russell Futures', nameHe: 'עתידי ראסל', longName: 'Russell 2000 Futures', longNameHe: 'חוזים עתידיים ראסל 2000', value: 2_401.3, changePct: 0.31, spark: [12, 14, 11, 9, 12, 8, 10, 9, 7] },
+      { symbol: '^VIX', name: 'VIX', nameHe: 'מדד הפחד', longName: 'CBOE Volatility Index', longNameHe: 'מדד התנודתיות CBOE', value: 14.02, changePct: -2.44, spark: [8, 10, 7, 12, 10, 14, 13, 16, 17] },
     ],
     holdings: [
       { symbol: 'NVDA', name: 'NVIDIA', shares: 250, avgCost: 194.8, price: 210.1, marketValue: 52_525, dayChangePct: 1.64, totalGain: 3_825, totalGainPct: 7.85, taxIfSold: 956.25, trades: 2 },

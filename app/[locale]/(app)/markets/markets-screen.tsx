@@ -13,7 +13,12 @@ import { SessionSparkline, Sparkline } from '@/components/charts';
 import { ChangePill, AfterHours } from '@/components/quote-bits';
 import { UnderlineTabs } from '@/components/underline-tabs';
 import { useCharts, useFx, useIndexQuotes, useMovers, useQuotes } from '@/components/use-market-data';
-import { displaySymbol, getMarket } from '@/src/markets/registry';
+import {
+  calendarForSymbol,
+  displaySymbol,
+  getMarket,
+  isFuturesSymbol,
+} from '@/src/markets/registry';
 import { lastTradeByMarket } from '@/src/markets/last-trade';
 import { demo, demoFx } from '@/src/demo/data';
 import { fmtNum, fmtWithSym } from '@/lib/format';
@@ -65,10 +70,10 @@ export function MarketsScreen() {
         <SessionSparkline
           points={series.points}
           previousClose={q?.previousClose ?? series.previousClose}
-          calendar={market.calendar}
+          calendar={calendarForSymbol(symbol)}
           price={q?.price}
           priceAt={q?.asOf}
-          lastTradeAt={lastTrades[market.id]}
+          lastTradeAt={isFuturesSymbol(symbol) ? q?.asOf : lastTrades[market.id]}
           width={91}
           height={36}
         />

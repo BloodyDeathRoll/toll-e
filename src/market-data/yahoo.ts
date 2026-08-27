@@ -21,7 +21,11 @@ import {
   type SessionPhase,
   type TradingCalendar,
 } from '@/src/markets/calendar';
-import { getMarket, marketForSymbol, marketIdForSymbol } from '@/src/markets/registry';
+import {
+  calendarForSymbol,
+  getMarket,
+  marketIdForSymbol,
+} from '@/src/markets/registry';
 
 // Unofficial Yahoo endpoints (toll-e-plan.md §5) — accepted MVP risk, and the
 // reason everything routes through the MarketDataProvider interface.
@@ -237,7 +241,7 @@ export class YahooProvider implements MarketDataProvider {
       const lastTradeAt = res.meta.regularMarketTime
         ? new Date(res.meta.regularMarketTime).getTime()
         : undefined;
-      const session = pickSession(points, marketForSymbol(symbol).calendar, Date.now(), lastTradeAt);
+      const session = pickSession(points, calendarForSymbol(symbol), Date.now(), lastTradeAt);
       points = session.points;
       sessionPrevClose = session.previousClose;
     }

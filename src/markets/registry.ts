@@ -102,6 +102,37 @@ const usCalendar: TradingCalendar = {
   },
 };
 
+// CME equity-index futures (ES/NQ/YM/RTY), US Eastern. Not an exchange the
+// registry lists as a market — a second calendar for instruments that trade
+// on one market's clock but not its bell.
+//
+// The contract week opens Sunday 18:00 ET and runs to Friday 17:00 ET, with a
+// one-hour maintenance halt each day at 17:00. The halt is deliberately not
+// encoded: Yahoo reports each futures day as one 00:00–23:59 ET session and
+// stamps its bars accordingly, so splitting the day here would carve a gap
+// into every chart the provider draws as continuous.
+const cmeFullDay = { open: h(0, 0), close: h(23, 59) };
+const cmeCalendar: TradingCalendar = {
+  timezone: 'America/New_York',
+  schedules: [
+    {
+      hours: {
+        0: { open: h(18, 0), close: h(23, 59) }, // Sunday evening reopen
+        1: cmeFullDay,
+        2: cmeFullDay,
+        3: cmeFullDay,
+        4: cmeFullDay,
+        5: { open: h(0, 0), close: h(17, 0) }, // Friday settlement
+      },
+    },
+  ],
+  // CME observes the same full closures as the NYSE; its half-days differ
+  // (futures reopen the evening before), which no chart of ours reads.
+  get holidays() {
+    return usCalendar.holidays;
+  },
+};
+
 // TASE: Sun–Thu historically; moved to Mon–Fri in January 2026.
 // Encoded as effective-dated schedules so backdated views stay correct.
 // TODO(verify): exact switch date and Friday closing time against TASE.
@@ -161,7 +192,12 @@ export const markets: Record<string, MarketDef> = {
     currencySymbol: '$',
     flag: '/flags/us.svg',
     // First three feed the homepage trio; the strip shows all of them.
-    indexes: ['^GSPC', '^IXIC', '^DJI', '^RUT', '^VIX'],
+    // Futures, not the indexes themselves. An index is only quoted between
+    // the bells, so for the ~17 hours a day the US market is shut it has
+    // nothing to say; the front-month future on the same basket trades
+    // through the night and is what a reader wants at 09:00 in Tel Aviv.
+    // ^VIX stays an index — Yahoo carries no VIX future under `=F`.
+    indexes: ['ES=F', 'NQ=F', 'YM=F', 'RTY=F', '^VIX'],
     calendar: usCalendar,
     numberLocale: 'en-US',
     moverMinVolume: 50_000,
@@ -206,6 +242,22 @@ export function marketForSymbol(symbol: string): MarketDef {
     (m) => m.symbolSuffix && symbol.endsWith(m.symbolSuffix),
   );
   return suffixed ?? Object.values(markets).find((m) => !m.symbolSuffix) ?? markets.US;
+}
+
+/** A futures contract in the provider's convention: 'NQ=F', 'ES=F'. */
+export function isFuturesSymbol(symbol: string): boolean {
+  return symbol.endsWith('=F');
+}
+
+/**
+ * The calendar a symbol actually trades on, which is not always its market's.
+ * Futures settle in the same currency and locale as the market whose basket
+ * they track, but they keep their own hours — nearly round the clock, against
+ * the NYSE's six and a half. Anything that draws a session (the intraday
+ * axis, the live dot, "closes in 3h") has to ask the instrument, not the tab.
+ */
+export function calendarForSymbol(symbol: string): TradingCalendar {
+  return isFuturesSymbol(symbol) ? cmeCalendar : marketForSymbol(symbol).calendar;
 }
 
 /**

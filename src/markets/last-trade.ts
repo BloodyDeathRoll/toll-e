@@ -1,4 +1,4 @@
-import { marketForSymbol } from './registry';
+import { isFuturesSymbol, marketForSymbol } from './registry';
 
 /**
  * The newest last-trade stamp seen per market, across every quote on hand.
@@ -16,13 +16,19 @@ import { marketForSymbol } from './registry';
  * progress view, however stale its own quote is. Only when *nothing* has
  * printed does the finished-session view stand — which is the real holiday
  * the stamp was there to catch.
+ *
+ * Futures are excluded, and have to be: they are attributed to the market
+ * whose basket they track, but they trade nearly round the clock. A 3 a.m.
+ * print on NQ=F is not evidence that the NYSE has opened, and admitting one
+ * would tell every US stock row to redraw an empty session-in-progress.
+ * A futures card asks its own quote's stamp instead.
  */
 export function lastTradeByMarket(
   quotes: Iterable<{ symbol: string; asOf?: number } | undefined>,
 ): Record<string, number> {
   const out: Record<string, number> = {};
   for (const q of quotes) {
-    if (!q || q.asOf === undefined) continue;
+    if (!q || q.asOf === undefined || isFuturesSymbol(q.symbol)) continue;
     const id = marketForSymbol(q.symbol).id;
     if (out[id] === undefined || q.asOf > out[id]) out[id] = q.asOf;
   }

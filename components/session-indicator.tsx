@@ -31,9 +31,18 @@ export function SessionStatus({ marketId, className }: { marketId: string; class
 }
 
 /** Compact chip for quote headers: "● Pre-market" / "● Live" / "● At close". */
-export function SessionBadge({ marketId, className }: { marketId: string; className?: string }) {
+export function SessionBadge({
+  marketId,
+  symbol,
+  className,
+}: {
+  marketId: string;
+  /** The instrument this badge is about, when it keeps hours of its own. */
+  symbol?: string;
+  className?: string;
+}) {
   const t = useTranslations('market');
-  const session = useMarketSession(marketId);
+  const session = useMarketSession(marketId, symbol);
   if (!session) return null;
   const live = session.phase === 'open';
   return (

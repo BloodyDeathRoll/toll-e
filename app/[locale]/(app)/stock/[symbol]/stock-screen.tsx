@@ -783,7 +783,7 @@ export function StockScreen({ symbol }: { symbol: string }) {
                 </span>
                 {scrubStamp && <span className="text-[13px] text-muted-foreground">{scrubStamp}</span>}
               </div>
-              <SessionBadge marketId={market.id} />
+              <SessionBadge marketId={market.id} symbol={symbol} />
             </div>
           </div>
           {/* An index cannot be held, so it carries neither a watchlist nor

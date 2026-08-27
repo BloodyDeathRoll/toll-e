@@ -32,7 +32,7 @@ import type { ChartRange } from '@/src/market-data/types';
 import { useCharts, useIndexQuotes, useQuotes } from '@/components/use-market-data';
 import { usePortfolioPositions } from '@/components/use-portfolio';
 import { useTax } from '@/components/use-tax';
-import { getMarket } from '@/src/markets/registry';
+import { calendarForSymbol, getMarket, isFuturesSymbol } from '@/src/markets/registry';
 import { lastTradeByMarket } from '@/src/markets/last-trade';
 import { demo } from '@/src/demo/data';
 import { fmtDate, fmtMoneySigned, fmtNum, fmtPct, fmtWithSym } from '@/lib/format';
@@ -304,10 +304,15 @@ export function HomeScreen() {
                     <SessionSparkline
                       points={ixSeries.points}
                       previousClose={live?.previousClose ?? ixSeries.previousClose}
-                      calendar={market.calendar}
+                      calendar={calendarForSymbol(ix.symbol)}
                       price={live?.price}
                       priceAt={live?.asOf}
-                      lastTradeAt={lastTrades[market.id]}
+                      // A future keeps its own hours, so it is the only
+                      // witness to its own session; the market's stamp
+                      // speaks for the bell it does not trade on.
+                      lastTradeAt={
+                        isFuturesSymbol(ix.symbol) ? live?.asOf : lastTrades[market.id]
+                      }
                       width={90}
                       height={30}
                     />
