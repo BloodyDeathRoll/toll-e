@@ -106,10 +106,10 @@ export const demo: Record<string, DemoMarketData> = {
       chart: [124, 116, 131, 100, 110, 92, 98, 74, 84, 58, 68, 42, 52, 30, 38, 20, 14],
     },
     indexes: [
-      { symbol: 'ES=F', name: 'S&P Futures', nameHe: 'עתידי S&P', longName: 'S&P 500 Futures', longNameHe: 'חוזים עתידיים S&P 500', value: 6_448.75, changePct: 0.62, spark: [17, 15, 18, 12, 14, 9, 11, 6, 4] },
-      { symbol: 'NQ=F', name: 'Nasdaq Futures', nameHe: 'עתידי נאסד״ק', longName: 'Nasdaq 100 Futures', longNameHe: 'חוזים עתידיים נאסד״ק 100', value: 23_704.25, changePct: 0.94, spark: [16, 14, 15, 11, 13, 10, 8, 7, 5] },
-      { symbol: 'YM=F', name: 'Dow Futures', nameHe: 'עתידי דאו', longName: 'Dow Jones Futures', longNameHe: 'חוזים עתידיים דאו ג׳ונס', value: 44_285, changePct: -0.18, spark: [10, 12, 9, 13, 11, 15, 13, 17, 16] },
-      { symbol: 'RTY=F', name: 'Russell Futures', nameHe: 'עתידי ראסל', longName: 'Russell 2000 Futures', longNameHe: 'חוזים עתידיים ראסל 2000', value: 2_401.3, changePct: 0.31, spark: [12, 14, 11, 9, 12, 8, 10, 9, 7] },
+      { symbol: 'ES=F', name: 'S&P Futures', nameHe: 'S&P עתידי', longName: 'S&P 500 Futures', longNameHe: 'S&P 500 עתידי', value: 6_448.75, changePct: 0.62, spark: [17, 15, 18, 12, 14, 9, 11, 6, 4] },
+      { symbol: 'NQ=F', name: 'Nasdaq Futures', nameHe: 'נאסד״ק עתידי', longName: 'Nasdaq 100 Futures', longNameHe: 'נאסד״ק 100 עתידי', value: 23_704.25, changePct: 0.94, spark: [16, 14, 15, 11, 13, 10, 8, 7, 5] },
+      { symbol: 'YM=F', name: 'Dow Futures', nameHe: 'דאו עתידי', longName: 'Dow Jones Futures', longNameHe: 'דאו ג׳ונס עתידי', value: 44_285, changePct: -0.18, spark: [10, 12, 9, 13, 11, 15, 13, 17, 16] },
+      { symbol: 'RTY=F', name: 'Russell Futures', nameHe: 'ראסל עתידי', longName: 'Russell 2000 Futures', longNameHe: 'ראסל 2000 עתידי', value: 2_401.3, changePct: 0.31, spark: [12, 14, 11, 9, 12, 8, 10, 9, 7] },
       { symbol: '^VIX', name: 'VIX', nameHe: 'מדד הפחד', longName: 'CBOE Volatility Index', longNameHe: 'מדד התנודתיות CBOE', value: 14.02, changePct: -2.44, spark: [8, 10, 7, 12, 10, 14, 13, 16, 17] },
     ],
     holdings: [
