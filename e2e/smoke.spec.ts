@@ -41,6 +41,30 @@ async function signIn(page: Page, baseURL: string) {
     // A surviving account already answered, so the flow is in editor mode
     // and returns to Settings rather than home — accept either exit.
     await page.waitForURL((url) => !url.pathname.includes('onboarding'));
+    // Seed one holding. The position card only paints for a symbol the
+    // account actually owns, so without a trade on the books the stock page
+    // has nothing to show and the summary test asserts against thin air.
+    const portfolio = await page.request.post('/api/portfolios', {
+      data: { market: 'US', ensure: true },
+      ...opts,
+    });
+    expect(portfolio.status()).toBe(200);
+    const { portfolio: us } = await portfolio.json();
+    const held = await page.request.get(`/api/portfolios/${us.id}/transactions`, opts);
+    const { transactions } = await held.json();
+    if (!transactions.some((t: { symbol: string }) => t.symbol === 'NVDA')) {
+      const buy = await page.request.post(`/api/portfolios/${us.id}/transactions`, {
+        data: {
+          symbol: 'NVDA',
+          type: 'BUY',
+          tradeDate: '2024-01-02',
+          shares: 10,
+          pricePerShare: 100,
+        },
+        ...opts,
+      });
+      expect(buy.status()).toBe(201);
+    }
     accountReady = true;
   }
   const res = await page.request.post('/api/auth/sign-in/email', { data: creds, ...opts });
@@ -215,7 +239,7 @@ test.describe('hebrew locale', () => {
   test('renders RTL with Hebrew copy', async ({ page }) => {
     await page.goto('/he');
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-    await expect(seen(page, 'מעקב השקעות עם בהירות מס אמיתית')).toBeVisible();
+    await expect(seen(page, 'מעקב אחרי השקעות כולל תשלומי מס ועמלות')).toBeVisible();
   });
 });
 
