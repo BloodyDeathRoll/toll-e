@@ -405,11 +405,16 @@ export function HomeScreen() {
                         shows on the right — deriving it from the live quote
                         rather than the server's stored value keeps the two
                         figures from disagreeing between polls. */}
-                    <span dir="ltr" className="private text-xs text-muted-foreground tabular-nums">
-                      {fmtWithSym(
-                        fmtNum(quote?.price !== undefined ? h.shares * quote.price : h.marketValue, nl),
-                        market.currencySymbol,
-                      )}
+                    <span className="private text-xs text-muted-foreground">
+                      {/* The figure reads LTR, but the line it sits on follows
+                          the locale — so the `dir` island is the number itself,
+                          not the row, which would pin it left under Hebrew. */}
+                      <span dir="ltr" className="inline-block tabular-nums">
+                        {fmtWithSym(
+                          fmtNum(quote?.price !== undefined ? h.shares * quote.price : h.marketValue, nl),
+                          market.currencySymbol,
+                        )}
+                      </span>
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-6">
