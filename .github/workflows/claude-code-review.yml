@@ -8,6 +8,11 @@ on:
 
 jobs:
   claude-review:
+    # claude-code-action refuses bot-initiated runs ("Workflow initiated by
+    # non-human actor") and Dependabot runs can't see the OAuth secret anyway,
+    # so every Dependabot PR showed a red check. Skip bots; `@claude review` on
+    # a Dependabot PR still works because that comes from a human comment.
+    if: github.event.pull_request.user.type != 'Bot'
     runs-on: ubuntu-latest
     permissions:
       contents: read
