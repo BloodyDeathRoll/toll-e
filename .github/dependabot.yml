@@ -1,0 +1,25 @@
+# Keeps the SHA-pinned actions in .github/workflows current and opens PRs for
+# npm security updates. One tool only (RULES C3: Dependabot or Renovate, never
+# both). Version bumps for npm are grouped so a week's churn is one PR; the
+# install cooldown in pnpm-workspace.yaml still applies to what it resolves.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "ci"
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "deps"
