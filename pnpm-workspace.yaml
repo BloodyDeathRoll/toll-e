@@ -5,3 +5,8 @@ ignoredBuiltDependencies:
   - '@swc/core'
 onlyBuiltDependencies:
   - esbuild
+
+# Install cooldown (pnpm >= 10.16; the pnpm 11 default). A version must be
+# at least one day old before pnpm will resolve to it, which is what stopped
+# the 2025 chalk/debug and Shai-Hulud npm waves for anyone who had it on.
+minimumReleaseAge: 1440
