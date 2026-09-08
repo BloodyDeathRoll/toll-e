@@ -19,7 +19,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          persist-credentials: false
+          # persist-credentials stays ON here: claude-code-action fetches the PR
+          # branch with checkout's token before it sets up its own App auth —
+          # with it off, `git fetch origin <branch>` fails (run 34259956274).
+          persist-credentials: true
           fetch-depth: 1
 
       - name: Run Claude Code Review
