@@ -61,7 +61,10 @@ export function AppHeader({
 
   return (
     <>
-    <header className="flex items-center gap-4 p-6 md:hidden">
+    {/* Sticky, and z-50 rather than z-40: the menu overlay below is nested
+        in here, so the header's layer caps it — and it must still cover the
+        z-40 bottom nav. */}
+    <header className="sticky top-0 z-50 flex items-center gap-4 bg-background p-6 md:hidden">
       <button type="button" aria-label={t('menu.open')} onClick={() => setMenuOpen(true)}>
         <Menu className="size-6 text-foreground" aria-hidden />
       </button>
