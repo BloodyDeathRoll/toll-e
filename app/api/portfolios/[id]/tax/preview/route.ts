@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getSession } from '@/lib/session';
-import { getOwnedPortfolio, listTransactions, toEngineTx } from '@/src/server/portfolios';
+import { getOwnedPortfolio, listEngineTxs, splitAdjusted } from '@/src/server/portfolios';
 import { validateSell } from '@/src/engine/portfolio';
 import { previewSell } from '@/src/engine/tax';
 
@@ -32,10 +32,10 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/portfolios/
   const body = schema.safeParse(await req.json().catch(() => null));
   if (!body.success) return NextResponse.json({ error: 'invalid body' }, { status: 400 });
 
-  const all = (await listTransactions(id)).map(toEngineTx);
+  const all = await listEngineTxs(id);
   const replacing = all.find((t) => t.id === body.data.excludeTxId);
   const txs = all.filter((t) => t.id !== body.data.excludeTxId);
-  const candidate = {
+  const [candidate] = await splitAdjusted([{
     id: 'preview',
     symbol: body.data.symbol.toUpperCase(),
     type: 'SELL' as const,
@@ -47,10 +47,10 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/portfolios/
     // in the ordering it already had, so the lots it matches are the lots the
     // save will actually match on a day with more than one sell.
     createdAt: replacing?.createdAt ?? Number.MAX_SAFE_INTEGER,
-  };
+  }]);
   const check = validateSell(txs, candidate);
   if (!check.ok) {
-    return NextResponse.json({ error: 'oversell', available: check.available }, { status: 422 });
+    return NextResponse.json({ error: 'oversell', available: (check.available * body.data.shares) / candidate.shares }, { status: 422 });
   }
   return NextResponse.json(previewSell(txs, candidate, { ratePct: Number(portfolio.taxRatePct) }));
 }

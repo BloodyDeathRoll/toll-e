@@ -2,8 +2,15 @@ import 'server-only';
 
 import { cached } from './cache';
 import { cachedQuotes } from './quote-cache';
-import { getChartFromDb, getCloseOnFromDb, getFxFallback, getQuotesFromDb } from './fallback';
-import { persistDailyCloses, persistDailyClosesNow, persistFx } from './persist';
+import {
+  getChartFromDb,
+  getCloseOnFromDb,
+  getFxFallback,
+  getQuotesFromDb,
+  getSplitsFromDb,
+} from './fallback';
+import { persistDailyCloses, persistDailyClosesNow, persistFx, persistSplits } from './persist';
+import { splitFactor } from '@/src/engine/portfolio/splits';
 import { getGlobesNews } from './globes';
 import { getFundHistory, getFundQuotes, getFundSummary } from './maya';
 import { YahooProvider } from './yahoo';
@@ -23,6 +30,7 @@ import type {
   Screen,
   ScreenKind,
   SearchResult,
+  Split,
   StockAnalysis,
   StockFinancials,
   Summary,
@@ -61,6 +69,7 @@ const TTL = {
   analysis: 6 * 60 * 60_000,
   financials: 24 * 60 * 60_000,
   fx: 12 * 60 * 60_000,
+  splits: 24 * 60 * 60_000,
   // Mutual fund NAVs move once a day; an hour keeps the day-of-publication
   // update reasonably fresh without hammering Maya.
   fund: 60 * 60_000,
@@ -418,6 +427,31 @@ export async function getCloseOn(symbol: string, date: string): Promise<number |
     if (localDate <= date) best = p.close;
     else break;
   }
-  if (best !== null) return best;
-  return getCloseOnFromDb(symbol, date).catch(() => null);
+  best ??= await getCloseOnFromDb(symbol, date).catch(() => null);
+  if (best === null) return null;
+  // History is served split-adjusted; a transaction is entered as executed,
+  // so hand back the price actually paid that day.
+  return best * splitFactor((await getSplits([symbol])).get(symbol), date);
+}
+
+/**
+ * Splits per symbol (symbols without any are absent). Live from the provider
+ * and persisted; an outage answers from what was persisted, and failing that
+ * with none — the same degraded numbers a missing quote already produces.
+ */
+export async function getSplits(symbols: string[]): Promise<Map<string, Split[]>> {
+  const out = new Map<string, Split[]>();
+  await Promise.all(
+    [...new Set(symbols)]
+      .filter((s) => !isTaseFund(s))
+      .map(async (symbol) => {
+        const list = await cached(`splits:${symbol}`, TTL.splits, async () => {
+          const live = await yahoo(() => provider.getSplits(symbol));
+          await persistSplits(symbol, live).catch(() => {});
+          return live;
+        }).catch(() => getSplitsFromDb(symbol).catch(() => []));
+        if (list.length) out.set(symbol, list);
+      }),
+  );
+  return out;
 }

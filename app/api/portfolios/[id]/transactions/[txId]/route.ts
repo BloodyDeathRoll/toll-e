@@ -4,7 +4,13 @@ import { z } from 'zod';
 import { db } from '@/src/db';
 import { transactions } from '@/src/db/schema';
 import { getSession } from '@/lib/session';
-import { getOwnedPortfolio, listTransactions, toEngineTx } from '@/src/server/portfolios';
+import {
+  getOwnedPortfolio,
+  listEngineTxs,
+  listTransactions,
+  splitAdjusted,
+  toEngineTx,
+} from '@/src/server/portfolios';
 import { syncHoldingsWatchlist } from '@/src/server/holdings-watchlist';
 import { computePortfolio } from '@/src/engine/portfolio';
 
@@ -50,7 +56,7 @@ export async function PATCH(
       : t,
   );
   try {
-    computePortfolio(edited);
+    computePortfolio(await splitAdjusted(edited));
   } catch {
     return NextResponse.json({ error: 'would_oversell' }, { status: 422 });
   }
@@ -82,7 +88,7 @@ export async function DELETE(
   if (!portfolio) return NextResponse.json({ error: 'not found' }, { status: 404 });
 
   // Deleting a BUY must not strand later sells — replay the rest first.
-  const remaining = (await listTransactions(id)).map(toEngineTx).filter((t) => t.id !== txId);
+  const remaining = (await listEngineTxs(id)).filter((t) => t.id !== txId);
   try {
     computePortfolio(remaining);
   } catch {

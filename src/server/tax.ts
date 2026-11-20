@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { computeTax, type ShieldLayer, type TaxComputation, type YearLedger } from '@/src/engine/tax';
-import { listTransactions, toEngineTx, type PortfolioRow } from './portfolios';
+import { listEngineTxs, type PortfolioRow } from './portfolios';
 
 // Wire shape for tax data: full ledgers plus a trimmed per-sale drill-down
 // (matched lots included — the "show your work" view).
@@ -63,6 +63,6 @@ export function serializeTax(portfolio: PortfolioRow, tax: TaxComputation): TaxP
 }
 
 export async function getTaxForPortfolio(portfolio: PortfolioRow): Promise<TaxPayload> {
-  const txs = (await listTransactions(portfolio.id)).map(toEngineTx);
+  const txs = await listEngineTxs(portfolio.id);
   return serializeTax(portfolio, computeTax(txs, { ratePct: Number(portfolio.taxRatePct) }));
 }

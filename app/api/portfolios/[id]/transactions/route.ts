@@ -3,7 +3,12 @@ import { z } from 'zod';
 import { db } from '@/src/db';
 import { transactions } from '@/src/db/schema';
 import { getSession } from '@/lib/session';
-import { getOwnedPortfolio, listTransactions, toEngineTx } from '@/src/server/portfolios';
+import {
+  getOwnedPortfolio,
+  listEngineTxs,
+  listTransactions,
+  splitAdjusted,
+} from '@/src/server/portfolios';
 import { syncHoldingsWatchlist } from '@/src/server/holdings-watchlist';
 import { validateSell } from '@/src/engine/portfolio';
 
@@ -42,20 +47,24 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/portfolios/
 
   // Sell ≤ held-at-date, including not starving later sells (plan §8).
   if (t.type === 'SELL') {
-    const existing = (await listTransactions(id)).map(toEngineTx);
-    const check = validateSell(existing, {
-      id: 'candidate',
-      symbol,
-      type: 'SELL',
-      tradeDate: t.tradeDate,
-      shares: t.shares,
-      pricePerShare: t.pricePerShare,
-      commission: t.commission,
-      createdAt: Number.MAX_SAFE_INTEGER,
-    });
+    const existing = await listEngineTxs(id);
+    const [candidate] = await splitAdjusted([
+      {
+        id: 'candidate',
+        symbol,
+        type: 'SELL',
+        tradeDate: t.tradeDate,
+        shares: t.shares,
+        pricePerShare: t.pricePerShare,
+        commission: t.commission,
+        createdAt: Number.MAX_SAFE_INTEGER,
+      },
+    ]);
+    const check = validateSell(existing, candidate);
     if (!check.ok) {
       return NextResponse.json(
-        { error: 'oversell', available: check.available },
+        // Back in the units of the trade date — the ones the user typed in.
+        { error: 'oversell', available: (check.available * t.shares) / candidate.shares },
         { status: 422 },
       );
     }

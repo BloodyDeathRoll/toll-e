@@ -10,12 +10,14 @@ import type {
   Screen,
   ScreenKind,
   SearchResult,
+  Split,
   StockAnalysis,
   StockFinancials,
   Summary,
 } from './types';
 import {
   hoursFor,
+  localDateIn,
   sessionWindow,
   toExchangeLocal,
   type SessionPhase,
@@ -556,6 +558,23 @@ export class YahooProvider implements MarketDataProvider {
         })),
       },
     };
+  }
+
+  async getSplits(symbol: string): Promise<Split[]> {
+    // Quarterly bars keep the payload small; only the events are wanted.
+    const res = await yf.chart(symbol, {
+      period1: new Date('1980-01-01'),
+      interval: '3mo',
+      events: 'split',
+    });
+    const tz = res.meta.exchangeTimezoneName ?? 'UTC';
+    return (res.events?.splits ?? [])
+      .filter((s) => s.numerator > 0 && s.denominator > 0)
+      .map((s) => ({
+        date: localDateIn(tz, new Date(s.date).getTime()),
+        ratio: s.numerator / s.denominator,
+      }))
+      .sort((a, b) => (a.date < b.date ? -1 : 1));
   }
 
   async getFx(pair: string): Promise<FxRate> {

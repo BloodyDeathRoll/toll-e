@@ -1,6 +1,8 @@
-import { and, asc, eq, gt, inArray, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 import { db } from '@/src/db';
 import { portfolios, transactions, watchlistItems, watchlists } from '@/src/db/schema';
+import { splitFactor } from '@/src/engine/portfolio/splits';
+import { getSplits } from '@/src/market-data';
 import { HOLDINGS_LIST } from '@/src/watchlists/constants';
 
 export { HOLDINGS_LIST } from '@/src/watchlists/constants';
@@ -14,15 +16,16 @@ export { HOLDINGS_LIST } from '@/src/watchlists/constants';
  * sells all land on the same answer.
  *
  * The question this path asks is only ever "is the balance still above zero?",
- * per (portfolio, symbol) — so it asks the database, rather than pulling every
- * column of the user's entire transaction history across the wire and running
- * the full FIFO replay (lot splits, realized events, matched-lot arrays) to
- * reach the same yes/no. `transactions_portfolio_symbol_date_idx` already
- * covers the grouping columns.
+ * per (portfolio, symbol) — so it reads four narrow columns and sums them,
+ * rather than pulling every column of the user's entire transaction history
+ * and running the full FIFO replay (lot splits, realized events, matched-lot
+ * arrays) to reach the same yes/no. The sum is taken here, not in SQL, because
+ * each trade counts in today's share units: a stock split between a buy and a
+ * sell changes what the raw share counts add up to.
  *
- * Two details are load-bearing. The sum is cast to double precision so the
- * cut-off matches the engine's own `shares > EPS` (1e-9) rather than a bare
- * `> 0` that would keep a floating-point crumb alive as a held position. And
+ * Two details are load-bearing. The cut-off is the engine's own
+ * `shares > EPS` (1e-9) rather than a bare `> 0` that would keep a
+ * floating-point crumb alive as a held position. And
  * dropping `computePortfolio` from this path also drops the `OversellError`
  * it used to inherit — a belt-and-braces check that cannot fire here anyway,
  * because the write routes validate before they reach this function.
@@ -36,16 +39,28 @@ export async function syncHoldingsWatchlist(userId: string): Promise<void> {
     .where(eq(portfolios.userId, userId));
   if (owned.length === 0) return;
 
-  // Held symbols across every portfolio the user owns: one grouped aggregate,
-  // one row per (portfolio, symbol) still carrying a positive balance.
-  const netShares = sql<number>`sum(case when ${transactions.type} = 'BUY' then ${transactions.shares} else -${transactions.shares} end)::double precision`;
+  // Held symbols across every portfolio the user owns: the split-adjusted
+  // balance per (portfolio, symbol), kept where it is still positive.
   const rows = await db
-    .select({ symbol: transactions.symbol })
+    .select({
+      portfolioId: transactions.portfolioId,
+      symbol: transactions.symbol,
+      type: transactions.type,
+      tradeDate: transactions.tradeDate,
+      shares: transactions.shares,
+    })
     .from(transactions)
-    .where(inArray(transactions.portfolioId, owned.map((p) => p.id)))
-    .groupBy(transactions.portfolioId, transactions.symbol)
-    .having(gt(netShares, EPS));
-  const held = new Set(rows.map((r) => r.symbol));
+    .where(inArray(transactions.portfolioId, owned.map((p) => p.id)));
+  const splits = await getSplits(rows.map((r) => r.symbol));
+  const net = new Map<string, { symbol: string; shares: number }>();
+  for (const r of rows) {
+    const key = `${r.portfolioId}\n${r.symbol}`;
+    const entry = net.get(key) ?? { symbol: r.symbol, shares: 0 };
+    const shares = Number(r.shares) * splitFactor(splits.get(r.symbol), r.tradeDate);
+    entry.shares += r.type === 'BUY' ? shares : -shares;
+    net.set(key, entry);
+  }
+  const held = new Set([...net.values()].filter((e) => e.shares > EPS).map((e) => e.symbol));
 
   const [existing] = await db
     .select()

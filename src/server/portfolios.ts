@@ -4,7 +4,8 @@ import { and, asc, eq } from 'drizzle-orm';
 import { db } from '@/src/db';
 import { portfolios, transactions } from '@/src/db/schema';
 import { computePortfolio, positionView, type EngineTx, type PositionView } from '@/src/engine/portfolio';
-import { getQuotes } from '@/src/market-data';
+import { applySplits } from '@/src/engine/portfolio/splits';
+import { getQuotes, getSplits } from '@/src/market-data';
 import { getMarket } from '@/src/markets/registry';
 
 export type PortfolioRow = typeof portfolios.$inferSelect;
@@ -53,6 +54,16 @@ export function toEngineTx(row: TransactionRow): EngineTx {
   };
 }
 
+/** Restate transactions in today's share units (see engine/portfolio/splits). */
+export async function splitAdjusted(txs: EngineTx[]): Promise<EngineTx[]> {
+  return applySplits(txs, await getSplits(txs.map((t) => t.symbol)));
+}
+
+/** A portfolio's transactions as every computation must see them: split-adjusted. */
+export async function listEngineTxs(portfolioId: string): Promise<EngineTx[]> {
+  return splitAdjusted((await listTransactions(portfolioId)).map(toEngineTx));
+}
+
 export async function listTransactions(portfolioId: string): Promise<TransactionRow[]> {
   return db
     .select()
@@ -95,7 +106,7 @@ export async function getPositions(
   portfolio: PortfolioRow,
   txs?: EngineTx[],
 ): Promise<PositionsPayload> {
-  txs ??= (await listTransactions(portfolio.id)).map(toEngineTx);
+  txs ??= await listEngineTxs(portfolio.id);
   const { holdings, realized } = computePortfolio(txs);
 
   const symbols = holdings.map((h) => h.symbol);

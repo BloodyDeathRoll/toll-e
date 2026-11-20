@@ -9,7 +9,7 @@ import { OTHER_SLICE } from '@/src/allocation';
 import { getBrokerProfile, resolveSchedule } from './broker-profile';
 import { getUserCosts } from './costs';
 import { makeConvert } from './fx-convert';
-import { getPositions, listTransactions, toEngineTx } from './portfolios';
+import { getPositions, listEngineTxs } from './portfolios';
 
 // The combined picture (§3.4): native amounts are authoritative; conversion
 // to the display currency happens here, at the presentation layer, never in
@@ -206,7 +206,7 @@ export async function getPerformance(
   // two quote round trips end to end for a page that needs one.
   const computed = await Promise.all(
     rows.map(async (p) => {
-      const txs = (await listTransactions(p.id)).map(toEngineTx);
+      const txs = await listEngineTxs(p.id);
       return {
         p,
         txs,

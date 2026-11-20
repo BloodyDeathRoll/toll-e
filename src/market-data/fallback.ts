@@ -2,9 +2,9 @@ import 'server-only';
 
 import { and, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { db } from '@/src/db';
-import { fxRates, priceHistory } from '@/src/db/schema';
+import { fxRates, priceHistory, splits as splitsTable } from '@/src/db/schema';
 import { marketForSymbol } from '@/src/markets/registry';
-import type { ChartRange, ChartSeries, FxRate, Quote } from './types';
+import type { ChartRange, ChartSeries, FxRate, Quote, Split } from './types';
 
 // Degraded-mode sources for when Yahoo is unreachable (toll-e-plan.md §10):
 // FX falls back to official providers (Bank of Israel first — §11 names it as
@@ -226,4 +226,14 @@ export async function getCloseOnFromDb(symbol: string, date: string): Promise<nu
     .orderBy(desc(priceHistory.date))
     .limit(1);
   return row ? Number(row.close) : null;
+}
+
+/** The splits we persisted for a symbol, oldest first. */
+export async function getSplitsFromDb(symbol: string): Promise<Split[]> {
+  const rows = await db
+    .select()
+    .from(splitsTable)
+    .where(eq(splitsTable.symbol, symbol))
+    .orderBy(splitsTable.date);
+  return rows.map((r) => ({ date: r.date, ratio: Number(r.ratio) }));
 }

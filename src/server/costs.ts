@@ -14,7 +14,7 @@ import {
 import type { EngineTx } from '@/src/engine/portfolio';
 import { getBrokerProfile, resolveSchedule } from './broker-profile';
 import { makeConvert } from './fx-convert';
-import { listTransactions, toEngineTx } from './portfolios';
+import { listEngineTxs } from './portfolios';
 
 // The DB-facing face of the cost ledger: one price_history read, the FX
 // conversions the engines refuse to do, and the assembly of computeCosts's
@@ -57,7 +57,7 @@ export async function getUserCosts(
     rows.map(async (p) => ({
       id: p.id,
       currency: p.currency,
-      txs: known?.get(p.id) ?? (await listTransactions(p.id)).map(toEngineTx),
+      txs: known?.get(p.id) ?? (await listEngineTxs(p.id)),
     })),
   );
   const today = new Date().toISOString().slice(0, 10);

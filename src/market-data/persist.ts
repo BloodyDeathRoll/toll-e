@@ -1,8 +1,8 @@
-import { sql } from 'drizzle-orm';
+import { and, eq, lt, sql } from 'drizzle-orm';
 import { db } from '@/src/db';
-import { fxRates, priceHistory } from '@/src/db/schema';
+import { fxRates, priceHistory, splits as splitsTable } from '@/src/db/schema';
 import { localDateIn } from '@/src/markets/calendar';
-import type { ChartSeries, FxRate } from './types';
+import type { ChartSeries, FxRate, Split } from './types';
 
 // Daily closes + FX persist to Postgres (toll-e-plan.md §5) — backdated
 // transactions and tax audit trails need them even if Yahoo disappears.
@@ -52,4 +52,31 @@ export function persistFx(fx: FxRate): void {
     .values({ pair: fx.pair, date: fx.asOf, rate: String(fx.rate) })
     .onConflictDoNothing()
     .catch(() => {});
+}
+
+/** A split first seen this soon after its ex-date found closes persisted before it. */
+const FRESH_SPLIT_DAYS = 30;
+
+/**
+ * Record a symbol's splits. A newly seen recent split also drops the closes
+ * persisted before it: they are in pre-split units, the provider now serves
+ * that history adjusted, and the two scales must not share a series. The
+ * dropped range refills from the next daily chart fetch.
+ * shortcut: a split first seen more than 30 days late keeps its pre-split
+ * closes; upgrade by stamping price_history rows with when they were written.
+ */
+export async function persistSplits(symbol: string, list: Split[]): Promise<void> {
+  if (list.length === 0) return;
+  const added = await db
+    .insert(splitsTable)
+    .values(list.map((s) => ({ symbol, date: s.date, ratio: String(s.ratio) })))
+    .onConflictDoNothing()
+    .returning({ date: splitsTable.date });
+  const cutoff = new Date(Date.now() - FRESH_SPLIT_DAYS * 86_400_000).toISOString().slice(0, 10);
+  const fresh = added.map((r) => r.date).filter((d) => d >= cutoff).sort().at(-1);
+  if (fresh) {
+    await db
+      .delete(priceHistory)
+      .where(and(eq(priceHistory.symbol, symbol), lt(priceHistory.date, fresh)));
+  }
 }

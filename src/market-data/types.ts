@@ -4,6 +4,9 @@
 
 import type { SessionPhase } from '@/src/markets/calendar';
 
+export type { Split } from '@/src/engine/portfolio/splits';
+import type { Split } from '@/src/engine/portfolio/splits';
+
 export interface Quote {
   symbol: string;
   name: string;
@@ -214,6 +217,8 @@ export interface StockFinancials {
 export interface MarketDataProvider {
   getQuote(symbols: string[]): Promise<Quote[]>;
   getChart(symbol: string, range: ChartRange): Promise<ChartSeries>;
+  /** Every split the symbol has had, oldest first. */
+  getSplits(symbol: string): Promise<Split[]>;
   search(query: string): Promise<SearchResult[]>;
   /** Leading instruments in a sector or industry, largest first. */
   getScreen(kind: ScreenKind, name: string, marketId: string): Promise<Screen>;

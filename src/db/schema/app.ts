@@ -193,6 +193,18 @@ export const fxRates = pgTable(
   (t) => [primaryKey({ columns: [t.pair, t.date] })],
 );
 
+// Stock splits per symbol. Permanent facts, persisted so positions and tax
+// stay correct when the provider is unreachable. `ratio` is new shares per old.
+export const splits = pgTable(
+  'splits',
+  {
+    symbol: text('symbol').notNull(),
+    date: date('date').notNull(), // ex-date, exchange-local
+    ratio: numeric('ratio', { precision: 20, scale: 10 }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.symbol, t.date] })],
+);
+
 // Hebrew name and About text per symbol, filled once and shared by everyone.
 //
 // Three sources feed it, best first: Hebrew Wikipedia, Wikidata, and the

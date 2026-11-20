@@ -43,6 +43,13 @@
       "when": 1787593271648,
       "tag": "0005_rainy_sharon_carter",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795186202775,
+      "tag": "0006_foamy_millenium_guard",
+      "breakpoints": true
     }
   ]
 }
