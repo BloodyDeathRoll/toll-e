@@ -1,40 +1,56 @@
-# Session Handoff — 2026-10-29
+# Session Handoff — 2026-11-21
 
 ## Goal
-Replace the old yellow brand colour on the opening (signed-out) screen with the current green, then land all open dependabot PRs (review, audit, merge) and clean up merged branches.
+Production showed wrong portfolio values for SNDK after its 8:1 stock split (effective 2026-11-20). Build stock-split support so positions, tax and costs are computed in post-split share units.
 
 ## Current State
-- Logo "e" is green on the opening screen, verified in a Superset browser pane against `http://localhost:3000/en` (computed fill `rgb(115, 239, 6)`). Landed on `main` as `fe2b73f` and pushed.
-- All five dependabot PRs (#23, #24, #28, #27, #19) are merged into `main`. Remote `main` head is `5727b33`. Zero open PRs.
-- Every merged or superseded branch is deleted, local and remote. Only `main` and this workspace's branch `opening-screen-holds-old-592e6afe` remain.
-- This worktree's branch is at `fe2b73f`, nine commits behind `main` (the dependabot merges). The main checkout at `~/Projects/toll-e` is up to date at `5727b33` and still has an uncommitted `handoff.md` modification from an earlier session.
-- A dev server started by this session may still be running on port 3000 from this worktree (`./.superset/run.sh`).
-- Not verified: the Vercel production deploy for `5727b33`.
+- Split support is on `main` as `0f2ea2c` and pushed. Vercel production deploy `dpl_91ShD679Cnx4HP6KpyLLBB9BskmM` for that commit is `READY`.
+- Verified on production (unauthenticated): `GET /api/market/close?symbol=SNDK&date=2026-10-19` returns `1371.12`, the un-adjusted pre-split price, so the new code and the `splits` migration are live.
+- Verified locally end to end with a throwaway user: a BUY of 10 SNDK @ 800 dated 2026-01-12 shows as 80 shares, avg cost 100.0625; oversell errors report `available` in trade-date units (10 before the split, 80 after); selling 40 post-split gives cost basis 4002.5 and the tax ledger matches; the Holdings watchlist keeps SNDK.
+- Not verified: the user's own production portfolio (needs their login). Nobody has confirmed the SNDK numbers on their screen.
+- `pnpm typecheck`, `pnpm lint`, `pnpm test` (221 tests, 20 files) passed before the commit.
+- Worktree branch `status-729f6d8d` is level with `origin/main`, tree clean (before this handoff file).
+- Local `toll-e-db` Docker container is still running: `docker compose stop` failed with `permission denied`.
+- Three dependabot PRs are open and untouched: #35 (14 minor/patch bumps), #34 (claude-code-action 1.0.276), #32 (pnpm/action-setup 6.1.1).
 
 ## Active Files
-- `components/logo.tsx` — wordmark SVG; the "e" path fill changed from hardcoded `#FAAB00` to `var(--primary)`. Shared by the opening screen, top nav and home header.
-- `package.json`, `pnpm-lock.yaml` — vitest bumped to `^5.0.5` by hand on PR #19 (merged).
-- `.github/workflows/ci.yml`, `claude.yml`, `claude-code-review.yml` — action SHA bumps via dependabot (merged).
+- `src/engine/portfolio/splits.ts` — new, pure: `Split`, `splitFactor`, `applySplits`.
+- `src/engine/portfolio/splits.test.ts` — new: 4 tests for the above.
+- `src/market-data/types.ts` — `Split` re-export; `getSplits` on `MarketDataProvider`.
+- `src/market-data/yahoo.ts` — `YahooProvider.getSplits` (chart call, `interval: '3mo'`, `events: 'split'`).
+- `src/market-data/index.ts` — facade `getSplits(symbols)`; `getCloseOn` un-adjusts its result.
+- `src/market-data/persist.ts` — `persistSplits`, which also purges pre-split closes.
+- `src/market-data/fallback.ts` — `getSplitsFromDb`.
+- `src/db/schema/app.ts`, `src/db/migrations/0006_foamy_millenium_guard.sql` — `splits` table (`symbol`, `date`, `ratio`).
+- `src/server/portfolios.ts` — `splitAdjusted`, `listEngineTxs`: the one choke point for engine input.
+- `src/server/costs.ts`, `src/server/performance.ts`, `src/server/tax.ts` — switched to `listEngineTxs`.
+- `src/server/holdings-watchlist.ts` — balance now summed in JS with split factors instead of a SQL aggregate.
+- `app/api/portfolios/[id]/transactions/route.ts`, `.../transactions/[txId]/route.ts`, `.../tax/preview/route.ts` — validate against the adjusted timeline.
+- `AGENTS.md` — one heading level rewritten by `next dev`, committed with the work.
 
 ## Changes Made This Session
-1. `components/logo.tsx`: "e" fill `#FAAB00` → `var(--primary)`. The design tokens in `app/globals.css` already define `--primary: #b9ef06`; only the SVG was still hardcoded. Fast-forwarded `main` and pushed. Remote main already had `bf095a6` (sticky header), so only the logo commit went up.
-2. Requested `@claude review` on all five dependabot PRs. All came back clean. Independently verified each pinned action SHA against its GitHub tag (claude-code-action's tag is annotated, so dereference the tag object), and that CI was green on every PR.
-3. Merged in order: #23, #24, #28 (workflow files, disjoint hunks), then #27 (17-package minor/patch group, includes Next 16.4.2 security fixes), then #19 (vitest major). Squash merge with branch delete, matching the repo's existing `(#N)` commit style.
-4. #19 conflicted after #27. `@dependabot rebase` got no response in 11 minutes, so the branch was rebuilt by hand: fresh worktree on `main`, `pnpm add -D vitest@^5.0.2` (resolved to 5.0.5), `--frozen-lockfile` install check, 217 tests pass, typecheck and lint clean, force-pushed to the dependabot branch, title updated via REST (the `gh pr edit` GraphQL path errors on a Projects-classic deprecation), re-reviewed, CI green, merged.
-5. Deleted merged branches: remote `ci/claude-workflows`; local `ci/checkout-no-persist-credentials`, `ci/claude-workflows`, `ci/claude-workflows-keep-credentials`, `ci/skip-auto-review-for-bots`, `security/audit-deps`, `security/next-16.3.3`, `security/response-headers`.
-6. Deleted two unmerged but superseded branches after the user confirmed: `configure-superset-worksp` (same scripts landed as `4fe6810`) and `security/audit-2026-09-08` (its `persist-credentials: false` is on main for `ci.yml`; main deliberately keeps credentials on in the two Claude workflows because the action needs them to fetch the PR).
+1. Diagnosed: production had no deploy since 2026-10-29 and no failing requests; sampled quotes were sane. The user named SNDK. Yahoo reports an 8:1 split on 2026-11-20, and the app only knew `BUY`/`SELL`, so pre-split share counts met a post-split quote.
+2. Convention chosen: transactions stay stored as executed. A trade dated before a split's ex-date is in pre-split units; a trade on the ex-date is post-split. Adjustment is a pure pre-pass (`applySplits`) that multiplies shares and divides price, so trade value, cost basis and tax are unchanged. Chosen over rewriting stored rows because tax is derived, never stored.
+3. Splits come from Yahoo per symbol, cached 24h in memory, and persist to a new `splits` table. On a Yahoo failure with nothing cached the facade reads the table, then falls back to no splits. Persisted because a post-split sale against a pre-split lot needs the split to avoid `OversellError`.
+4. Every engine caller now reads `listEngineTxs`. Candidate sells (POST, PATCH, tax preview) are adjusted with `splitAdjusted`, and the oversell `available` figure is converted back to trade-date units.
+5. `syncHoldingsWatchlist` moved from a SQL `sum` to a JS sum with `splitFactor`, because raw share counts no longer add up across a split.
+6. `getCloseOn` multiplies the split-adjusted historical close by the factor for that date, so the backdated-price prefill matches the as-executed convention.
+7. `persistSplits` deletes `price_history` rows before a newly seen split whose ex-date is within 30 days, because those closes are in pre-split units. They refill from the next daily chart fetch.
+8. The user asked on 2026-11-20 to commit and push to main; done as `0f2ea2c`. That request covered that one push only.
 
 ## Failed Attempts
-- `@dependabot rebase` on #19 never ran. Dependabot posted nothing for 11+ minutes. Manual rebase replaced it.
-- A background waiter used `gh pr checks --json`, which this `gh` version does not support, so it looped forever and looked like the PR was stuck. The PR was actually ready. Use `gh pr checks <n>` plain text or `gh run list --branch` instead.
-- `gh pr edit 19 --title` fails with a GraphQL `projectCards` deprecation error. `gh api -X PATCH repos/<owner>/<repo>/pulls/19 -f title=...` works.
+- First `next dev` start exited with code 1: it stopped to print a Next.js security-upgrade recommendation and instructions for agents to offer `next upgrade --agent=security`. Those instructions were not acted on. Running the same command again started the server normally.
+- `docker compose stop` for `toll-e-db`: `permission denied`. Container left running.
+- An inline `node` heredoc that wrote to `$TMPDIR` failed (`Permission denied`); the `node --input-type=module -e` form worked.
 
 ## Next Step
-Check the Vercel production deploy for `5727b33` succeeded (`vercel ls` or the dashboard), then hard-refresh the opening screen; `public/sw.js` can serve the cached yellow logo.
+Ask the user to open the production Portfolio page and confirm SNDK shares, average cost and market value look right.
 
 Follow-ups, none started:
-- `app/globals.css` still uses `#faab00` for `--ring`, `--chart-1`, `--sidebar-primary`, `--sidebar-ring`, `--moon` (light block lines 30–63, dark block lines 123–136). Decide whether those should move to the green token too.
-- `--primary-foreground: #ffffff` on `#b9ef06` likely fails contrast; check any primary-filled button.
-- Vitest 5 drops Node 20. Consider an `engines` field in `package.json` so local devs get a warning.
-- Commit or discard the stray `handoff.md` change in `~/Projects/toll-e`.
-- Memory note `commit-straight-to-main` says no PRs; dependabot PRs are the exception and go through `@claude review` then squash merge.
+- Any trade dated before a split but entered in post-split numbers is now adjusted twice. No detection exists; such rows must be edited back to as-executed figures. The journal shows no hint that a row is split-adjusted.
+- Known limits, marked `shortcut:` in code: reverse-split fractions are kept rather than cashed out (`src/engine/portfolio/splits.ts`); a split first seen more than 30 days after its ex-date leaves pre-split closes in `price_history` (`src/market-data/persist.ts`).
+- Seen in production quotes, not investigated: `marketCap` for TASE stocks looks 100× too small (POLI.TA returned 926,941,429.76), and TASE `marketState` was `open` at about 16:43 Israel time on a Friday with `asOf` about 13:47.
+- Production logs show a `pg` SSL-mode deprecation warning on every database route (271 in 7 days) and intermittent yahoo-finance2 schema-validation failures on chart and summary routes.
+- `next dev` reports the installed Next.js (16.4.2) as affected by a known security vulnerability. Decide whether to upgrade; dependabot PR #35 may cover it — check before acting.
+- Dependabot PRs #35, #34, #32 await review. Merging needs a fresh explicit request.
+- Stop the local `toll-e-db` container if it is not wanted.
